@@ -1,6 +1,6 @@
 const { createClient } = require("@supabase/supabase-js");
 
-const requiredEnvVars = ["SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY"];
+const requiredEnvVars = ["SUPABASE_URL", "SUPABASE_ANON_KEY"];
 
 // validate environment variables
 for (const key of requiredEnvVars) {
@@ -12,7 +12,7 @@ for (const key of requiredEnvVars) {
 // create supabase client if all env variables are set
 const supabase = createClient(
   process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY,
+  process.env.SUPABASE_ANON_KEY,
 );
 
 module.exports = supabase;
