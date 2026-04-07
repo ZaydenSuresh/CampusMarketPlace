@@ -5,15 +5,17 @@ const supabase = require("./database");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const DB_CHECK_TABLE = process.env.DB_CHECK_TABLE || "profiles";
+const DB_CHECK_TABLE = process.env.DB_CHECK_TABLE || "testing";
 
 app.use(cors());
 app.use(express.json());
 
+// check server health
 app.get("/health", (req, res) => {
   res.status(200).json({ ok: true, service: "campus-marketplace-api" });
 });
 
+// check database connection
 app.get("/db-check", async (req, res) => {
   try {
     const { data, error } = await supabase
