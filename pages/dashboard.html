@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Campus Marketplace | Dashboard</title>
+        <link rel="stylesheet" href="../styles/global.css" />
+        <style>
+            /* Internal styles for layout structure until global.css is ready */
+            body {
+                font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+                margin: 0;
+                display: flex;
+                background: #f4f7f6;
+            }
+
+            /* Navigation Sidebar */
+            nav {
+                width: 250px;
+                height: 100vh;
+                background: #2c3e50;
+                color: white;
+                padding: 20px;
+                position: fixed;
+            }
+            nav h2 {
+                font-size: 1.2rem;
+                border-bottom: 1px solid #555;
+                padding-bottom: 10px;
+            }
+            nav ul {
+                list-style: none;
+                padding: 0;
+            }
+            nav ul li {
+                margin: 20px 0;
+            }
+            nav ul li a {
+                color: #bdc3c7;
+                text-decoration: none;
+                transition: 0.3s;
+            }
+            nav ul li a:hover {
+                color: white;
+            }
+
+            /* Main Content Area */
+            main {
+                margin-left: 290px;
+                padding: 40px;
+                width: 100%;
+            }
+
+            /* User Info Section */
+            .user-header {
+                background: white;
+                padding: 20px;
+                border-radius: 8px;
+                box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+                margin-bottom: 30px;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+            }
+            .user-profile {
+                display: flex;
+                align-items: center;
+            }
+            .avatar {
+                width: 60px;
+                height: 60px;
+                background: #3498db;
+                border-radius: 50%;
+                margin-right: 15px;
+            }
+
+            /* Listings Overview */
+            .stats-container {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: 20px;
+                margin-bottom: 30px;
+            }
+            .stat-card {
+                background: white;
+                padding: 20px;
+                border-radius: 8px;
+                text-align: center;
+                border-top: 4px solid #3498db;
+            }
+
+            .listings-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                gap: 20px;
+            }
+            .listing-item {
+                background: white;
+                border-radius: 8px;
+                overflow: hidden;
+                box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            }
+            .listing-img {
+                height: 150px;
+                background: #ddd;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: #999;
+            }
+            .listing-info {
+                padding: 15px;
+            }
+            .status {
+                font-size: 0.8rem;
+                padding: 3px 8px;
+                border-radius: 12px;
+                background: #e8f5e9;
+                color: #2e7d32;
+            }
+        </style>
+    </head>
+    <body>
+        <nav id="sidebar">
+            <h2>Campus Market</h2>
+            <ul>
+                <li>
+                    <a href="dashboard.html" class="active">🏠 Dashboard</a>
+                </li>
+                <li><a href="trade-slots.html">📅 Trade Slots</a></li>
+                <li><a href="#">📦 My Listings</a></li>
+                <li><a href="#">💬 Messages</a></li>
+            </ul>
+        </nav>
+
+        <main>
+            <header class="user-header">
+                <div class="user-profile">
+                    <div class="avatar"></div>
+                    <div>
+                        <h1 id="user-name">Welcome back, Alex!</h1>
+                        <p id="user-major">Computer Science | Senior</p>
+                    </div>
+                </div>
+                <button style="padding: 10px 20px; cursor: pointer">
+                    + Create New Listing
+                </button>
+            </header>
+
+            <section>
+                <h3>Activity Overview</h3>
+                <div class="stats-container">
+                    <div class="stat-card">
+                        <h4>Active Listings</h4>
+                        <p style="font-size: 2rem; font-weight: bold">5</p>
+                    </div>
+                    <div class="stat-card">
+                        <h4>Items Sold</h4>
+                        <p style="font-size: 2rem; font-weight: bold">12</p>
+                    </div>
+                    <div class="stat-card">
+                        <h4>Pending Bookings</h4>
+                        <p style="font-size: 2rem; font-weight: bold">2</p>
+                    </div>
+                </div>
+
+                <h3>Recent Listings</h3>
+                <div class="listings-grid" id="listings-container">
+                    <div class="listing-item">
+                        <div class="listing-img">Product Image</div>
+                        <div class="listing-info">
+                            <span class="status">Active</span>
+                            <h4>Calculus Textbook (10th Ed)</h4>
+                            <p>$45.00</p>
+                        </div>
+                    </div>
+                    <div class="listing-item">
+                        <div class="listing-img">Product Image</div>
+                        <div class="listing-info">
+                            <span class="status">Active</span>
+                            <h4>Dorm Desk Lamp</h4>
+                            <p>$15.00</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <script src="../scripts/navbar.js"></script>
+        <script src="../scripts/listings.js"></script>
+
+        <script>
+            // Inline mock data logic as suggested in your blockers list
+            console.log("Using mock data for development...");
+            const mockListings = [
+                { title: "Lab Coat", price: "$25", status: "Sold" },
+                {
+                    title: "Graphing Calculator",
+                    price: "$60",
+                    status: "Active",
+                },
+            ];
+            // In reality, listings.js would populate the listings-container div
+        </script>
+    </body>
+</html>
