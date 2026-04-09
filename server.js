@@ -45,6 +45,8 @@ app.get("/db-check", async (req, res) => {
     });
   }
 });
+const listingsRouter = require('./routes/listings');
+app.use('/listings', listingsRouter);
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
