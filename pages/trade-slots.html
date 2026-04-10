@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Campus Marketplace | Trade Slots</title>
+        <link rel="stylesheet" href="../styles/global.css" />
+        <link rel="stylesheet" href="../styles/slots.css" />
+        <style>
+            /* Base layout styles (matching dashboard) */
+            body {
+                font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+                margin: 0;
+                display: flex;
+                background: #f4f7f6;
+            }
+
+            /* Navigation Sidebar */
+            nav {
+                width: 250px;
+                height: 100vh;
+                background: #2c3e50;
+                color: white;
+                padding: 20px;
+                position: fixed;
+            }
+            nav h2 {
+                font-size: 1.2rem;
+                border-bottom: 1px solid #555;
+                padding-bottom: 10px;
+                margin-bottom: 20px;
+            }
+            nav ul {
+                list-style: none;
+                padding: 0;
+            }
+            nav ul li {
+                margin: 20px 0;
+            }
+            nav ul li a {
+                color: #bdc3c7;
+                text-decoration: none;
+                transition: 0.3s;
+                display: block;
+                padding: 8px 0;
+            }
+            nav ul li a:hover {
+                color: white;
+            }
+            nav ul li a.active {
+                color: #3498db;
+                font-weight: bold;
+            }
+
+            /* Main Content Area */
+            main {
+                margin-left: 290px;
+                padding: 40px;
+                width: calc(100% - 290px);
+            }
+
+            /* Slot Booking Interface Header */
+            .page-header {
+                margin-bottom: 30px;
+            }
+            .page-header h1 {
+                margin: 0;
+                color: #2c3e50;
+            }
+            .page-header p {
+                color: #7f8c8d;
+                margin-top: 5px;
+            }
+
+            /* Slot Grid Layout */
+            .slots-container {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+                gap: 20px;
+            }
+
+            /* Slot Card (Requirement: card.js/slots.css) */
+            .slot-card {
+                background: white;
+                border-radius: 10px;
+                padding: 20px;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+                border-left: 5px solid #3498db;
+                transition: transform 0.2s;
+            }
+            .slot-card:hover {
+                transform: translateY(-3px);
+            }
+            .slot-time {
+                font-weight: bold;
+                font-size: 1.1rem;
+                color: #2c3e50;
+            }
+            .slot-location {
+                color: #3498db;
+                margin: 10px 0;
+                font-size: 0.9rem;
+            }
+            .slot-availability {
+                font-size: 0.85rem;
+                color: #27ae60;
+                background: #e8f5e9;
+                display: inline-block;
+                padding: 2px 8px;
+                border-radius: 4px;
+            }
+
+            /* Booking Interaction (Requirement: Enable booking interactions) */
+            .book-btn {
+                width: 100%;
+                margin-top: 15px;
+                padding: 10px;
+                background: #3498db;
+                color: white;
+                border: none;
+                border-radius: 5px;
+                cursor: pointer;
+                font-weight: bold;
+                transition: 0.2s;
+            }
+            .book-btn:hover {
+                background: #2980b9;
+            }
+            .book-btn:disabled {
+                background: #bdc3c7;
+                cursor: not-allowed;
+            }
+
+            /* Calendar Mockup for context */
+            .calendar-picker {
+                background: white;
+                padding: 20px;
+                border-radius: 8px;
+                margin-bottom: 30px;
+                display: flex;
+                align-items: center;
+                gap: 20px;
+            }
+        </style>
+    </head>
+    <body>
+        <nav id="sidebar">
+            <h2>Campus Market</h2>
+            <ul>
+                <li><a href="dashboard.html">🏠 Dashboard</a></li>
+                <li>
+                    <a href="trade-slots.html" class="active">📅 Trade Slots</a>
+                </li>
+                <li><a href="#">📦 My Listings</a></li>
+                <li><a href="#">💬 Messages</a></li>
+            </ul>
+        </nav>
+
+        <main>
+            <header class="page-header">
+                <h1>Trade Slot Booking</h1>
+                <p>
+                    Select a safe campus location and time to finalize your
+                    exchange.
+                </p>
+            </header>
+
+            <section class="calendar-picker">
+                <strong>Select Date:</strong>
+                <input type="date" id="trade-date" value="2024-05-20" />
+                <span>Viewing available slots for today</span>
+            </section>
+
+            <section class="slots-container" id="slots-list">
+                <div class="slot-card">
+                    <div class="slot-time">10:30 AM - 11:00 AM</div>
+                    <div class="slot-location">
+                        📍 Student Union - North Entrance
+                    </div>
+                    <div class="slot-availability">Available</div>
+                    <button
+                        class="book-btn"
+                        onclick="handleBooking('10:30 AM')"
+                    >
+                        Book This Slot
+                    </button>
+                </div>
+
+                <div class="slot-card">
+                    <div class="slot-time">01:00 PM - 01:30 PM</div>
+                    <div class="slot-location">
+                        📍 Library Lobby (Quiet Zone)
+                    </div>
+                    <div class="slot-availability">Available</div>
+                    <button
+                        class="book-btn"
+                        onclick="handleBooking('01:00 PM')"
+                    >
+                        Book This Slot
+                    </button>
+                </div>
+
+                <div class="slot-card" style="border-left-color: #e74c3c">
+                    <div class="slot-time">03:45 PM - 04:15 PM</div>
+                    <div class="slot-location">📍 Campus Cafe Terrace</div>
+                    <div
+                        class="slot-availability"
+                        style="color: #e74c3c; background: #fdeaea"
+                    >
+                        Fully Booked
+                    </div>
+                    <button class="book-btn" disabled>Unavailable</button>
+                </div>
+            </section>
+        </main>
+
+        <script src="../scripts/slots.js"></script>
+        <script src="../scripts/card.js"></script>
+
+        <script>
+            // Enable booking interactions (Requirement)
+            function handleBooking(time) {
+                const confirmBooking = confirm(
+                    `Would you like to request a trade meeting at ${time}?`,
+                );
+                if (confirmBooking) {
+                    alert(
+                        "Booking request sent! The other student will be notified.",
+                    );
+                }
+            }
+
+            // Mock data logic for blockers
+            console.log(
+                "Slots UI initialized. Use slots.js to fetch real-time campus safety spots.",
+            );
+        </script>
+    </body>
+</html>
