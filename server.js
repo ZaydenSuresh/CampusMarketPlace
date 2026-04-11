@@ -1,5 +1,4 @@
 const express = require("express");
-const session = require("express-session");
 const cors = require("cors");
 require("dotenv").config();
 const supabase = require("./database");
@@ -10,18 +9,6 @@ const PORT = process.env.PORT || 3000;
 const DB_CHECK_TABLE = process.env.DB_CHECK_TABLE || "testing";
 
 app.use(cors());
-app.use(
-  session({
-    secret: process.env.SESSION_SECRET || "campus-marketplace",
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-      httpOnly: true,
-      secure: false,
-      sameSite: "lax",
-    },
-  }),
-);
 app.use(express.static("pages"));
 app.use("/auth", authRouter);
 app.use(express.json());

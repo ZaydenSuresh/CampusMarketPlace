@@ -83,14 +83,6 @@ authRouter.get("/callback", async (req, res) => {
         .json({ ok: false, message: "User data was not returned by Supabase" });
     }
 
-    // Optionally, store key user data in session as before
-    req.session.userId = data.user.id;
-    req.session.email = data.user.email;
-    req.session.name = data.user.user_metadata?.name;
-    req.session.supabase_token = data.session?.access_token;
-    req.session.supabase_refresh_token = data.session?.refresh_token;
-    req.session.supabase_expires_at = data.session?.expires_at;
-
     // redirect to dashboard.html
     return res.redirect(302, "/dashboard.html");
   } catch (error) {
