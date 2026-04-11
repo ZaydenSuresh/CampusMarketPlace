@@ -1,18 +1,14 @@
 const express = require("express");
-const authRouter = express.Router();
-// Swap out direct supabase client for SSR-aware helper
 const { createSupabaseClient } = require("../lib/supabase");
+const authRouter = express.Router();
 
 // Google Authentication Flow
 authRouter.get("/google", async (req, res) => {
   try {
-    // Use the SSR client to ensure PKCE state is handled with cookies
     const supabase = createSupabaseClient(req, res);
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: {
-        redirectTo: "http://localhost:3000/auth/callback",
-      },
+      options: { redirectTo: "http://localhost:3000/auth/callback" },
     });
 
     if (error) {
@@ -34,10 +30,8 @@ authRouter.get("/google", async (req, res) => {
     // Redirect to Supabase's Google OAuth URL
     return res.redirect(302, data.url);
   } catch (error) {
-    return res.status(500).json({
-      ok: false,
-      message: "Unexpected error while starting Google OAuth",
-    });
+    console.error("[/auth/google] OAuth start error:", error);
+    return res.status(500).json({ ok: false, message: error.message });
   }
 });
 
@@ -67,29 +61,17 @@ authRouter.get("/callback", async (req, res) => {
   // Use SSR-aware Supabase client for proper PKCE state
   const supabase = createSupabaseClient(req, res);
   try {
-    const { data, error: sessionError } =
-      await supabase.auth.exchangeCodeForSession(code);
-
-    if (sessionError) {
-      return res.status(500).json({
-        ok: false,
-        message: `Failed to exchange code for session`,
-      });
-    }
-
-    if (!data || !data.user) {
-      return res
-        .status(500)
-        .json({ ok: false, message: "User data was not returned by Supabase" });
-    }
-
-    // redirect to dashboard.html
+    const code = req.query.code;
+    if (!code)
+      return res.status(400).json({ ok: false, message: "Missing code" });
+    const supabase = createSupabaseClient(req, res);
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+    if (error) throw error;
+    // Session cookie is now set by supabase.js. Redirect to dashboard.
     return res.redirect(302, "/dashboard.html");
   } catch (error) {
-    return res.status(500).json({
-      ok: false,
-      message: "Unexpected error while exchanging code for session",
-    });
+    console.error("[/auth/callback] OAuth callback error:", error);
+    return res.status(500).json({ ok: false, message: error.message });
   }
 });
 
@@ -115,8 +97,8 @@ authRouter.get("/me", (req, res) => {
   }
 });
 
+// Placeholder for logout; expands as needed for Supabase signOut
 authRouter.post("/logout", async (req, res) => {
-  // Temporary response for testing route wiring only.
   return res
     .status(200)
     .json({ ok: true, route: "/auth/logout", message: "placeholder" });
