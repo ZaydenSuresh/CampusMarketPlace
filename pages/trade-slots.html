@@ -3,237 +3,213 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Campus Marketplace | Trade Slots</title>
+        <title>Trade Slots | Campus Marketplace</title>
         <link rel="stylesheet" href="../styles/global.css" />
-        <link rel="stylesheet" href="../styles/slots.css" />
         <style>
-            /* Base layout styles (matching dashboard) */
             body {
-                font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-                margin: 0;
                 display: flex;
-                background: #f4f7f6;
+                min-height: 100vh;
+                background-color: var(--bg-light);
+                color: var(--text-dark);
             }
 
-            /* Navigation Sidebar */
-            nav {
-                width: 250px;
-                height: 100vh;
-                background: #2c3e50;
-                color: white;
-                padding: 20px;
+            /* Sidebar - Consistent with Dashboard & Login Panel */
+            .sidebar {
+                width: 280px;
+                background: var(--clr-bg-gradient);
+                color: var(--white);
+                display: flex;
+                flex-direction: column;
+                padding: var(--space-xl);
                 position: fixed;
-            }
-            nav h2 {
-                font-size: 1.2rem;
-                border-bottom: 1px solid #555;
-                padding-bottom: 10px;
-                margin-bottom: 20px;
-            }
-            nav ul {
-                list-style: none;
-                padding: 0;
-            }
-            nav ul li {
-                margin: 20px 0;
-            }
-            nav ul li a {
-                color: #bdc3c7;
-                text-decoration: none;
-                transition: 0.3s;
-                display: block;
-                padding: 8px 0;
-            }
-            nav ul li a:hover {
-                color: white;
-            }
-            nav ul li a.active {
-                color: #3498db;
-                font-weight: bold;
+                height: 100vh;
+                box-shadow: var(--shadow-lg);
+                z-index: 100;
             }
 
-            /* Main Content Area */
-            main {
-                margin-left: 290px;
-                padding: 40px;
-                width: calc(100% - 290px);
+            .sidebar-logo {
+                font-size: 1.5rem;
+                font-weight: 800;
+                margin-bottom: var(--space-2xl);
             }
 
-            /* Slot Booking Interface Header */
-            .page-header {
-                margin-bottom: 30px;
-            }
-            .page-header h1 {
-                margin: 0;
-                color: #2c3e50;
-            }
-            .page-header p {
-                color: #7f8c8d;
-                margin-top: 5px;
+            .sidebar-logo .highlight {
+                color: var(--wits-gold);
             }
 
-            /* Slot Grid Layout */
-            .slots-container {
-                display: grid;
-                grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-                gap: 20px;
+            .nav-list {
+                display: flex;
+                flex-direction: column;
+                gap: var(--space-sm);
             }
 
-            /* Slot Card (Requirement: card.js/slots.css) */
-            .slot-card {
-                background: white;
-                border-radius: 10px;
-                padding: 20px;
-                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-                border-left: 5px solid #3498db;
-                transition: transform 0.2s;
-            }
-            .slot-card:hover {
-                transform: translateY(-3px);
-            }
-            .slot-time {
-                font-weight: bold;
-                font-size: 1.1rem;
-                color: #2c3e50;
-            }
-            .slot-location {
-                color: #3498db;
-                margin: 10px 0;
-                font-size: 0.9rem;
-            }
-            .slot-availability {
-                font-size: 0.85rem;
-                color: #27ae60;
-                background: #e8f5e9;
-                display: inline-block;
-                padding: 2px 8px;
-                border-radius: 4px;
-            }
-
-            /* Booking Interaction (Requirement: Enable booking interactions) */
-            .book-btn {
-                width: 100%;
-                margin-top: 15px;
-                padding: 10px;
-                background: #3498db;
-                color: white;
-                border: none;
-                border-radius: 5px;
-                cursor: pointer;
-                font-weight: bold;
-                transition: 0.2s;
-            }
-            .book-btn:hover {
-                background: #2980b9;
-            }
-            .book-btn:disabled {
-                background: #bdc3c7;
-                cursor: not-allowed;
-            }
-
-            /* Calendar Mockup for context */
-            .calendar-picker {
-                background: white;
-                padding: 20px;
-                border-radius: 8px;
-                margin-bottom: 30px;
+            .nav-item {
                 display: flex;
                 align-items: center;
-                gap: 20px;
+                padding: var(--space-md);
+                border-radius: var(--radius-md);
+                background: rgba(255, 255, 255, 0.08);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                transition: all var(--transition-normal);
+                font-weight: 600;
+                font-size: 0.9rem;
+                color: var(--white);
+            }
+
+            .nav-item:hover,
+            .nav-item.active {
+                background: rgba(255, 255, 255, 0.2);
+                border-color: var(--wits-gold);
+                transform: translateX(5px);
+            }
+
+            /* Main Content */
+            .main-content {
+                margin-left: 280px;
+                flex: 1;
+                padding: var(--space-2xl);
+            }
+
+            .page-header {
+                margin-bottom: var(--space-2xl);
+            }
+
+            .page-header h1 {
+                color: var(--wits-navy-dark);
+                font-size: 1.75rem;
+                font-weight: 800;
+                margin-bottom: var(--space-xs);
+            }
+
+            /* Slots Grid - Target for slots.js */
+            #slots-container {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+                gap: var(--space-lg);
+            }
+
+            /* Slot Card Styling - Mimicking the Login Card aesthetic */
+            .slot-card {
+                background: var(--white);
+                padding: var(--space-xl);
+                border-radius: var(--radius-lg);
+                box-shadow: var(--shadow-sm);
+                border: 1px solid var(--grey-border);
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
+                transition: var(--transition-normal);
+                position: relative;
+                overflow: hidden;
+            }
+
+            .slot-card::before {
+                content: "";
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 4px;
+                height: 100%;
+                background: var(--wits-gold);
+            }
+
+            .slot-card:hover {
+                box-shadow: var(--shadow-md);
+                transform: translateY(-3px);
+                border-color: var(--wits-gold-light);
+            }
+
+            .slot-card p {
+                margin: 0;
+                font-size: 0.95rem;
+                line-height: 1.6;
+            }
+
+            .slot-card strong {
+                color: var(--wits-navy-dark);
+                display: block;
+                font-size: 1.1rem;
+                margin-bottom: var(--space-xs);
+            }
+
+            /* Button Styling - Matches submit-btn from login.html */
+            .slot-card button {
+                margin-top: var(--space-lg);
+                width: 100%;
+                padding: 12px;
+                background-color: var(--wits-navy);
+                color: var(--white);
+                border: none;
+                border-radius: var(--radius-pill);
+                font-weight: 700;
+                font-size: 0.9rem;
+                cursor: pointer;
+                transition: all var(--transition-fast);
+            }
+
+            .slot-card button:hover {
+                background-color: var(--wits-navy-dark);
+                box-shadow: 0 4px 12px rgba(0, 59, 126, 0.25);
+            }
+
+            /* Loading state text */
+            .loading-text {
+                color: var(--grey-text);
+                font-style: italic;
+                grid-column: 1 / -1;
+                text-align: center;
+                padding: var(--space-2xl);
+            }
+
+            @media (max-width: 968px) {
+                .sidebar {
+                    width: 80px;
+                    padding: var(--space-md);
+                }
+                .sidebar-logo,
+                .nav-item span {
+                    display: none;
+                }
+                .main-content {
+                    margin-left: 80px;
+                }
             }
         </style>
     </head>
     <body>
-        <nav id="sidebar">
-            <h2>Campus Market</h2>
-            <ul>
-                <li><a href="dashboard.html">🏠 Dashboard</a></li>
-                <li>
-                    <a href="trade-slots.html" class="active">📅 Trade Slots</a>
-                </li>
-                <li><a href="#">📦 My Listings</a></li>
-                <li><a href="#">💬 Messages</a></li>
-            </ul>
-        </nav>
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                Campus<span class="highlight">Market</span>
+            </div>
+            <nav class="nav-list">
+                <a href="dashboard.html" class="nav-item">
+                    <span>🏠 Dashboard</span>
+                </a>
+                <a href="trade-slots.html" class="nav-item active">
+                    <span>📅 Trade Slots</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <span>📦 My Listings</span>
+                </a>
+            </nav>
+        </aside>
 
-        <main>
+        <main class="main-content">
             <header class="page-header">
                 <h1>Trade Slot Booking</h1>
-                <p>
-                    Select a safe campus location and time to finalize your
-                    exchange.
+                <p class="text-muted">
+                    Choose a secure time and location on campus to exchange your
+                    items.
                 </p>
             </header>
 
-            <section class="calendar-picker">
-                <strong>Select Date:</strong>
-                <input type="date" id="trade-date" value="2024-05-20" />
-                <span>Viewing available slots for today</span>
-            </section>
-
-            <section class="slots-container" id="slots-list">
-                <div class="slot-card">
-                    <div class="slot-time">10:30 AM - 11:00 AM</div>
-                    <div class="slot-location">
-                        📍 Student Union - North Entrance
-                    </div>
-                    <div class="slot-availability">Available</div>
-                    <button
-                        class="book-btn"
-                        onclick="handleBooking('10:30 AM')"
-                    >
-                        Book This Slot
-                    </button>
-                </div>
-
-                <div class="slot-card">
-                    <div class="slot-time">01:00 PM - 01:30 PM</div>
-                    <div class="slot-location">
-                        📍 Library Lobby (Quiet Zone)
-                    </div>
-                    <div class="slot-availability">Available</div>
-                    <button
-                        class="book-btn"
-                        onclick="handleBooking('01:00 PM')"
-                    >
-                        Book This Slot
-                    </button>
-                </div>
-
-                <div class="slot-card" style="border-left-color: #e74c3c">
-                    <div class="slot-time">03:45 PM - 04:15 PM</div>
-                    <div class="slot-location">📍 Campus Cafe Terrace</div>
-                    <div
-                        class="slot-availability"
-                        style="color: #e74c3c; background: #fdeaea"
-                    >
-                        Fully Booked
-                    </div>
-                    <button class="book-btn" disabled>Unavailable</button>
-                </div>
-            </section>
+            <div id="slots-container">
+                <p class="loading-text">
+                    Connecting to campus safety server...
+                </p>
+            </div>
         </main>
 
         <script src="../scripts/slots.js"></script>
-        <script src="../scripts/card.js"></script>
-
-        <script>
-            // Enable booking interactions (Requirement)
-            function handleBooking(time) {
-                const confirmBooking = confirm(
-                    `Would you like to request a trade meeting at ${time}?`,
-                );
-                if (confirmBooking) {
-                    alert(
-                        "Booking request sent! The other student will be notified.",
-                    );
-                }
-            }
-
-            // Mock data logic for blockers
-            console.log(
-                "Slots UI initialized. Use slots.js to fetch real-time campus safety spots.",
-            );
-        </script>
     </body>
 </html>
