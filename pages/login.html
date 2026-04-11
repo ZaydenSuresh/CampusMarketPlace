@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Campus Marketplace Login</title>
+    <link rel="stylesheet" href="global.css">
+</head>
+<body>
+    <div class="page-container">
+        <div class="left-panel">
+            <div class="hero-content">
+                <h1 class="logo-title">Campus <br><span class="highlight">Marketplace</span></h1>
+                <p class="description">
+                    Buy, sell, and trade with fellow students. Safe, secure, and exclusively for your university community.
+                </p>
+
+                <div class="feature-list">
+                    <div class="feature-item">
+                        <div class="icon-box icon-gold">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
+                        </div>
+                        <div class="feature-text">
+                            <h3>Secure Trading</h3>
+                            <p>Campus-wide secure trade facilities</p>
+                        </div>
+                    </div>
+
+                    <div class="feature-item">
+                        <div class="icon-box icon-blue">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
+                        </div>
+                        <div class="feature-text">
+                            <h3>Built-in Messaging</h3>
+                            <p>Chat directly with buyers and sellers</p>
+                        </div>
+                    </div>
+
+                    <div class="feature-item">
+                        <div class="icon-box icon-green">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
+                        </div>
+                        <div class="feature-text">
+                            <h3>Verified Students</h3>
+                            <p>Trade only within your campus community</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="right-panel">
+            <div class="login-card">
+                <div class="card-header">
+                    <div class="app-icon">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14v7"></path></svg>
+                    </div>
+                    <h2>Welcome Back!</h2>
+                    <p>Sign in to start trading with your campus community</p>
+                </div>
+
+                <div class="toggle-container">
+                    <button class="toggle-btn active" id="btn-login">Login</button>
+                    <button class="toggle-btn" id="btn-signup">Sign Up</button>
+                </div>
+
+                <form id="loginForm">
+                    <div class="input-group">
+                        <label for="email">University Email</label>
+                        <div class="input-wrapper">
+                            <svg class="input-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                            <input type="email" id="email" placeholder="student@wits.ac.za" required>
+                        </div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="password">Password</label>
+                        <div class="input-wrapper">
+                            <svg class="input-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                            <input type="password" id="password" placeholder="••••••••" required>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="submit-btn">Sign In</button>
+                </form>
+
+                <div class="card-footer">
+                    <a href="#" class="forgot-password">Forgot password?</a>
+                </div>
+            </div>
+            
+            <p class="terms-text">
+                By continuing, you agree to our Terms of Service and Privacy Policy
+            </p>
+        </div>
+
+        <button class="help-btn">?</button>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>
