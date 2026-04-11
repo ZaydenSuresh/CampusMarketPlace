@@ -56,7 +56,7 @@
   --radius-md:   12px;
   --radius-lg:   20px;
   --radius-pill: 9999px;
-  --radius-full: 9999px;  
+  --radius-full: 9999px;
 
   /* Shadows */
   --shadow-sm:  0 1px 3px rgba(0, 0, 0, 0.08);
@@ -71,7 +71,7 @@
 *,
 *::before,
 *::after {
-<<<<<<< HEAD
+
   margin: 0;
   padding: 0;
   box-sizing: border-box;
@@ -104,12 +104,12 @@ body {
     background-color: var(--bg-light);
     line-height: 1.5;
     min-height: 100vh;
->>>>>>> issue-#17-student-landing-page
+
 }
 
 img,
 svg {
-<<<<<<< HEAD
+
   display: block;
   max-width: 100%;
 }
@@ -134,7 +134,7 @@ a {
 button {
     font-family: inherit;
     cursor: pointer;
->>>>>>> issue-#17-student-landing-page
+
 }
 
 input,
@@ -146,7 +146,7 @@ textarea {
 
 ul,
 ol {
-<<<<<<< HEAD
+
   list-style: none;
 }
 
@@ -175,13 +175,13 @@ ol {
     font-size: 0.85rem;
     font-weight: 600;
     color: var(--text-dark);
->>>>>>> issue-#17-student-landing-page
+
 }
 
 .form-input,
 .form-select,
 .form-textarea {
-<<<<<<< HEAD
+
   width: 100%;
   padding: 12px var(--space-md);
   border: 1px solid var(--grey-border);
@@ -202,7 +202,7 @@ ol {
     transition:
         border-color var(--transition-fast),
         box-shadow var(--transition-fast);
->>>>>>> issue-#17-student-landing-page
+
 }
 
 .form-input:focus,
@@ -215,7 +215,7 @@ ol {
 .form-input.error,
 .form-select.error,
 .form-textarea.error {
-<<<<<<< HEAD
+
   border-color: var(--clr-danger);
   box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
 }
@@ -272,12 +272,12 @@ ol {
         background-color var(--transition-fast),
         opacity var(--transition-fast);
     white-space: nowrap;
->>>>>>> issue-#17-student-landing-page
+
 }
 
 .btn:disabled,
 .btn.loading {
-<<<<<<< HEAD
+
   opacity: 0.6;
   cursor: not-allowed;
 }
@@ -551,5 +551,5 @@ ol {
 
 .hidden {
     display: none !important;
+
 }
->>>>>>> issue-#17-student-landing-page
