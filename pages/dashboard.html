@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Dashboard | Campus Marketplace</title>
+        <link rel="stylesheet" href="../styles/global.css" />
+        <style>
+            body {
+                display: flex;
+                min-height: 100vh;
+                background-color: var(--bg-light);
+            }
+
+            /* Sidebar - Styled like the Login Left Panel */
+            .sidebar {
+                width: 280px;
+                background: var(--clr-bg-gradient);
+                color: var(--white);
+                display: flex;
+                flex-direction: column;
+                padding: var(--space-xl);
+                position: fixed;
+                height: 100vh;
+                box-shadow: var(--shadow-lg);
+            }
+
+            .sidebar-logo {
+                font-size: 1.5rem;
+                font-weight: 800;
+                margin-bottom: var(--space-2xl);
+                color: var(--white);
+            }
+
+            .sidebar-logo .highlight {
+                color: var(--wits-gold);
+            }
+
+            .nav-list {
+                display: flex;
+                flex-direction: column;
+                gap: var(--space-sm);
+            }
+
+            .nav-item {
+                display: flex;
+                align-items: center;
+                padding: var(--space-md);
+                border-radius: var(--radius-md);
+                background: rgba(255, 255, 255, 0.08);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                transition: all var(--transition-normal);
+                font-weight: 600;
+                font-size: 0.9rem;
+            }
+
+            .nav-item:hover,
+            .nav-item.active {
+                background: rgba(255, 255, 255, 0.2);
+                border-color: var(--wits-gold);
+                transform: translateX(5px);
+            }
+
+            /* Main Content Area */
+            .main-content {
+                margin-left: 280px;
+                flex: 1;
+                padding: var(--space-2xl);
+            }
+
+            /* Header / User Profile Section */
+            .dashboard-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: var(--space-2xl);
+            }
+
+            .user-welcome h1 {
+                color: var(--wits-navy-dark);
+                font-size: 1.75rem;
+                font-weight: 700;
+            }
+
+            /* Stats Grid - Using the login-card style for individual items */
+            .stats-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+                gap: var(--space-lg);
+                margin-bottom: var(--space-2xl);
+            }
+
+            .stat-card {
+                background: var(--white);
+                padding: var(--space-xl);
+                border-radius: var(--radius-lg);
+                box-shadow: var(--shadow-sm);
+                border: 1px solid var(--grey-border);
+                text-align: center;
+                transition: var(--transition-normal);
+            }
+
+            .stat-card:hover {
+                box-shadow: var(--shadow-md);
+                border-color: var(--wits-gold);
+            }
+
+            .stat-card h3 {
+                color: var(--grey-text);
+                font-size: 0.85rem;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+                margin-bottom: var(--space-sm);
+            }
+
+            .stat-card .value {
+                font-size: 2rem;
+                font-weight: 800;
+                color: var(--wits-navy);
+            }
+
+            /* Listings Section */
+            .section-title {
+                color: var(--wits-navy-dark);
+                margin-bottom: var(--space-lg);
+                font-weight: 700;
+            }
+
+            .listings-container {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+                gap: var(--space-lg);
+            }
+
+            .item-card {
+                background: var(--white);
+                border-radius: var(--radius-lg);
+                overflow: hidden;
+                border: 1px solid var(--grey-border);
+                transition: transform var(--transition-normal);
+            }
+
+            .item-card:hover {
+                transform: translateY(-5px);
+                box-shadow: var(--shadow-md);
+            }
+
+            .item-img {
+                height: 180px;
+                background: var(--grey-light);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: var(--grey-text);
+            }
+
+            .item-details {
+                padding: var(--space-lg);
+            }
+
+            .item-price {
+                color: var(--wits-navy);
+                font-weight: 800;
+                font-size: 1.2rem;
+                margin: var(--space-xs) 0;
+            }
+
+            /* Button - Styled like submit-btn from login.html */
+            .action-btn {
+                background-color: var(--wits-navy);
+                color: var(--white);
+                border: none;
+                padding: 12px 24px;
+                border-radius: var(--radius-pill);
+                font-weight: 700;
+                transition: all var(--transition-fast);
+            }
+
+            .action-btn:hover {
+                background-color: var(--wits-navy-dark);
+                box-shadow: 0 4px 12px rgba(0, 59, 126, 0.2);
+            }
+
+            @media (max-width: 968px) {
+                .sidebar {
+                    width: 80px;
+                    padding: var(--space-md);
+                }
+                .sidebar-logo,
+                .nav-item span {
+                    display: none;
+                }
+                .main-content {
+                    margin-left: 80px;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                Campus<span class="highlight">Market</span>
+            </div>
+            <nav class="nav-list">
+                <a href="dashboard.html" class="nav-item active">
+                    <span>🏠 Dashboard</span>
+                </a>
+                <a href="trade-slots.html" class="nav-item">
+                    <span>📅 Trade Slots</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <span>📦 My Listings</span>
+                </a>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <header class="dashboard-header">
+                <div class="user-welcome">
+                    <h1>Welcome back, Alex</h1>
+                    <p class="text-muted">
+                        Here's what's happening with your trades today.
+                    </p>
+                </div>
+                <button class="action-btn">+ Create Listing</button>
+            </header>
+
+            <section class="stats-grid">
+                <div class="stat-card">
+                    <h3>Active Listings</h3>
+                    <div class="value">05</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Items Sold</h3>
+                    <div class="value">12</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Pending Trades</h3>
+                    <div class="value">02</div>
+                </div>
+            </section>
+
+            <h2 class="section-title">Recent Listings</h2>
+            <div class="listings-container" id="listings-container">
+                <div class="item-card">
+                    <div class="item-img">No Image Provided</div>
+                    <div class="item-details">
+                        <span
+                            class="alert-success"
+                            style="
+                                padding: 2px 8px;
+                                border-radius: 4px;
+                                font-size: 0.7rem;
+                                font-weight: bold;
+                            "
+                            >ACTIVE</span
+                        >
+                        <h3 style="margin-top: 10px">Calculus Textbook</h3>
+                        <p class="item-price">R 450.00</p>
+                        <p class="text-small text-muted">Posted 2 days ago</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </body>
+</html>
