@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Campus Marketplace</title>
+
+  <link rel="stylesheet" href="../styles/global.css"/>
+  <link rel="stylesheet" href="../styles/listing.css"/>
+</head>
+
+<body class="listings-page">
+  <main class="listings-main">
+
+    <section class="listings-hero">
+      <header>
+        <h1 class="listings-hero__title">Campus Marketplace 🎓</h1>
+        <p class="listings-hero__subtitle">
+          Buy, sell, and trade with fellow students. Safe, secure, and convenient.
+        </p>
+      </header>
+    </section>
+
+    <section class="listings-toolbar">
+      <input
+        id="searchInput"
+        class="search-input"
+        type="search"
+        placeholder="Search listings..."
+      />
+    </section>
+
+
+    <nav class="category-filters">
+      <button class="filter-pill active">All</button>
+      <button class="filter-pill">Textbooks</button>
+      <button class="filter-pill">Electronics</button>
+      <button class="filter-pill">Clothing</button>
+      <button class="filter-pill">Furniture</button>
+    </nav>
+
+ 
+    <p id="listingsCount" class="listings-count">Loading listings...</p>
+
+    <section id="listingsGrid" class="listings-grid"></section>
+
+  </main>
+
+  <script src="../scripts/global.js"></script>
+
+  <script>
+    let allListings = [];
+
+    document.addEventListener('DOMContentLoaded', () => {
+      requireAuth();
+
+      const searchInput = document.getElementById('searchInput');
+      searchInput.addEventListener('input', debounce(handleSearch, 250));
+
+      loadListings();
+    });
+
+    async function loadListings() {
+      const grid = qs('#listingsGrid');
+      const count = qs('#listingsCount');
+
+      count.textContent = "Loading listings...";
+      grid.innerHTML = "<p>Loading...</p>";
+
+      const result = await api.get('/listings');
+
+      if (result.error) {
+        grid.innerHTML = `<p>${result.error}</p>`;
+        count.textContent = "0 listings";
+        showToast(result.error, 'error');
+        return;
+      }
+
+      allListings = result.data.listings || [];
+      renderListings(allListings);
+    }
+
+    function renderListings(listings) {
+      const grid = qs('#listingsGrid');
+      const count = qs('#listingsCount');
+
+      count.textContent = `${listings.length} listing(s)`;
+
+      if (!listings.length) {
+        grid.innerHTML = "<p>No listings found.</p>";
+        return;
+      }
+
+      grid.innerHTML = listings.map(listing => `
+        <article class="listing-card">
+
+          <img 
+            src="https://picsum.photos/300/200" 
+            alt="Listing image"
+            class="listing-card__img"
+          />
+
+          <section class="listing-card__body">
+            <span class="badge">Listing</span>
+
+            <h3 class="listing-card__title">
+              ${escapeHtml(listing.title)}
+            </h3>
+
+            <p class="listing-card__desc">
+              ${truncate(listing.description, 80)}
+            </p>
+
+            <strong class="listing-card__price">
+              ${formatPrice(listing.price)}
+            </strong>
+
+            <footer class="listing-card__footer">
+              <small>User ${listing.user_id}</small>
+              <small>ID ${listing.id}</small>
+            </footer>
+          </section>
+
+        </article>
+      `).join('');
+    }
+
+    function handleSearch(e) {
+      const query = e.target.value.toLowerCase();
+
+      const filtered = allListings.filter(l =>
+        (l.title || '').toLowerCase().includes(query) ||
+        (l.description || '').toLowerCase().includes(query)
+      );
+
+      renderListings(filtered);
+    }
+
+    function escapeHtml(text) {
+      return String(text || '')
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+    }
+  </script>
+</body>
+</html>
