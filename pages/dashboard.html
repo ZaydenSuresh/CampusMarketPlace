@@ -3,204 +3,264 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Campus Marketplace | Dashboard</title>
+        <title>Dashboard | Campus Marketplace</title>
         <link rel="stylesheet" href="../styles/global.css" />
         <style>
-            /* Internal styles for layout structure until global.css is ready */
             body {
-                font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-                margin: 0;
                 display: flex;
-                background: #f4f7f6;
+                min-height: 100vh;
+                background-color: var(--bg-light);
             }
 
-            /* Navigation Sidebar */
-            nav {
-                width: 250px;
-                height: 100vh;
-                background: #2c3e50;
-                color: white;
-                padding: 20px;
+            /* Sidebar - Styled like the Login Left Panel */
+            .sidebar {
+                width: 280px;
+                background: var(--clr-bg-gradient);
+                color: var(--white);
+                display: flex;
+                flex-direction: column;
+                padding: var(--space-xl);
                 position: fixed;
+                height: 100vh;
+                box-shadow: var(--shadow-lg);
             }
-            nav h2 {
-                font-size: 1.2rem;
-                border-bottom: 1px solid #555;
-                padding-bottom: 10px;
+
+            .sidebar-logo {
+                font-size: 1.5rem;
+                font-weight: 800;
+                margin-bottom: var(--space-2xl);
+                color: var(--white);
             }
-            nav ul {
-                list-style: none;
-                padding: 0;
+
+            .sidebar-logo .highlight {
+                color: var(--wits-gold);
             }
-            nav ul li {
-                margin: 20px 0;
+
+            .nav-list {
+                display: flex;
+                flex-direction: column;
+                gap: var(--space-sm);
             }
-            nav ul li a {
-                color: #bdc3c7;
-                text-decoration: none;
-                transition: 0.3s;
+
+            .nav-item {
+                display: flex;
+                align-items: center;
+                padding: var(--space-md);
+                border-radius: var(--radius-md);
+                background: rgba(255, 255, 255, 0.08);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                transition: all var(--transition-normal);
+                font-weight: 600;
+                font-size: 0.9rem;
             }
-            nav ul li a:hover {
-                color: white;
+
+            .nav-item:hover,
+            .nav-item.active {
+                background: rgba(255, 255, 255, 0.2);
+                border-color: var(--wits-gold);
+                transform: translateX(5px);
             }
 
             /* Main Content Area */
-            main {
-                margin-left: 290px;
-                padding: 40px;
-                width: 100%;
+            .main-content {
+                margin-left: 280px;
+                flex: 1;
+                padding: var(--space-2xl);
             }
 
-            /* User Info Section */
-            .user-header {
-                background: white;
-                padding: 20px;
-                border-radius: 8px;
-                box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-                margin-bottom: 30px;
+            /* Header / User Profile Section */
+            .dashboard-header {
                 display: flex;
-                align-items: center;
                 justify-content: space-between;
-            }
-            .user-profile {
-                display: flex;
                 align-items: center;
-            }
-            .avatar {
-                width: 60px;
-                height: 60px;
-                background: #3498db;
-                border-radius: 50%;
-                margin-right: 15px;
+                margin-bottom: var(--space-2xl);
             }
 
-            /* Listings Overview */
-            .stats-container {
-                display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-                gap: 20px;
-                margin-bottom: 30px;
+            .user-welcome h1 {
+                color: var(--wits-navy-dark);
+                font-size: 1.75rem;
+                font-weight: 700;
             }
+
+            /* Stats Grid - Using the login-card style for individual items */
+            .stats-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+                gap: var(--space-lg);
+                margin-bottom: var(--space-2xl);
+            }
+
             .stat-card {
-                background: white;
-                padding: 20px;
-                border-radius: 8px;
+                background: var(--white);
+                padding: var(--space-xl);
+                border-radius: var(--radius-lg);
+                box-shadow: var(--shadow-sm);
+                border: 1px solid var(--grey-border);
                 text-align: center;
-                border-top: 4px solid #3498db;
+                transition: var(--transition-normal);
             }
 
-            .listings-grid {
+            .stat-card:hover {
+                box-shadow: var(--shadow-md);
+                border-color: var(--wits-gold);
+            }
+
+            .stat-card h3 {
+                color: var(--grey-text);
+                font-size: 0.85rem;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+                margin-bottom: var(--space-sm);
+            }
+
+            .stat-card .value {
+                font-size: 2rem;
+                font-weight: 800;
+                color: var(--wits-navy);
+            }
+
+            /* Listings Section */
+            .section-title {
+                color: var(--wits-navy-dark);
+                margin-bottom: var(--space-lg);
+                font-weight: 700;
+            }
+
+            .listings-container {
                 display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-                gap: 20px;
+                grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+                gap: var(--space-lg);
             }
-            .listing-item {
-                background: white;
-                border-radius: 8px;
+
+            .item-card {
+                background: var(--white);
+                border-radius: var(--radius-lg);
                 overflow: hidden;
-                box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+                border: 1px solid var(--grey-border);
+                transition: transform var(--transition-normal);
             }
-            .listing-img {
-                height: 150px;
-                background: #ddd;
+
+            .item-card:hover {
+                transform: translateY(-5px);
+                box-shadow: var(--shadow-md);
+            }
+
+            .item-img {
+                height: 180px;
+                background: var(--grey-light);
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                color: #999;
+                color: var(--grey-text);
             }
-            .listing-info {
-                padding: 15px;
+
+            .item-details {
+                padding: var(--space-lg);
             }
-            .status {
-                font-size: 0.8rem;
-                padding: 3px 8px;
-                border-radius: 12px;
-                background: #e8f5e9;
-                color: #2e7d32;
+
+            .item-price {
+                color: var(--wits-navy);
+                font-weight: 800;
+                font-size: 1.2rem;
+                margin: var(--space-xs) 0;
+            }
+
+            /* Button - Styled like submit-btn from login.html */
+            .action-btn {
+                background-color: var(--wits-navy);
+                color: var(--white);
+                border: none;
+                padding: 12px 24px;
+                border-radius: var(--radius-pill);
+                font-weight: 700;
+                transition: all var(--transition-fast);
+            }
+
+            .action-btn:hover {
+                background-color: var(--wits-navy-dark);
+                box-shadow: 0 4px 12px rgba(0, 59, 126, 0.2);
+            }
+
+            @media (max-width: 968px) {
+                .sidebar {
+                    width: 80px;
+                    padding: var(--space-md);
+                }
+                .sidebar-logo,
+                .nav-item span {
+                    display: none;
+                }
+                .main-content {
+                    margin-left: 80px;
+                }
             }
         </style>
     </head>
     <body>
-        <nav id="sidebar">
-            <h2>Campus Market</h2>
-            <ul>
-                <li>
-                    <a href="dashboard.html" class="active">🏠 Dashboard</a>
-                </li>
-                <li><a href="trade-slots.html">📅 Trade Slots</a></li>
-                <li><a href="#">📦 My Listings</a></li>
-                <li><a href="#">💬 Messages</a></li>
-            </ul>
-        </nav>
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                Campus<span class="highlight">Market</span>
+            </div>
+            <nav class="nav-list">
+                <a href="dashboard.html" class="nav-item active">
+                    <span>🏠 Dashboard</span>
+                </a>
+                <a href="trade-slots.html" class="nav-item">
+                    <span>📅 Trade Slots</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <span>📦 My Listings</span>
+                </a>
+            </nav>
+        </aside>
 
-        <main>
-            <header class="user-header">
-                <div class="user-profile">
-                    <div class="avatar"></div>
-                    <div>
-                        <h1 id="user-name">Welcome back, Alex!</h1>
-                        <p id="user-major">Computer Science | Senior</p>
-                    </div>
+        <main class="main-content">
+            <header class="dashboard-header">
+                <div class="user-welcome">
+                    <h1>Welcome back, Alex</h1>
+                    <p class="text-muted">
+                        Here's what's happening with your trades today.
+                    </p>
                 </div>
-                <button style="padding: 10px 20px; cursor: pointer">
-                    + Create New Listing
-                </button>
+                <button class="action-btn">+ Create Listing</button>
             </header>
 
-            <section>
-                <h3>Activity Overview</h3>
-                <div class="stats-container">
-                    <div class="stat-card">
-                        <h4>Active Listings</h4>
-                        <p style="font-size: 2rem; font-weight: bold">5</p>
-                    </div>
-                    <div class="stat-card">
-                        <h4>Items Sold</h4>
-                        <p style="font-size: 2rem; font-weight: bold">12</p>
-                    </div>
-                    <div class="stat-card">
-                        <h4>Pending Bookings</h4>
-                        <p style="font-size: 2rem; font-weight: bold">2</p>
-                    </div>
+            <section class="stats-grid">
+                <div class="stat-card">
+                    <h3>Active Listings</h3>
+                    <div class="value">05</div>
                 </div>
-
-                <h3>Recent Listings</h3>
-                <div class="listings-grid" id="listings-container">
-                    <div class="listing-item">
-                        <div class="listing-img">Product Image</div>
-                        <div class="listing-info">
-                            <span class="status">Active</span>
-                            <h4>Calculus Textbook (10th Ed)</h4>
-                            <p>$45.00</p>
-                        </div>
-                    </div>
-                    <div class="listing-item">
-                        <div class="listing-img">Product Image</div>
-                        <div class="listing-info">
-                            <span class="status">Active</span>
-                            <h4>Dorm Desk Lamp</h4>
-                            <p>$15.00</p>
-                        </div>
-                    </div>
+                <div class="stat-card">
+                    <h3>Items Sold</h3>
+                    <div class="value">12</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Pending Trades</h3>
+                    <div class="value">02</div>
                 </div>
             </section>
+
+            <h2 class="section-title">Recent Listings</h2>
+            <div class="listings-container" id="listings-container">
+                <div class="item-card">
+                    <div class="item-img">No Image Provided</div>
+                    <div class="item-details">
+                        <span
+                            class="alert-success"
+                            style="
+                                padding: 2px 8px;
+                                border-radius: 4px;
+                                font-size: 0.7rem;
+                                font-weight: bold;
+                            "
+                            >ACTIVE</span
+                        >
+                        <h3 style="margin-top: 10px">Calculus Textbook</h3>
+                        <p class="item-price">R 450.00</p>
+                        <p class="text-small text-muted">Posted 2 days ago</p>
+                    </div>
+                </div>
+            </div>
         </main>
-
-        <script src="../scripts/navbar.js"></script>
-        <script src="../scripts/listings.js"></script>
-
-        <script>
-            // Inline mock data logic as suggested in your blockers list
-            console.log("Using mock data for development...");
-            const mockListings = [
-                { title: "Lab Coat", price: "$25", status: "Sold" },
-                {
-                    title: "Graphing Calculator",
-                    price: "$60",
-                    status: "Active",
-                },
-            ];
-            // In reality, listings.js would populate the listings-container div
-        </script>
     </body>
 </html>
