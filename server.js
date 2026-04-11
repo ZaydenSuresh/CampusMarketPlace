@@ -15,7 +15,11 @@ app.use(
     secret: process.env.SESSION_SECRET || "campus-marketplace",
     resave: false,
     saveUninitialized: false,
-    cookie: { secure: false },
+    cookie: {
+      httpOnly: true,
+      secure: false,
+      sameSite: "lax",
+    },
   }),
 );
 app.use(express.static("pages"));
