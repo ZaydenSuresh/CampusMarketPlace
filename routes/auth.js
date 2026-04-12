@@ -41,8 +41,6 @@ router.get("/callback", async (req, res) => {
   const oauthError = req.query.error;
   const errorMsg = req.query.error_description;
 
-  console.log("[DEBUG] /auth/callback query:", req.query);
-
   if (oauthError) {
     return res.status(401).json({
       ok: false,
@@ -54,20 +52,37 @@ router.get("/callback", async (req, res) => {
     return res.status(400).json({
       ok: false,
       message: "Invalid callback request: missing code.",
-      query: req.query,
     });
   }
 
   // Use SSR-aware Supabase client for proper PKCE state
   const supabase = createSupabaseClient(req, res);
   try {
-    const code = req.query.code;
-    if (!code)
-      return res.status(400).json({ ok: false, message: "Missing code" });
-    const supabase = createSupabaseClient(req, res);
-    const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+    const {
+      data: { user },
+      error,
+    } = await supabase.auth.exchangeCodeForSession(code);
     if (error) throw error;
-    // Session cookie is now set by supabase.js. Redirect to dashboard.
+
+    // NOTE: implementation code for adding profile after GOOGLE signup
+    // check if profile exits
+    const { data: existingProfile } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", user.id)
+      .single();
+
+    // add profile only if it doesn't exist yet
+    if (!existingProfile) {
+      await supabase.from("profiles").insert({
+        id: user.id,
+        email: user.email,
+        name: user.user_metadata?.full_name || user.email.split("@")[0],
+        role: "Student", // default role
+      });
+    }
+
+    // Redirect to dashboard.
     return res.redirect(302, "/dashboard.html");
   } catch (error) {
     console.error("[/auth/callback] OAuth callback error:", error);
@@ -117,7 +132,7 @@ async function signup(newUser) {
       return null;
     }
 
-    // NOTE: implementation code for profile signup syncing
+    // NOTE: implementation code for profile syncing after manual signup
     // check if the profile already exists
     const { data: exisistingProfile } = await supabase
       .from("profiles")
