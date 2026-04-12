@@ -2,7 +2,10 @@ const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
 const supabase = require("./database");
-const { authRouter } = require("./routes/auth");
+const  authRouter  = require("./routes/auth");
+const slotsRouter = require("./routes/slots"); // khanyisile
+
+console.log("auth:", typeof authRouter);
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -10,8 +13,10 @@ const DB_CHECK_TABLE = process.env.DB_CHECK_TABLE || "testing";
 
 app.use(cors());
 app.use(express.static("pages"));
-app.use("/auth", authRouter);
 app.use(express.json());
+app.use("/auth", authRouter);
+app.use("/slots", slotsRouter); //Khanyisile
+
 
 // check server health
 app.get("/health", (req, res) => {

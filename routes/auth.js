@@ -104,7 +104,9 @@ authRouter.post("/logout", async (req, res) => {
     .json({ ok: true, route: "/auth/logout", message: "placeholder" });
 });
 
-module.exports = { authRouter };
+module.exports = { authRouter} ;
+
+module.exports =  authRouter ;//Khanyisile
 
 // Classic Authentication Flow
 async function signup(newUser) {
@@ -174,3 +176,4 @@ async function logout() {
 }
 
 module.exports = { signup, login, logout };
+module.exports = authRouter; //Khanyisile

@@ -1,59 +1,119 @@
-async function fetchSlots() {
-  try {
-    const response = await fetch('/slots');
-    const slots = await response.json();
-    displaySlots(slots);
-  } catch (error) {
-    console.error('Error fetching slots:', error);
-  }
+const API = "http://localhost:3000";
+
+const container = document.getElementById("slots-container");
+const dateInput = document.getElementById("slot-date");
+const feedbackMessage = document.getElementById("feedback-message");
+
+function isWeekday(date) {
+  const d = new Date(date).getDay();
+  return d >= 1 && d <= 5;
 }
 
-function displaySlots(slots) {
-  const slotsContainer = document.getElementById('slots-container');
+function showMessage(message, type) {
+  if (!feedbackMessage) return;
+  feedbackMessage.textContent = message;
+  feedbackMessage.className = `feedback-message ${type}`;
+}
 
-  if (!slotsContainer) return;
+function clearMessage() {
+  if (!feedbackMessage) return;
+  feedbackMessage.textContent = "";
+  feedbackMessage.className = "feedback-message";
+}
 
-  slotsContainer.innerHTML = '';
+async function fetchSlots() {
+  const date = dateInput.value;
 
-  if (slots.length === 0) {
-    slotsContainer.innerHTML = '<p>No available slots found.</p>';
+  clearMessage();
+
+  if (!date) {
+    container.innerHTML = "<p>Select a date</p>";
     return;
   }
 
-  slots.forEach(slot => {
-    const slotCard = document.createElement('div');
-    slotCard.className = 'slot-card';
+  if (!isWeekday(date)) {
+    container.innerHTML = "<p class='loading-text'>No booking available.</p>";
+    return;
+  }
 
-    slotCard.innerHTML = `
-      <p><strong>Time:</strong> ${slot.time}</p>
-      <button data-id="${slot.id}">Book Slot</button>
-    `;
-
-    const button = slotCard.querySelector('button');
-    button.addEventListener('click', () => bookSlot(slot.id));
-
-    slotsContainer.appendChild(slotCard);
-  });
-}
-
-async function bookSlot(slotId) {
   try {
-    const response = await fetch(`/slots/book/${slotId}`, {
-      method: 'POST'
-    });
+    const res = await fetch(`${API}/slots?date=${date}`);
 
-    const result = await response.json();
-
-    if (!response.ok) {
-      alert(result.error || 'Failed to book slot');
-      return;
+    if (!res.ok) {
+      throw new Error("Failed to fetch slots");
     }
 
-    alert(result.message);
-    fetchSlots();
+    const slots = await res.json();
+    displaySlots(slots, date);
   } catch (error) {
-    console.error('Error booking slot:', error);
+    console.error("Error loading slots:", error);
+    container.innerHTML = "<p class='loading-text'>Failed to load slots.</p>";
   }
 }
 
-document.addEventListener('DOMContentLoaded', fetchSlots);
+function displaySlots(slots, date) {
+  container.innerHTML = "";
+
+  if (!slots.length) {
+    container.innerHTML = "<p class='loading-text'>No booking available.</p>";
+    return;
+  }
+
+  slots.forEach((slot) => {
+    const div = document.createElement("div");
+    div.className = "slot-card";
+
+    div.innerHTML = `
+      <p><strong>${slot.time}</strong></p>
+      <button>Book</button>
+    `;
+
+    div.querySelector("button").onclick = () => bookSlot(date, slot.time);
+
+    container.appendChild(div);
+  });
+}
+
+function to24(time) {
+  let [t, p] = time.split(" ");
+  let [h, m] = t.split(":").map(Number);
+
+  if (p === "PM" && h !== 12) h += 12;
+  if (p === "AM" && h === 12) h = 0;
+
+  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+}
+
+async function bookSlot(date, time) {
+  clearMessage();
+
+  try {
+    const res = await fetch(`${API}/slots/book`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        date,
+        time: to24(time)
+      })
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      showMessage(data.error || "Failed to book slot", "error");
+      return;
+    }
+
+    showMessage("The slot has been booked", "success");
+    fetchSlots();
+  } catch (error) {
+    console.error("Error booking slot:", error);
+    showMessage("Failed to book slot", "error");
+  }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  if (!dateInput || !container) return;
+
+  dateInput.addEventListener("change", fetchSlots);
+});
