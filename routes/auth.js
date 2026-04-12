@@ -117,16 +117,26 @@ async function signup(newUser) {
       return null;
     }
 
-    const { error: profileError } = await supabase.from("User_test").insert({
-      id: authData.user.id,
-      name: newUser.name,
-      email: newUser.email,
-      role: newUser.role,
-    });
+    // NOTE: implementation code for profile signup syncing
+    // check if the profile already exists
+    const { data: exisistingProfile } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", authData.user.id)
+      .single();
 
-    if (profileError) {
-      console.error("Profile creation error:", profileError.message);
-      return null;
+    // if the profile doesn't exist, add it to the profiles table
+    if (!exisistingProfile) {
+      const { error: profileError } = await supabase.from("profiles").insert({
+        id: authData.user.id,
+        email: authData.user.email,
+        name: newUser.name,
+        role: newUser.role || "Student", // default role
+      });
+
+      if (profileError) {
+        console.error("Profile creation error:", profileError.message);
+      }
     }
 
     console.log("Signup successful:", authData.user);
@@ -171,5 +181,4 @@ async function logout() {
   }
 }
 
-module.exports = { signup, login, logout };
-module.exports = router;
+module.exports = { signup, login, logout, router };
