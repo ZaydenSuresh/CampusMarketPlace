@@ -1,4 +1,3 @@
-
 body.login-page {
   background: linear-gradient(135deg, var(--wits-navy-light), var(--wits-navy-dark));
   min-height: 100vh;
@@ -333,6 +332,64 @@ body.login-page {
 
 .help-btn:hover {
   background-color: var(--wits-navy-dark);
+}
+
+/* ── NEW: Gold Create Account button (register panel only) ── */
+.register-submit-btn {
+  background-color: var(--wits-gold);
+  color: var(--wits-navy-dark);
+}
+
+.register-submit-btn:hover {
+  background-color: #c9a000;
+  box-shadow: 0 4px 14px rgba(212, 175, 55, 0.45);
+}
+
+/* ── NEW: Divider ── */
+.divider {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  margin: var(--space-md) 0;
+  color: var(--grey-text);
+  font-size: 0.8rem;
+}
+
+.divider::before,
+.divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--grey-border);
+}
+
+/* ── NEW: Google sign-up button ── */
+.google-btn {
+  width: 100%;
+  padding: 12px 14px;
+  background-color: var(--white);
+  color: var(--text-dark);
+  border: 1.5px solid var(--grey-border);
+  border-radius: var(--radius-pill);
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: background-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.google-btn:hover {
+  background-color: var(--grey-light);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.google-btn svg {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
 }
 
 @media (max-width: 968px) {
