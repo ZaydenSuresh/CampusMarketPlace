@@ -1,122 +1,261 @@
+body.listings-page {
+  background: #f0f2f5;
+  min-height: 100vh;
+  color: #1a2a4a;
+  padding: 0;
+  margin: 0;
+}
 
+.listings-main {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 2.5rem;
+}
+
+/* ── Back button ── */
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 1.25rem;
+  padding: 8px 16px;
+  background: #ffffff;
+  border: 1px solid #e2e6ef;
+  border-radius: 20px;
+  color: #003B7E;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.back-btn:hover {
+  border-color: #003B7E;
+  background: #eef0f5;
+}
+
+/* ── Hero ── */
 .listings-hero {
-  background: var(--clr-bg-gradient);
-  padding: 1.5rem 2rem;
-  color: var(--white);
-  border-radius: var(--radius-lg);
+  background: transparent;
+  padding: 0 0 1.5rem 0;
   margin-bottom: 1.5rem;
 }
 
 .listings-hero__title {
-  font-size: 1.5rem;
+  font-size: 2rem;
   font-weight: 800;
+  line-height: 1.2;
+  margin-bottom: 0.25rem;
+  color: #1a2a4a;
+  font-family: inherit;
+  letter-spacing: -0.01em;
+}
+
+.listings-hero__title .highlight {
+  color: #D4AF37;
 }
 
 .listings-hero__subtitle {
-  font-size: 0.9rem;
-  opacity: 0.85;
-  margin-top: 0.3rem;
+  font-size: 0.95rem;
+  color: #6b7a99;
+  max-width: 680px;
+  font-weight: 400;
+  margin: 0;
 }
 
+/* ── Search ── */
 .listings-toolbar {
-  margin: 1rem 0;
+  margin-bottom: 1rem;
 }
 
 .search-input {
   width: 100%;
-  padding: 0.75rem 1rem;
-  border-radius: var(--radius-pill);
-  border: 1px solid var(--grey-border);
+  padding: 12px 16px;
+  border: 1px solid #e2e6ef;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #1a2a4a;
+  font-size: 0.95rem;
+  font-family: inherit;
   outline: none;
+  box-shadow: none;
+  transition: border-color 0.15s;
+  box-sizing: border-box;
 }
+
+.search-input:focus {
+  border-color: #003B7E;
+  box-shadow: 0 0 0 3px rgba(0, 59, 126, 0.1);
+}
+
+/* ── Filter pills ── */
 .category-filters {
   display: flex;
   gap: 0.5rem;
-  margin: 1rem 0;
   flex-wrap: wrap;
+  margin-bottom: 1.25rem;
 }
 
 .filter-pill {
-  padding: 0.35rem 0.8rem;
-  border-radius: var(--radius-pill);
-  border: 1px solid var(--grey-border);
-  background: var(--white);
-  font-size: 0.8rem;
+  border: 1px solid #e2e6ef;
+  background: #ffffff;
+  color: #003B7E;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 0.875rem;
+  font-family: inherit;
   cursor: pointer;
+  transition: all 0.15s;
+}
+
+.filter-pill:hover {
+  border-color: #D4AF37;
+  color: #1a2a4a;
 }
 
 .filter-pill.active {
-  background: var(--wits-navy);
-  color: var(--white);
-  border-color: var(--wits-navy);
+  background: #003B7E;
+  color: #ffffff;
+  border-color: #003B7E;
 }
 
+/* ── Count ── */
+.listings-count {
+  margin-bottom: 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #6b7a99;
+}
+
+/* ── Grid ── */
 .listings-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
-  gap: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+  gap: 1.25rem;
 }
 
+/* ── Cards ── */
 .listing-card {
-  background: var(--white);
-  border-radius: var(--radius-md);
-  border: 1px solid var(--grey-border);
+  background: #ffffff;
+  border-radius: 14px;
   overflow: hidden;
-  transition: var(--transition);
-  cursor: pointer;
+  border: 1px solid #e2e6ef;
+  box-shadow: none;
+  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+  display: flex;
+  flex-direction: column;
 }
 
 .listing-card:hover {
   transform: translateY(-3px);
-  box-shadow: var(--shadow-md);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.07);
+  border-color: #D4AF37;
 }
 
-/* IMAGE */
-.listing-card__img {
+/* ── Empty image placeholder ── */
+.listing-card__img-wrap {
   width: 100%;
-  height: 140px;
-  object-fit: cover;
+  height: 190px;
+  background: #eef0f5;
 }
 
-/* BODY */
 .listing-card__body {
-  padding: 0.8rem;
+  padding: 1.1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
 }
 
-/* BADGE */
-.badge {
-  font-size: 0.7rem;
-  font-weight: 700;
-  color: var(--wits-navy);
-  margin-bottom: 0.3rem;
-}
-
-/* TITLE */
-.listing-card__title {
-  font-size: 0.9rem;
-  font-weight: 700;
-  margin-bottom: 0.3rem;
-}
-
-.listing-card__desc {
-  font-size: 0.75rem;
-  color: var(--grey-text);
+.listing-card__meta {
   margin-bottom: 0.5rem;
 }
 
-/* PRICE */
-.listing-card__price {
-  font-size: 1rem;
-  font-weight: 800;
-  color: var(--wits-navy);
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  background: rgba(212, 175, 55, 0.15);
+  color: #9a7a10;
 }
 
-/* FOOTER */
+.listing-card__title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1a2a4a;
+  font-family: inherit;
+  margin: 0 0 0.4rem 0;
+  line-height: 1.35;
+}
+
+.listing-card__desc {
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: #6b7a99;
+  margin: 0 0 0.6rem 0;
+  flex: 1;
+}
+
+.listing-card__condition {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #6b7a99;
+  margin-bottom: 0.75rem;
+}
+
+/* ── Footer ── */
 .listing-card__footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 0.7rem;
-  color: var(--grey-text);
-  margin-top: 0.5rem;
+  border-top: 1px solid #e2e6ef;
+  padding-top: 0.75rem;
+  gap: 0.5rem;
+}
+
+.listing-card__location {
+  font-size: 0.78rem;
+  color: #6b7a99;
+}
+
+.listing-card__price {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #003B7E;
+}
+
+/* ── Empty state ── */
+.empty-state {
+  grid-column: 1 / -1;
+  background: #ffffff;
+  border: 1px solid #e2e6ef;
+  border-radius: 14px;
+  padding: 3rem;
+  text-align: center;
+  color: #6b7a99;
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .listings-main {
+    padding: 1.5rem;
+  }
+
+  .listings-hero__title {
+    font-size: 1.7rem;
+  }
+}
+
+@media (max-width: 560px) {
+  .listings-main {
+    padding: 1rem;
+  }
+
+  .listings-grid {
+    grid-template-columns: 1fr;
+  }
 }
