@@ -10,6 +10,9 @@ const PORT = process.env.PORT || 3000;
 const DB_CHECK_TABLE = process.env.DB_CHECK_TABLE || "testing";
 
 app.use(cors());
+app.use("/styles", express.static("styles"));
+app.use("/scripts", express.static("scripts"));
+app.use("/components", express.static("components"));
 app.use(express.static("pages"));
 app.use(express.json());
 app.use("/auth", authRouter);
