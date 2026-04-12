@@ -1,9 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Slot = require('../models/slot');
-
-// store bookings per date
-const bookingsByDate = {};
+const supabase = require('../database');
 
 // check weekday
 function isWeekday(dateString) {
@@ -12,7 +10,7 @@ function isWeekday(dateString) {
   return day >= 1 && day <= 5;
 }
 
-// generate 15-min slots from 8 to 17
+// generate 15-min slots from 8:00 to 4:45
 function generateSlots() {
   const slots = [];
   let hour = 8;
@@ -33,7 +31,7 @@ function generateSlots() {
   return slots;
 }
 
-// format to AM/PM
+// format 24-hour time to AM/PM
 function formatTime(time24) {
   let [h, m] = time24.split(':').map(Number);
   const suffix = h >= 12 ? 'PM' : 'AM';
@@ -45,29 +43,39 @@ function formatTime(time24) {
 }
 
 // GET slots by date
-router.get('/', (req, res) => {
+router.get('/', async (req, res) => {
   const { date } = req.query;
 
-  if (!date) return res.status(400).json({ error: 'Date required' });
-
-  if (!isWeekday(date)) {
-    return res.json([]); // weekend = no slots
+  if (!date) {
+    return res.status(400).json({ error: 'Date required' });
   }
 
+  if (!isWeekday(date)) {
+    return res.json([]);
+  }
+
+  const { data, error } = await supabase
+    .from('slot_bookings')
+    .select('booking_time')
+    .eq('booking_date', date);
+
+  if (error) {
+    return res.status(500).json({ error: 'Failed to load booked slots' });
+  }
+
+  const bookedTimes = new Set((data || []).map(row => row.booking_time));
   const allSlots = generateSlots();
-  const booked = bookingsByDate[date] || new Set();
 
   const available = allSlots
-    .filter(s => !booked.has(s.time))
-    .map(s => new Slot(s.id, formatTime(s.time)));
+    .filter(slot => !bookedTimes.has(slot.time))
+    .map(slot => new Slot(slot.id, formatTime(slot.time)));
 
   res.json(available);
 });
 
 // BOOK slot
-router.post('/book', (req, res) => {
+router.post('/book', async (req, res) => {
   const { date, time } = req.body || {};
-  //const { date, time } = req.body;
 
   if (!date || !time) {
     return res.status(400).json({ error: 'Missing date or time' });
@@ -77,15 +85,22 @@ router.post('/book', (req, res) => {
     return res.status(400).json({ error: 'No booking on weekends' });
   }
 
-  if (!bookingsByDate[date]) {
-    bookingsByDate[date] = new Set();
-  }
+  const { error } = await supabase
+    .from('slot_bookings')
+    .insert([
+      {
+        booking_date: date,
+        booking_time: time
+      }
+    ]);
 
-  if (bookingsByDate[date].has(time)) {
-    return res.status(400).json({ error: 'Slot already booked' });
-  }
+  if (error) {
+    if (error.code === '23505') {
+      return res.status(400).json({ error: 'Slot already booked' });
+    }
 
-  bookingsByDate[date].add(time);
+    return res.status(500).json({ error: 'Failed to book slot' });
+  }
 
   res.json({ message: 'Slot has been booked' });
 });
