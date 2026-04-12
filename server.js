@@ -11,12 +11,9 @@ const DB_CHECK_TABLE = process.env.DB_CHECK_TABLE || "testing";
 
 app.use(cors());
 app.use(express.static("pages"));
-
-app.use(express.json())
+app.use(express.json());
 app.use("/auth", authRouter);
-
 app.use("/slots", slotsRouter);
-;
 
 // check server health
 app.get("/health", (req, res) => {
