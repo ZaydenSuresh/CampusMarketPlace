@@ -11,14 +11,21 @@ function isWeekday(date) {
 
 function showMessage(message, type) {
   if (!feedbackMessage) return;
+
   feedbackMessage.textContent = message;
-  feedbackMessage.className = `feedback-message ${type}`;
+
+  feedbackMessage.classList.remove("success", "error");
+  feedbackMessage.classList.add(type);
+
+  feedbackMessage.style.display = "block";
 }
 
 function clearMessage() {
   if (!feedbackMessage) return;
+
   feedbackMessage.textContent = "";
-  feedbackMessage.className = "feedback-message";
+  feedbackMessage.classList.remove("success", "error");
+  feedbackMessage.style.display = "none";
 }
 
 async function fetchSlots() {
