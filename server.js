@@ -3,6 +3,7 @@ const cors = require("cors");
 require("dotenv").config();
 const supabase = require("./database");
 const authRouter = require("./routes/auth");
+const slotsRouter = require("./routes/slots");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -11,6 +12,7 @@ const DB_CHECK_TABLE = process.env.DB_CHECK_TABLE || "testing";
 app.use(cors());
 app.use(express.static("pages"));
 app.use("/auth", authRouter);
+app.use("/slots", slotsRouter);
 app.use(express.json());
 
 // check server health
