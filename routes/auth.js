@@ -1,9 +1,9 @@
 const express = require("express");
 const { createSupabaseClient } = require("../lib/supabase");
-const authRouter = express.Router();
+const router = express.Router();
 
 // Google Authentication Flow
-authRouter.get("/google", async (req, res) => {
+router.get("/google", async (req, res) => {
   try {
     const supabase = createSupabaseClient(req, res);
     const { data, error } = await supabase.auth.signInWithOAuth({
@@ -35,7 +35,7 @@ authRouter.get("/google", async (req, res) => {
   }
 });
 
-authRouter.get("/callback", async (req, res) => {
+router.get("/callback", async (req, res) => {
   // parse request parameters
   const code = req.query.code;
   const oauthError = req.query.error;
@@ -75,7 +75,7 @@ authRouter.get("/callback", async (req, res) => {
   }
 });
 
-authRouter.get("/me", (req, res) => {
+router.get("/me", (req, res) => {
   // Check if the session exists and the user ID is set (i.e., user is logged in)
   if (req.session && req.session.userId) {
     return res.status(200).json({
@@ -98,15 +98,11 @@ authRouter.get("/me", (req, res) => {
 });
 
 // Placeholder for logout; expands as needed for Supabase signOut
-authRouter.post("/logout", async (req, res) => {
+router.post("/logout", async (req, res) => {
   return res
     .status(200)
     .json({ ok: true, route: "/auth/logout", message: "placeholder" });
 });
-
-module.exports = { authRouter} ;
-
-module.exports =  authRouter ;//Khanyisile
 
 // Classic Authentication Flow
 async function signup(newUser) {
@@ -176,4 +172,4 @@ async function logout() {
 }
 
 module.exports = { signup, login, logout };
-module.exports = authRouter; //Khanyisile
+module.exports = router;

@@ -2,10 +2,8 @@ const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
 const supabase = require("./database");
-const  authRouter  = require("./routes/auth");
-const slotsRouter = require("./routes/slots"); // khanyisile
-
-console.log("auth:", typeof authRouter);
+const authRouter = require("./routes/auth");
+const slotsRouter = require("./routes/slots");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -13,10 +11,9 @@ const DB_CHECK_TABLE = process.env.DB_CHECK_TABLE || "testing";
 
 app.use(cors());
 app.use(express.static("pages"));
-app.use(express.json());
 app.use("/auth", authRouter);
-app.use("/slots", slotsRouter); //Khanyisile
-
+app.use("/slots", slotsRouter);
+app.use(express.json());
 
 // check server health
 app.get("/health", (req, res) => {
@@ -53,8 +50,9 @@ app.get("/db-check", async (req, res) => {
     });
   }
 });
-const listingsRouter = require('./routes/listings');
-app.use('/listings', listingsRouter);
+
+const listingsRouter = require("./routes/listings");
+app.use("/listings", listingsRouter);
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
