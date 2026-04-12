@@ -25,15 +25,20 @@ CREATE TABLE public.profiles (
   created_at timestamp without time zone DEFAULT now(),
   CONSTRAINT profiles_pkey PRIMARY KEY (id)
 );
+CREATE TABLE public.slot_bookings (
+  id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
+  booking_date date NOT NULL,
+  booking_time text NOT NULL,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT slot_bookings_pkey PRIMARY KEY (id)
+);
 CREATE TABLE public.slots (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
-  listing_id uuid NOT NULL DEFAULT gen_random_uuid(),
   start_time timestamp with time zone,
   end_time timestamp with time zone,
   is_available boolean NOT NULL DEFAULT true,
   booked_by uuid DEFAULT gen_random_uuid(),
   booked_at timestamp with time zone,
   CONSTRAINT slots_pkey PRIMARY KEY (id),
-  CONSTRAINT slots_booked_by_fkey FOREIGN KEY (booked_by) REFERENCES public.profiles(id),
-  CONSTRAINT slots_listing_id_fkey FOREIGN KEY (listing_id) REFERENCES public.listings(id)
+  CONSTRAINT slots_booked_by_fkey FOREIGN KEY (booked_by) REFERENCES public.profiles(id)
 );
