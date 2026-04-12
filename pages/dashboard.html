@@ -7,7 +7,6 @@
 
         <link rel="stylesheet" href="/styles/global.css" />
 
-        <!-- KEEP YOUR ORIGINAL STYLES EXACTLY -->
         <style>
             body {
                 display: flex;
@@ -130,6 +129,13 @@
                 align-items: center;
                 justify-content: center;
                 color: var(--grey-text);
+                overflow: hidden;
+            }
+
+            .item-img img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
             }
 
             .item-details {
@@ -149,13 +155,13 @@
                 padding: 12px 24px;
                 border-radius: var(--radius-pill);
                 font-weight: 700;
+                cursor: pointer;
             }
 
             .action-btn:hover {
                 background-color: var(--wits-navy-dark);
             }
 
-            /* ONLY ADDITION: search styling (minimal) */
             #searchInput {
                 width: 100%;
                 padding: 12px;
@@ -167,7 +173,6 @@
     </head>
 
     <body>
-        <!-- SIDEBAR (UNCHANGED UI) -->
         <aside class="sidebar">
             <div class="sidebar-logo">
                 Campus<span class="highlight">Market</span>
@@ -180,7 +185,6 @@
             </nav>
         </aside>
 
-        <!-- MAIN -->
         <main class="main-content">
             <header class="dashboard-header">
                 <div>
@@ -188,14 +192,18 @@
                     <p>Here's what's happening with your trades today.</p>
                 </div>
 
-                <button class="action-btn">+ Create Listing</button>
+                <button
+                    class="action-btn"
+                    onclick="window.location.href='/create-listing.html'"
+                >
+                    + Create Listing
+                </button>
             </header>
 
-            <!-- STATS (UNCHANGED UI) -->
             <section class="stats-grid">
                 <div class="stat-card">
                     <h3>Active Listings</h3>
-                    <div class="value">05</div>
+                    <div class="value" id="activeListingsCount">00</div>
                 </div>
                 <div class="stat-card">
                     <h3>Items Sold</h3>
@@ -209,81 +217,85 @@
 
             <h2 class="section-title">Recent Listings</h2>
 
-            <!-- SEARCH (NEW BUT SAFE) -->
-            <input
-                id="searchInput"
-                type="text"
-                placeholder="Search listings..."
-            />
+            <input id="searchInput" type="text" placeholder="Search listings..." />
 
-            <!-- LISTINGS -->
-            <div class="listings-container" id="listings-container">
-                <div class="item-card">
-                    <div class="item-img">No Image Provided</div>
-                    <div class="item-details">
-                        <span style="font-size: 0.7rem; font-weight: bold; color: green;">
-                            ACTIVE
-                        </span>
-
-                        <h3 style="margin-top: 10px">Calculus Textbook</h3>
-                        <p class="item-price">R 450.00</p>
-                        <p class="text-small text-muted">Posted 2 days ago</p>
-                    </div>
-                </div>
-            </div>
+            <div class="listings-container" id="listings-container"></div>
         </main>
 
-        <!-- FUNCTIONAL SCRIPT (ONLY LOGIC ADDED, NO UI CHANGE) -->
         <script type="module">
             import { filterListings } from "/components/search.js";
 
-            let listings = [
-                {
-                    title: "Calculus Textbook",
-                    description: "Used but good condition",
-                    price: 450
-                },
-                {
-                    title: "Laptop Charger",
-                    description: "Dell charger working perfectly",
-                    price: 200
-                },
-                {
-                    title: "Physics Notes",
-                    description: "First year summaries",
-                    price: 100
-                }
-            ];
+            let listings = [];
 
             const container = document.getElementById("listings-container");
             const input = document.getElementById("searchInput");
+            const activeListingsCount = document.getElementById("activeListingsCount");
 
             function render(data) {
+                if (!data || data.length === 0) {
+                    container.innerHTML = `
+                        <div class="item-card">
+                            <div class="item-details">
+                                <h3>No listings found</h3>
+                                <p class="text-small text-muted">There are no listings to display yet.</p>
+                            </div>
+                        </div>
+                    `;
+                    return;
+                }
+
                 container.innerHTML = data.map(item => `
                     <div class="item-card">
-                        <div class="item-img">No Image Provided</div>
+                        <div class="item-img">
+                            ${item.image_url
+                                ? `<img src="${item.image_url}" alt="${item.title || "Listing image"}">`
+                                : `No Image Provided`
+                            }
+                        </div>
 
                         <div class="item-details">
                             <span style="font-size: 0.7rem; font-weight: bold; color: green;">
                                 ACTIVE
                             </span>
 
-                            <h3 style="margin-top: 10px">${item.title}</h3>
-
-                            <p class="item-price">R ${item.price}</p>
-
-                            <p class="text-small text-muted">${item.description}</p>
+                            <h3 style="margin-top: 10px">${item.title || "Untitled Listing"}</h3>
+                            <p class="item-price">R ${item.price ?? "0.00"}</p>
+                            <p class="text-small text-muted">${item.description || "No description provided"}</p>
                         </div>
                     </div>
                 `).join("");
             }
 
-            render(listings);
+            async function loadListings() {
+                try {
+                    const response = await fetch("/listings");
+                    const result = await response.json();
+
+                    if (!response.ok) {
+                        throw new Error(result.error || "Failed to load listings");
+                    }
+
+                    listings = result.listings || [];
+                    activeListingsCount.textContent = String(listings.length).padStart(2, "0");
+                    render(listings);
+                } catch (error) {
+                    container.innerHTML = `
+                        <div class="item-card">
+                            <div class="item-details">
+                                <h3>Error loading listings</h3>
+                                <p class="text-small text-muted">${error.message}</p>
+                            </div>
+                        </div>
+                    `;
+                }
+            }
 
             input.addEventListener("input", (e) => {
                 const filtered = filterListings(listings, e.target.value);
                 render(filtered);
             });
+
+            loadListings();
         </script>
     </body>
 </html>

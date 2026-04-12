@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Create Listing | CampusMarket</title>
+  <link rel="stylesheet" href="/styles/global.css" />
+  <style>
+    body {
+      background: #f6f7fb;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 40px 20px;
+    }
+
+    .container {
+      max-width: 700px;
+      margin: 0 auto;
+      background: white;
+      padding: 32px;
+      border-radius: 18px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    }
+
+    h1 {
+      margin-bottom: 10px;
+      color: #0f2b5b;
+    }
+
+    p {
+      margin-bottom: 24px;
+      color: #555;
+    }
+
+    .form-group {
+      margin-bottom: 18px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: #1f2d3d;
+    }
+
+    input,
+    textarea,
+    select {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #d7dce5;
+      border-radius: 10px;
+      font-size: 15px;
+      box-sizing: border-box;
+    }
+
+    textarea {
+      min-height: 120px;
+      resize: vertical;
+    }
+
+    .actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 24px;
+    }
+
+    .btn {
+      border: none;
+      padding: 12px 18px;
+      border-radius: 999px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+    }
+
+    .btn-primary {
+      background: #0b4ea2;
+      color: white;
+    }
+
+    .btn-secondary {
+      background: #e9eef7;
+      color: #0f2b5b;
+    }
+
+    .message {
+      margin-top: 18px;
+      font-weight: 600;
+    }
+
+    .success {
+      color: green;
+    }
+
+    .error {
+      color: crimson;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Create New Listing</h1>
+    <p>Fill in the details below to add an item for sale.</p>
+
+    <form id="createListingForm">
+      <div class="form-group">
+        <label for="title">Item Title</label>
+        <input type="text" id="title" name="title" required />
+      </div>
+
+      <div class="form-group">
+        <label for="price">Price (R)</label>
+        <input type="number" id="price" name="price" min="0" step="0.01" required />
+      </div>
+
+      <div class="form-group">
+        <label for="category">Category</label>
+        <select id="category" name="category" required>
+          <option value="">Select category</option>
+          <option value="Textbooks">Textbooks</option>
+          <option value="Electronics">Electronics</option>
+          <option value="Furniture">Furniture</option>
+          <option value="Clothing">Clothing</option>
+          <option value="Appliances">Appliances</option>
+          <option value="Stationary">Stationary</option>
+          <option value="Tickets">Tickets</option>
+          <option value="Miscellaneous">Miscellaneous</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="description">Description</label>
+        <textarea id="description" name="description" required></textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="image_url">Image URL</label>
+        <input type="url" id="image_url" name="image_url" placeholder="https://example.com/image.jpg" />
+      </div>
+
+      <div class="actions">
+        <button type="submit" class="btn btn-primary">Save Listing</button>
+        <a href="/dashboard.html" class="btn btn-secondary">Back to Dashboard</a>
+      </div>
+
+      <div id="formMessage" class="message"></div>
+    </form>
+  </div>
+
+  <script src="/scripts/create-listing.js"></script>
+</body>
+</html>
