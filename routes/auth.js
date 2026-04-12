@@ -181,5 +181,4 @@ async function logout() {
   }
 }
 
-module.exports = { signup, login, logout };
-module.exports = router;
+module.exports = { signup, login, logout, router };
