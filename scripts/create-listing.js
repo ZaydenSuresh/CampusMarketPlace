@@ -25,6 +25,7 @@ form.addEventListener("submit", async (e) => {
         category,
         description,
         image_url,
+        user_id: "2f089266-1b66-495a-b628-c37877c75716"
       }),
     });
 

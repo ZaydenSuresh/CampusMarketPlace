@@ -1,32 +1,39 @@
-const express = require('express'); //For creating routes
-const router = express.Router(); //Router object for POST, GET etc.
-const supabase = require('../database'); //For querying
+const express = require('express');
+const router = express.Router();
+const supabase = require('../database');
 
-//LISTINGS ARE REFERENCED BY ID
-
-// Posting route creation
+// CREATE listing
 router.post('/', async (req, res) => {
     try {
-        const { title, description, price, user_id } = req.body;
+        const { title, description, price, user_id, image_url, category } = req.body;
 
-        if (!title || !description || !price || !user_id) {
-            return res.status(400).json({ error: 'All fields are required' });
+        // minimal required fields
+        if (!title || !description || price === undefined) {
+            return res.status(400).json({ error: 'Title, description and price are required' });
         }
 
         const { data, error } = await supabase
             .from('listings')
-            .insert([{ title, description, price, user_id }])
+            .insert([{
+                title,
+                description,
+                price,
+                user_id: user_id || null,
+                image_url: image_url || null,
+                category: category || null
+            }])
             .select('*');
 
         if (error) throw new Error(error.message);
 
         res.status(201).json({ ok: true, listing: data[0] });
+
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 });
 
-// Getting all listings
+// GET all listings
 router.get('/', async (req, res) => {
     try {
         const { data, error } = await supabase
@@ -36,12 +43,13 @@ router.get('/', async (req, res) => {
         if (error) throw new Error(error.message);
 
         res.json({ ok: true, listings: data });
+
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 });
 
-// Read a selected listing
+// GET single listing
 router.get('/:id', async (req, res) => {
     try {
         const { data, error } = await supabase
@@ -53,31 +61,40 @@ router.get('/:id', async (req, res) => {
         if (error) throw new Error(error.message);
 
         res.json({ ok: true, listing: data });
+
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 });
 
-// Update selected listing
+// UPDATE listing
 router.put('/:id', async (req, res) => {
     try {
-        const { title, description, price, user_id } = req.body;
+        const { title, description, price, user_id, image_url, category } = req.body;
 
         const { data, error } = await supabase
             .from('listings')
-            .update({ title, description, price, user_id })
+            .update({
+                title,
+                description,
+                price,
+                user_id,
+                image_url,
+                category
+            })
             .eq('id', req.params.id)
             .select('*');
 
         if (error) throw new Error(error.message);
 
         res.json({ ok: true, listing: data[0] });
+
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 });
 
-// Remove a listing
+// DELETE listing
 router.delete('/:id', async (req, res) => {
     try {
         const { error } = await supabase
@@ -88,9 +105,10 @@ router.delete('/:id', async (req, res) => {
         if (error) throw new Error(error.message);
 
         res.json({ ok: true, message: 'Listing deleted' });
+
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 });
 
-module.exports = router; //Routes available to server.js
+module.exports = router;
