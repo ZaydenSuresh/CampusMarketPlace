@@ -2,7 +2,7 @@ const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
 const supabase = require("./database");
-const { authRouter } = require("./routes/auth");
+const authRouter = require("./routes/auth");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -48,8 +48,9 @@ app.get("/db-check", async (req, res) => {
     });
   }
 });
-const listingsRouter = require('./routes/listings');
-app.use('/listings', listingsRouter);
+
+const listingsRouter = require("./routes/listings");
+app.use("/listings", listingsRouter);
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
