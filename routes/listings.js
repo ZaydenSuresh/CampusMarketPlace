@@ -33,12 +33,31 @@ router.post('/', async (req, res) => {
     }
 });
 
-// GET all listings
+// GET all listings (6 most recent, sorted by creation time)
 router.get('/', async (req, res) => {
     try {
         const { data, error } = await supabase
             .from('listings')
-            .select('*');
+            .select('*')
+            .order('created_at', { ascending: false }) // Sort by newest first
+            .limit(6); // Return only the 6 most recent listings
+
+        if (error) throw new Error(error.message);
+
+        res.json({ ok: true, listings: data });
+
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// GET all listings (no limit - used for search)
+router.get('/all', async (req, res) => {
+    try {
+        const { data, error } = await supabase
+            .from('listings')
+            .select('*')
+            .order('created_at', { ascending: false });
 
         if (error) throw new Error(error.message);
 
