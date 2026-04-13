@@ -90,26 +90,27 @@ router.get("/callback", async (req, res) => {
   }
 });
 
-router.get("/me", (req, res) => {
-  // Check if the session exists and the user ID is set (i.e., user is logged in)
-  if (req.session && req.session.userId) {
-    return res.status(200).json({
-      ok: true,
-      user: {
-        // User's unique Supabase ID
-        id: req.session.userId,
-        // User's email address as stored in Supabase
-        email: req.session.email,
-        // User's name, if provided by Google/Supabase
-        name: req.session.name,
-        // Access token used for making authorized Supabase requests (keep this secret!)
-        access_token: req.session.supabase_token,
-      },
-    });
-  } else {
-    // No user in session — they are not logged in
+router.get("/me", async (req, res) => {
+  // Use SSR-aware Supabase client to read session cookies
+  const supabase = createSupabaseClient(req, res);
+  
+  // Get user from Supabase session (validates cookies from browser)
+  const { data: { user }, error } = await supabase.auth.getUser();
+  
+  // If no valid session, user is not logged in
+  if (error || !user) {
     return res.status(401).json({ ok: false, message: "Not logged in" });
   }
+  
+  // Return user info to client
+  return res.status(200).json({
+    ok: true,
+    user: {
+      id: user.id,
+      email: user.email,
+      name: user.user_metadata?.full_name || user.email.split("@")[0]
+    }
+  });
 });
 
 // Placeholder for logout; expands as needed for Supabase signOut
