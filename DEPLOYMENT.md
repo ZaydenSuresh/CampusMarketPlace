@@ -37,7 +37,7 @@ The server already uses `process.env.PORT || 3000` - no changes needed.
    - **Publish**: Code
    - **Runtime stack**: Node 20 LTS
    - **OS**: Linux
-   - **Region**: Select nearest (e.g., South Africa North)
+   - **Region**: Use one of: eastus, eastus2, westus2, centralus, westeurope, australiaeast (check which is allowed by your subscription)
    - **App Service Plan**: Free tier (F1) for dev
 
 ### 2.2 Configure Application Settings
