@@ -168,6 +168,49 @@ body {
     border-radius: 8px;
     border: 1px solid var(--grey-border);
 }
+
+/* Category filter buttons container - wraps buttons and allows them to wrap on smaller screens */
+.category-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+/* Individual category filter button styling */
+.filter-pill {
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1px solid var(--grey-border);
+    background: var(--white);
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: all 0.2s ease;
+}
+
+/* Hover state for filter pills */
+.filter-pill:hover {
+    background: var(--bg-light);
+}
+
+/* Active state - selected category button */
+.filter-pill.active {
+    background: var(--wits-navy);
+    color: var(--white);
+    border-color: var(--wits-navy);
+}
+
+/* Badge styling for category, condition, and sale_type labels */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    background: rgba(212, 175, 55, 0.15);
+    color: #9a7a10;
+}
 </style>
 </head>
 
@@ -217,6 +260,19 @@ Campus<span class="highlight">Market</span>
 
 <input id="searchInput" type="text" placeholder="Search listings..." />
 
+<!-- Category filter buttons for filtering listings -->
+<div class="category-filters" id="categoryFilters">
+  <button class="filter-pill active" data-category="All">All</button>
+  <button class="filter-pill" data-category="Textbooks">Textbooks</button>
+  <button class="filter-pill" data-category="Electronics">Electronics</button>
+  <button class="filter-pill" data-category="Furniture">Furniture</button>
+  <button class="filter-pill" data-category="Clothing">Clothing</button>
+  <button class="filter-pill" data-category="Appliances">Appliances</button>
+  <button class="filter-pill" data-category="Stationary">Stationary</button>
+  <button class="filter-pill" data-category="Tickets">Tickets</button>
+  <button class="filter-pill" data-category="Miscellaneous">Miscellaneous</button>
+</div>
+
 <div class="listings-container" id="listings-container"></div>
 
 </main>
@@ -253,12 +309,15 @@ if (!user) {
 // Display user's name from profiles table in welcome text
 document.getElementById('welcome-name').textContent = `Welcome back, ${user.name}`;
 
+// Store listings data and current active category filter
 let listings = [];
+let activeCategory = 'All';
 
 const container = document.getElementById("listings-container");
 const input = document.getElementById("searchInput");
 const activeListingsCount = document.getElementById("activeListingsCount");
 
+// Renders the listing cards to the DOM
 function render(data) {
 if (!data || data.length === 0) {
 container.innerHTML = `
@@ -282,6 +341,10 @@ onerror="this.src='https://via.placeholder.com/300x180'">
 <div class="item-details">
 <span style="font-size: 0.7rem; font-weight: bold; color: green;">ACTIVE</span>
 
+<span class="badge" style="margin-left: 8px; font-size: 0.7rem;">${item.category || ''}</span>
+<span class="badge" style="margin-left: 4px; font-size: 0.7rem;">${item.condition || ''}</span>
+<span class="badge" style="margin-left: 4px; font-size: 0.7rem;">${item.sale_type || ''}</span>
+
 <h3 style="margin-top: 10px">${item.title || "Untitled Listing"}</h3>
 <p class="item-price">R ${item.price ?? "0.00"}</p>
 <p>${item.description || "No description provided"}</p>
@@ -290,6 +353,7 @@ onerror="this.src='https://via.placeholder.com/300x180'">
 `).join("");
 }
 
+// Fetches listings from the API
 async function loadListings() {
 try {
 const response = await fetch("/listings");
@@ -304,11 +368,49 @@ container.innerHTML = `<p>Error loading listings</p>`;
 }
 }
 
-input.addEventListener("input", (e) => {
-const filtered = filterListings(listings, e.target.value);
-render(filtered);
+// Fetches all listings from API and filters by search text and category
+async function searchListings(query, category) {
+  try {
+    const response = await fetch("/listings/all");
+    const result = await response.json();
+    
+    const allListings = result.listings || [];
+    const filtered = filterListings(allListings, query, category);
+    
+    activeListingsCount.textContent = String(filtered.length).padStart(2, "0");
+    render(filtered);
+  } catch {
+    container.innerHTML = `<p>Error loading listings</p>`;
+  }
+}
+
+// Debounce function to limit API calls while typing
+function debounce(func, delay) {
+  let timeoutId;
+  return function (...args) {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => func.apply(this, args), delay);
+  };
+}
+
+// Search input handler - fetches all listings and filters (debounced)
+const debouncedSearch = debounce((e) => {
+  searchListings(e.target.value, activeCategory);
+}, 300);
+
+input.addEventListener("input", debouncedSearch);
+
+// Category filter button click handlers - fetches all listings and filters
+document.querySelectorAll('.filter-pill').forEach(btn => {
+btn.addEventListener('click', () => {
+  document.querySelectorAll('.filter-pill').forEach(b => b.class.remove('active'));
+  btn.classList.add('active');
+  activeCategory = btn.dataset.category;
+  searchListings(input.value, activeCategory);
+});
 });
 
+// Load initial 6 most recent listings on page load
 loadListings();
 </script>
 
