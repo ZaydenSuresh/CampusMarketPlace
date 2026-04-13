@@ -131,14 +131,39 @@
         </select>
       </div>
 
+      <!-- Condition dropdown - required field for listing condition -->
+      <div class="form-group">
+        <label for="condition">Condition</label>
+        <select id="condition" name="condition" required>
+          <option value="">Select condition</option>
+          <option value="New">New</option>
+          <option value="Good">Good</option>
+          <option value="Fair">Fair</option>
+          <option value="Worn">Worn</option>
+          <option value="Damaged">Damaged</option>
+        </select>
+      </div>
+
+      <!-- Sale type dropdown - required field for sale/trade preference -->
+      <div class="form-group">
+        <label for="sale_type">Sale Type</label>
+        <select id="sale_type" name="sale_type" required>
+          <option value="">Select sale type</option>
+          <option value="Sale">Sale</option>
+          <option value="Trade">Trade</option>
+          <option value="Either">Either</option>
+        </select>
+      </div>
+
       <div class="form-group">
         <label for="description">Description</label>
         <textarea id="description" name="description" required></textarea>
       </div>
 
+      <!-- Image URL - required field for listing -->
       <div class="form-group">
         <label for="image_url">Image URL</label>
-        <input type="url" id="image_url" name="image_url" placeholder="https://example.com/image.jpg" />
+        <input type="url" id="image_url" name="image_url" placeholder="https://example.com/image.jpg" required />
       </div>
 
       <div class="actions">
@@ -150,6 +175,26 @@
     </form>
   </div>
 
+  <!-- Auth check - verify user is logged in before showing form -->
+  <script>
+    async function checkAuth() {
+      try {
+        const res = await fetch('/auth/me');
+        if (!res.ok) {
+          window.location.href = '/pages/login.html';
+          return null;
+        }
+        const { user } = await res.json();
+        return user;
+      } catch {
+        window.location.href = '/pages/login.html';
+        return null;
+      }
+    }
+    
+    // Run auth check immediately - redirect if not logged in
+    checkAuth();
+  </script>
   <script src="/scripts/create-listing.js"></script>
 </body>
 </html>
