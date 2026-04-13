@@ -293,6 +293,7 @@ document.addEventListener('DOMContentLoaded', () => {
   populateUserUI();
   bindLogoutButtons();
 
+  // Google OAuth sign-in button - redirects to Google OAuth flow
   document.getElementById('google-login-btn')?.addEventListener('click', () => {
     window.location.href = '/auth/google';
   });

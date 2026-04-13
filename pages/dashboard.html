@@ -224,6 +224,32 @@ Campus<span class="highlight">Market</span>
 <script type="module">
 import { filterListings } from "/components/search.js";
 
+// Check if user is logged in by calling /auth/me endpoint
+// If not authenticated, redirect to login page
+async function checkAuth() {
+  try {
+    const res = await fetch('/auth/me');
+    // If response not OK, user is not logged in
+    if (!res.ok) {
+      window.location.href = '/login.html';
+      return null;
+    }
+    // Return user object from response
+    const { user } = await res.json();
+    return user;
+  } catch {
+    // Network error or other issues - redirect to login
+    window.location.href = '/login.html';
+    return null;
+  }
+}
+
+// Run auth check before loading page content
+const user = await checkAuth();
+if (!user) {
+  throw new Error('Redirecting...');
+}
+
 let listings = [];
 
 const container = document.getElementById("listings-container");
