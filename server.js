@@ -1,13 +1,25 @@
 const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
-const supabase = require("./database");
-const { router: authRouter } = require("./routes/auth");
-const slotsRouter = require("./routes/slots");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 const DB_CHECK_TABLE = process.env.DB_CHECK_TABLE || "testing";
+
+console.log("Starting server...");
+console.log("SUPABASE_URL set:", !!process.env.SUPABASE_URL);
+console.log("SUPABASE_ANON_KEY set:", !!process.env.SUPABASE_ANON_KEY);
+
+let supabase;
+try {
+  supabase = require("./database");
+} catch (err) {
+  console.error("Failed to load database:", err.message);
+  supabase = null;
+}
+
+const { router: authRouter } = require("./routes/auth");
+const slotsRouter = require("./routes/slots");
 
 app.use(cors());
 app.use("/styles", express.static("styles"));
@@ -25,6 +37,9 @@ app.get("/health", (req, res) => {
 
 // check database connection
 app.get("/db-check", async (req, res) => {
+  if (!supabase) {
+    return res.status(503).json({ ok: false, message: "Database not initialized" });
+  }
   try {
     const { data, error } = await supabase
       .from(DB_CHECK_TABLE)
@@ -58,5 +73,5 @@ const listingsRouter = require("./routes/listings");
 app.use("/listings", listingsRouter);
 
 app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
+  console.log(`Server is running on port ${PORT}`);
 });
