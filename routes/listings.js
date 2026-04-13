@@ -5,27 +5,55 @@ const supabase = require('../database');
 // CREATE listing
 router.post('/', async (req, res) => {
     try {
-        const { title, description, price, user_id, image_url, category } = req.body;
+        // Extract all fields from request body
+        const { title, description, price, user_id, image_url, category, condition, sale_type } = req.body;
 
-        // minimal required fields
-        if (!title || !description || price === undefined) {
-            return res.status(400).json({ error: 'Title, description and price are required' });
+        // Validate required fields - all fields are required
+        if (!title || !description || price === undefined || !user_id) {
+            return res.status(400).json({ error: 'Title, description, price, and user_id are required' });
         }
 
+        // Validate image_url is provided
+        if (!image_url) {
+            return res.status(400).json({ error: 'Image URL is required' });
+        }
+
+        // Validate category enum - must be one of the allowed values
+        const validCategories = ['Textbooks', 'Electronics', 'Furniture', 'Clothing', 'Appliances', 'Stationary', 'Tickets', 'Miscellaneous'];
+        if (!category || !validCategories.includes(category)) {
+            return res.status(400).json({ error: 'Invalid category' });
+        }
+
+        // Validate condition enum - must be one of the allowed values
+        const validConditions = ['New', 'Good', 'Fair', 'Worn', 'Damaged'];
+        if (!condition || !validConditions.includes(condition)) {
+            return res.status(400).json({ error: 'Invalid condition' });
+        }
+
+        // Validate sale_type enum - must be one of the allowed values
+        const validSaleTypes = ['Sale', 'Trade', 'Either'];
+        if (!sale_type || !validSaleTypes.includes(sale_type)) {
+            return res.status(400).json({ error: 'Invalid sale_type' });
+        }
+
+        // Insert listing into database with all required fields
         const { data, error } = await supabase
             .from('listings')
             .insert([{
                 title,
                 description,
                 price,
-                user_id: user_id || null,
-                image_url: image_url || null,
-                category: category || null
+                user_id,
+                image_url,
+                category,
+                condition,
+                sale_type
             }])
             .select('*');
 
         if (error) throw new Error(error.message);
 
+        // Return created listing
         res.status(201).json({ ok: true, listing: data[0] });
 
     } catch (err) {
