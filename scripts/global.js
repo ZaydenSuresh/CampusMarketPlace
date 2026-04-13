@@ -292,6 +292,10 @@ function bindLogoutButtons() {
 document.addEventListener('DOMContentLoaded', () => {
   populateUserUI();
   bindLogoutButtons();
+
+  document.getElementById('google-login-btn')?.addEventListener('click', () => {
+    window.location.href = '/auth/google';
+  });
 });
 //Global exports:)
 
