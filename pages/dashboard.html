@@ -403,7 +403,8 @@ input.addEventListener("input", debouncedSearch);
 // Category filter button click handlers - fetches all listings and filters
 document.querySelectorAll('.filter-pill').forEach(btn => {
 btn.addEventListener('click', () => {
-  document.querySelectorAll('.filter-pill').forEach(b => b.class.remove('active'));
+  const allPills = document.querySelectorAll('.filter-pill');
+  allPills.forEach(pill => pill.classList.remove('active'));
   btn.classList.add('active');
   activeCategory = btn.dataset.category;
   searchListings(input.value, activeCategory);
