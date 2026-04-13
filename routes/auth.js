@@ -102,13 +102,20 @@ router.get("/me", async (req, res) => {
     return res.status(401).json({ ok: false, message: "Not logged in" });
   }
   
+  // Query profiles table to get the user's name from the database
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("name")
+    .eq("id", user.id)
+    .single();
+  
   // Return user info to client
   return res.status(200).json({
     ok: true,
     user: {
       id: user.id,
       email: user.email,
-      name: user.user_metadata?.full_name || user.email.split("@")[0]
+      name: profile?.name || user.email.split("@")[0]
     }
   });
 });

@@ -189,7 +189,7 @@ Campus<span class="highlight">Market</span>
 
 <header class="dashboard-header">
 <div>
-<h1>Welcome back, Alex</h1>
+<h1 id="welcome-name">Welcome back</h1>
 <p>Here's what's happening with your trades today.</p>
 </div>
 
@@ -249,6 +249,9 @@ const user = await checkAuth();
 if (!user) {
   throw new Error('Redirecting...');
 }
+
+// Display user's name from profiles table in welcome text
+document.getElementById('welcome-name').textContent = `Welcome back, ${user.name}`;
 
 let listings = [];
 
