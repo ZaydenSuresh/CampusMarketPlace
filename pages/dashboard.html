@@ -1,301 +1,287 @@
 <!doctype html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Dashboard | Campus Marketplace</title>
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Dashboard | Campus Marketplace</title>
 
-        <link rel="stylesheet" href="/styles/global.css" />
+<link rel="stylesheet" href="/styles/global.css" />
 
-        <style>
-            body {
-                display: flex;
-                min-height: 100vh;
-                background-color: var(--bg-light);
-            }
+<style>
+body {
+    display: flex;
+    min-height: 100vh;
+    background-color: var(--bg-light);
+}
 
-            .sidebar {
-                width: 280px;
-                background: var(--clr-bg-gradient);
-                color: var(--white);
-                display: flex;
-                flex-direction: column;
-                padding: var(--space-xl);
-                position: fixed;
-                height: 100vh;
-                box-shadow: var(--shadow-lg);
-            }
+.sidebar {
+    width: 280px;
+    background: var(--clr-bg-gradient);
+    color: var(--white);
+    display: flex;
+    flex-direction: column;
+    padding: var(--space-xl);
+    position: fixed;
+    height: 100vh;
+    box-shadow: var(--shadow-lg);
+}
 
-            .sidebar-logo {
-                font-size: 1.5rem;
-                font-weight: 800;
-                margin-bottom: var(--space-2xl);
-                color: var(--white);
-            }
+.sidebar-logo {
+    font-size: 1.5rem;
+    font-weight: 800;
+    margin-bottom: var(--space-2xl);
+    color: var(--white);
+}
 
-            .sidebar-logo .highlight {
-                color: var(--wits-gold);
-            }
+.sidebar-logo .highlight {
+    color: var(--wits-gold);
+}
 
-            .nav-list {
-                display: flex;
-                flex-direction: column;
-                gap: var(--space-sm);
-            }
+.nav-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+}
 
-            .nav-item {
-                display: flex;
-                align-items: center;
-                padding: var(--space-md);
-                border-radius: var(--radius-md);
-                background: rgba(255, 255, 255, 0.08);
-                border: 1px solid rgba(255, 255, 255, 0.1);
-                transition: all var(--transition-normal);
-                font-weight: 600;
-                font-size: 0.9rem;
-            }
+.nav-item {
+    display: flex;
+    align-items: center;
+    padding: var(--space-md);
+    border-radius: var(--radius-md);
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all var(--transition-normal);
+    font-weight: 600;
+    font-size: 0.9rem;
+}
 
-            .nav-item:hover,
-            .nav-item.active {
-                background: rgba(255, 255, 255, 0.2);
-                border-color: var(--wits-gold);
-                transform: translateX(5px);
-            }
+.nav-item:hover,
+.nav-item.active {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: var(--wits-gold);
+    transform: translateX(5px);
+}
 
-            .main-content {
-                margin-left: 280px;
-                flex: 1;
-                padding: var(--space-2xl);
-            }
+.main-content {
+    margin-left: 280px;
+    flex: 1;
+    padding: var(--space-2xl);
+}
 
-            .dashboard-header {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                margin-bottom: var(--space-2xl);
-            }
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-2xl);
+}
 
-            .stats-grid {
-                display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-                gap: var(--space-lg);
-                margin-bottom: var(--space-2xl);
-            }
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: var(--space-lg);
+    margin-bottom: var(--space-2xl);
+}
 
-            .stat-card {
-                background: var(--white);
-                padding: var(--space-xl);
-                border-radius: var(--radius-lg);
-                box-shadow: var(--shadow-sm);
-                border: 1px solid var(--grey-border);
-                text-align: center;
-            }
+.stat-card {
+    background: var(--white);
+    padding: var(--space-xl);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--grey-border);
+    text-align: center;
+}
 
-            .stat-card .value {
-                font-size: 2rem;
-                font-weight: 800;
-                color: var(--wits-navy);
-            }
+.stat-card .value {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--wits-navy);
+}
 
-            .section-title {
-                color: var(--wits-navy-dark);
-                margin-bottom: var(--space-lg);
-                font-weight: 700;
-            }
+.section-title {
+    color: var(--wits-navy-dark);
+    margin-bottom: var(--space-lg);
+    font-weight: 700;
+}
 
-            .listings-container {
-                display: grid;
-                grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-                gap: var(--space-lg);
-            }
+.listings-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: var(--space-lg);
+}
 
-            .item-card {
-                background: var(--white);
-                border-radius: var(--radius-lg);
-                overflow: hidden;
-                border: 1px solid var(--grey-border);
-                transition: transform var(--transition-normal);
-            }
+.item-card {
+    background: var(--white);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    border: 1px solid var(--grey-border);
+    transition: transform var(--transition-normal);
+}
 
-            .item-card:hover {
-                transform: translateY(-5px);
-                box-shadow: var(--shadow-md);
-            }
+.item-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-md);
+}
 
-            .item-img {
-                height: 180px;
-                background: var(--grey-light);
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                color: var(--grey-text);
-                overflow: hidden;
-            }
+/* ✅ FIXED IMAGE SECTION */
+.item-img {
+    height: 200px;
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
 
-            .item-img img {
-                width: 100%;
-                height: 100%;
-                object-fit: cover;
-            }
+.item-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain; /* 🔥 THIS FIXES YOUR ISSUE */
+}
 
-            .item-details {
-                padding: var(--space-lg);
-            }
+.item-details {
+    padding: var(--space-lg);
+}
 
-            .item-price {
-                color: var(--wits-navy);
-                font-weight: 800;
-                font-size: 1.2rem;
-            }
+.item-price {
+    color: var(--wits-navy);
+    font-weight: 800;
+    font-size: 1.2rem;
+}
 
-            .action-btn {
-                background-color: var(--wits-navy);
-                color: var(--white);
-                border: none;
-                padding: 12px 24px;
-                border-radius: var(--radius-pill);
-                font-weight: 700;
-                cursor: pointer;
-            }
+.action-btn {
+    background-color: var(--wits-navy);
+    color: var(--white);
+    border: none;
+    padding: 12px 24px;
+    border-radius: var(--radius-pill);
+    font-weight: 700;
+    cursor: pointer;
+}
 
-            .action-btn:hover {
-                background-color: var(--wits-navy-dark);
-            }
+.action-btn:hover {
+    background-color: var(--wits-navy-dark);
+}
 
-            #searchInput {
-                width: 100%;
-                padding: 12px;
-                margin-bottom: 15px;
-                border-radius: 8px;
-                border: 1px solid var(--grey-border);
-            }
-        </style>
-    </head>
+#searchInput {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 15px;
+    border-radius: 8px;
+    border: 1px solid var(--grey-border);
+}
+</style>
+</head>
 
-    <body>
-        <aside class="sidebar">
-            <div class="sidebar-logo">
-                Campus<span class="highlight">Market</span>
-            </div>
+<body>
 
-            <nav class="nav-list">
-                <a href="dashboard.html" class="nav-item active">🏠 Dashboard</a>
-                <a href="trade-slots.html" class="nav-item">📅 Trade Slots</a>
-                <a href="#" class="nav-item">📦 My Listings</a>
-            </nav>
-        </aside>
+<aside class="sidebar">
+<div class="sidebar-logo">
+Campus<span class="highlight">Market</span>
+</div>
 
-        <main class="main-content">
-            <header class="dashboard-header">
-                <div>
-                    <h1>Welcome back, Alex</h1>
-                    <p>Here's what's happening with your trades today.</p>
-                </div>
+<nav class="nav-list">
+<a href="dashboard.html" class="nav-item active">🏠 Dashboard</a>
+<a href="trade-slots.html" class="nav-item">📅 Trade Slots</a>
+<a href="#" class="nav-item">📦 My Listings</a>
+</nav>
+</aside>
 
-                <button
-                    class="action-btn"
-                    onclick="window.location.href='/create-listing.html'"
-                >
-                    + Create Listing
-                </button>
-            </header>
+<main class="main-content">
 
-            <section class="stats-grid">
-                <div class="stat-card">
-                    <h3>Active Listings</h3>
-                    <div class="value" id="activeListingsCount">00</div>
-                </div>
-                <div class="stat-card">
-                    <h3>Items Sold</h3>
-                    <div class="value">12</div>
-                </div>
-                <div class="stat-card">
-                    <h3>Pending Trades</h3>
-                    <div class="value">02</div>
-                </div>
-            </section>
+<header class="dashboard-header">
+<div>
+<h1>Welcome back, Alex</h1>
+<p>Here's what's happening with your trades today.</p>
+</div>
 
-            <h2 class="section-title">Recent Listings</h2>
+<button class="action-btn" onclick="window.location.href='/create-listing.html'">
++ Create Listing
+</button>
+</header>
 
-            <input id="searchInput" type="text" placeholder="Search listings..." />
+<section class="stats-grid">
+<div class="stat-card">
+<h3>Active Listings</h3>
+<div class="value" id="activeListingsCount">00</div>
+</div>
+<div class="stat-card">
+<h3>Items Sold</h3>
+<div class="value">12</div>
+</div>
+<div class="stat-card">
+<h3>Pending Trades</h3>
+<div class="value">02</div>
+</div>
+</section>
 
-            <div class="listings-container" id="listings-container"></div>
-        </main>
+<h2 class="section-title">Recent Listings</h2>
 
-        <script type="module">
-            import { filterListings } from "/components/search.js";
+<input id="searchInput" type="text" placeholder="Search listings..." />
 
-            let listings = [];
+<div class="listings-container" id="listings-container"></div>
 
-            const container = document.getElementById("listings-container");
-            const input = document.getElementById("searchInput");
-            const activeListingsCount = document.getElementById("activeListingsCount");
+</main>
 
-            function render(data) {
-                if (!data || data.length === 0) {
-                    container.innerHTML = `
-                        <div class="item-card">
-                            <div class="item-details">
-                                <h3>No listings found</h3>
-                                <p class="text-small text-muted">There are no listings to display yet.</p>
-                            </div>
-                        </div>
-                    `;
-                    return;
-                }
+<script type="module">
+import { filterListings } from "/components/search.js";
 
-                container.innerHTML = data.map(item => `
-                    <div class="item-card">
-                        <div class="item-img">
-                            ${item.image_url
-                                ? `<img src="${item.image_url}" alt="${item.title || "Listing image"}">`
-                                : `No Image Provided`
-                            }
-                        </div>
+let listings = [];
 
-                        <div class="item-details">
-                            <span style="font-size: 0.7rem; font-weight: bold; color: green;">
-                                ACTIVE
-                            </span>
+const container = document.getElementById("listings-container");
+const input = document.getElementById("searchInput");
+const activeListingsCount = document.getElementById("activeListingsCount");
 
-                            <h3 style="margin-top: 10px">${item.title || "Untitled Listing"}</h3>
-                            <p class="item-price">R ${item.price ?? "0.00"}</p>
-                            <p class="text-small text-muted">${item.description || "No description provided"}</p>
-                        </div>
-                    </div>
-                `).join("");
-            }
+function render(data) {
+if (!data || data.length === 0) {
+container.innerHTML = `
+<div class="item-card">
+<div class="item-details">
+<h3>No listings found</h3>
+<p>There are no listings yet.</p>
+</div>
+</div>`;
+return;
+}
 
-            async function loadListings() {
-                try {
-                    const response = await fetch("/listings");
-                    const result = await response.json();
+container.innerHTML = data.map(item => `
+<div class="item-card">
+<div class="item-img">
+<img src="${item.image_url || 'https://via.placeholder.com/300x180'}"
+alt="${item.title || 'Listing'}"
+onerror="this.src='https://via.placeholder.com/300x180'">
+</div>
 
-                    if (!response.ok) {
-                        throw new Error(result.error || "Failed to load listings");
-                    }
+<div class="item-details">
+<span style="font-size: 0.7rem; font-weight: bold; color: green;">ACTIVE</span>
 
-                    listings = result.listings || [];
-                    activeListingsCount.textContent = String(listings.length).padStart(2, "0");
-                    render(listings);
-                } catch (error) {
-                    container.innerHTML = `
-                        <div class="item-card">
-                            <div class="item-details">
-                                <h3>Error loading listings</h3>
-                                <p class="text-small text-muted">${error.message}</p>
-                            </div>
-                        </div>
-                    `;
-                }
-            }
+<h3 style="margin-top: 10px">${item.title || "Untitled Listing"}</h3>
+<p class="item-price">R ${item.price ?? "0.00"}</p>
+<p>${item.description || "No description provided"}</p>
+</div>
+</div>
+`).join("");
+}
 
-            input.addEventListener("input", (e) => {
-                const filtered = filterListings(listings, e.target.value);
-                render(filtered);
-            });
+async function loadListings() {
+try {
+const response = await fetch("/listings");
+const result = await response.json();
 
-            loadListings();
-        </script>
-    </body>
+listings = result.listings || [];
+activeListingsCount.textContent = String(listings.length).padStart(2, "0");
+
+render(listings);
+} catch {
+container.innerHTML = `<p>Error loading listings</p>`;
+}
+}
+
+input.addEventListener("input", (e) => {
+const filtered = filterListings(listings, e.target.value);
+render(filtered);
+});
+
+loadListings();
+</script>
+
+</body>
 </html>
