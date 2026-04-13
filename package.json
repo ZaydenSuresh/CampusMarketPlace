@@ -2,7 +2,7 @@
   "name": "campusmarketplace",
   "version": "1.0.0",
   "description": "",
-  "main": "database.js",
+  "main": "server.js",
   "directories": {
     "doc": "docs"
   },
