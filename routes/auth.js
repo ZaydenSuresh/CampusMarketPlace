@@ -8,7 +8,7 @@ router.get("/google", async (req, res) => {
     const supabase = createSupabaseClient(req, res);
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: "http://localhost:3000/auth/callback" },
+      options: { redirectTo: `${process.env.APP_URL}/auth/callback` },
     });
 
     if (error) {
@@ -93,30 +93,33 @@ router.get("/callback", async (req, res) => {
 router.get("/me", async (req, res) => {
   // Use SSR-aware Supabase client to read session cookies
   const supabase = createSupabaseClient(req, res);
-  
+
   // Get user from Supabase session (validates cookies from browser)
-  const { data: { user }, error } = await supabase.auth.getUser();
-  
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser();
+
   // If no valid session, user is not logged in
   if (error || !user) {
     return res.status(401).json({ ok: false, message: "Not logged in" });
   }
-  
+
   // Query profiles table to get the user's name from the database
   const { data: profile } = await supabase
     .from("profiles")
     .select("name")
     .eq("id", user.id)
     .single();
-  
+
   // Return user info to client
   return res.status(200).json({
     ok: true,
     user: {
       id: user.id,
       email: user.email,
-      name: profile?.name || user.email.split("@")[0]
-    }
+      name: profile?.name || user.email.split("@")[0],
+    },
   });
 });
 
