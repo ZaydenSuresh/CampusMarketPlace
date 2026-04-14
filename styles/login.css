@@ -415,3 +415,16 @@ body.login-page {
     padding: 0 var(--space-xl) var(--space-2xl);
   }
 }
+.material-icons {
+  font-size: 20px;
+}
+
+.icon-box .material-icons {
+  color: white;
+  font-size: 24px;
+}
+
+.app-icon .material-icons {
+  color: white;
+  font-size: 32px;
+}
