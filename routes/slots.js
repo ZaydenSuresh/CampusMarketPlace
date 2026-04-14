@@ -1,7 +1,17 @@
 const express = require('express');
 const router = express.Router();
 const Slot = require('../models/slot');
-const supabase = require('../database');
+let supabase = null;
+
+try {
+  supabase = require('../database');
+} catch (err) {
+  console.warn("Database not available");
+}
+
+function checkDb() {
+  return supabase !== null;
+}
 
 // check weekday
 function isWeekday(dateString) {
@@ -44,6 +54,9 @@ function formatTime(time24) {
 
 // GET slots by date
 router.get('/', async (req, res) => {
+  if (!checkDb()) {
+    return res.status(503).json({ error: 'Database not available' });
+  }
   const { date } = req.query;
 
   if (!date) {
@@ -75,6 +88,9 @@ router.get('/', async (req, res) => {
 
 // BOOK slot
 router.post('/book', async (req, res) => {
+  if (!checkDb()) {
+    return res.status(503).json({ error: 'Database not available' });
+  }
   const { date, time } = req.body || {};
 
   if (!date || !time) {
