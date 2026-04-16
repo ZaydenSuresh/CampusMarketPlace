@@ -2,7 +2,7 @@ const express = require("express");
 const { createSupabaseClient } = require("../lib/supabase");
 const router = express.Router();
 
-// Google Authentication Flow
+// handles the Google OAuth flow by redirecting the user to Google's OAuth page
 router.get("/google", async (req, res) => {
   try {
     const supabase = createSupabaseClient(req, res);
@@ -35,6 +35,7 @@ router.get("/google", async (req, res) => {
   }
 });
 
+// callback endpoint handles the OAuth callback from Google and inserts the user into the database
 router.get("/callback", async (req, res) => {
   // parse request parameters
   const code = req.query.code;
@@ -90,6 +91,7 @@ router.get("/callback", async (req, res) => {
   }
 });
 
+// me endpoint returns the user's profile information & supabase session
 router.get("/me", async (req, res) => {
   // Use SSR-aware Supabase client to read session cookies
   const supabase = createSupabaseClient(req, res);
@@ -123,15 +125,48 @@ router.get("/me", async (req, res) => {
   });
 });
 
-// Placeholder for logout; expands as needed for Supabase signOut
+// register endpoint inserts the user into the database
+router.post("/register", async (req, res) => {
+  // create supabase client
+  const supabase = createSupabaseClient(req, res);
+  // send user info in request body
+  const { email, password, name, role } = req.body;
+  const user = await signup(supabase, { email, password, name, role });
+
+  // check if the user was made successfully
+  if (!user)
+    return res.status(400).json({ ok: false, message: "Signup failed" });
+
+  return res.status(200).json({ ok: true, user, message: "Signup successful" });
+});
+
+// login endpoint signs in the user and returns the user object 
+router.post("/login", async (req, res) => {
+  const supabase = createSupabaseClient(req, res);
+  const { email, password } = req.body;
+
+  const user = await login(supabase, email, password);
+
+  if (!user)
+    return res.status(400).json({ ok: false, message: "Login failed" });
+
+  return res.status(200).json({ ok: true, user, message: "Login successful" });
+});
+
+// logout endpoint call clears supabase session
 router.post("/logout", async (req, res) => {
-  return res
-    .status(200)
-    .json({ ok: true, route: "/auth/logout", message: "placeholder" });
+  const supabase = createSupabaseClient(req, res);
+  const { error } = await logout(supabase);
+
+  if (error)
+    return res.status(400).json({ ok: false, message: "Logout failed" });
+
+  // redirect to login page after logout
+  return res.status(200).json({ ok: true, message: "Logout successful" });
 });
 
 // Classic Authentication Flow
-async function signup(newUser) {
+async function signup(supabase, newUser) {
   try {
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email: newUser.email,
@@ -143,7 +178,7 @@ async function signup(newUser) {
       return null;
     }
 
-    // NOTE: implementation code for profile syncing after manual signup
+    // implementation code for profile syncing after manual signup
     // check if the profile already exists
     const { data: exisistingProfile } = await supabase
       .from("profiles")
@@ -157,7 +192,7 @@ async function signup(newUser) {
         id: authData.user.id,
         email: authData.user.email,
         name: newUser.name,
-        role: newUser.role || "Student", // default role
+        role: newUser.role,
       });
 
       if (profileError) {
@@ -173,7 +208,7 @@ async function signup(newUser) {
   }
 }
 
-async function login(email, password) {
+async function login(supabase, email, password) {
   try {
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
@@ -193,7 +228,7 @@ async function login(email, password) {
   }
 }
 
-async function logout() {
+async function logout(supabase) {
   try {
     const { error } = await supabase.auth.signOut();
 
