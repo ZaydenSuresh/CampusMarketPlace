@@ -1,4 +1,4 @@
-import { loginUser, registerUser, logoutUser } from './auth.js';
+import { loginUser, registerUser, logoutUser, getCurrentUser } from './auth.js';
 
 const loginTab = document.getElementById("tab-login");
 const registerTab = document.getElementById("tab-register");
@@ -119,8 +119,20 @@ if (loginForm) {
 
     try {
       const data = await loginUser({ email, password });
+      const user = await getCurrentUser();
 
-      window.location.href = "/dashboard.html";
+      if (!user) {
+        console.error("Login error: User not found.");
+        showError("User not found.");
+        return;
+      }
+
+      if (user.role === "Student") {
+        window.location.href = "/dashboard.html";
+      } else if (user.role === 'Trade Facility Staff') {
+        window.location.href = "/manage-slots.html";
+      }
+
     } catch (err) {
       console.error("Login error:", err.message);
       showError(err.message);
