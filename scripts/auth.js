@@ -1,4 +1,4 @@
-COnst API_BASE = "/auth";
+const API_BASE = "/auth";
 
 async function handleResponse(response) {
   const contentType = response.headers.get("content-type") || "";
