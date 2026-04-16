@@ -1,47 +1,24 @@
 const express = require('express');
 const router = express.Router();
-const Slot = require('../models/slot');
+const Slot = require('../models/slots');
 let supabase = null;
 
 try {
   supabase = require('../database');
 } catch (err) {
-  console.warn("Database not available");
+  console.warn('Database not available');
 }
 
 function checkDb() {
   return supabase !== null;
 }
 
-// check weekday
 function isWeekday(dateString) {
   const date = new Date(dateString);
   const day = date.getDay();
   return day >= 1 && day <= 5;
 }
 
-// generate 15-min slots from 8:00 to 4:45
-function generateSlots() {
-  const slots = [];
-  let hour = 8;
-  let minute = 0;
-  let id = 1;
-
-  while (hour < 17) {
-    const time = `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
-    slots.push({ id: id++, time });
-
-    minute += 15;
-    if (minute === 60) {
-      minute = 0;
-      hour++;
-    }
-  }
-
-  return slots;
-}
-
-// format 24-hour time to AM/PM
 function formatTime(time24) {
   let [h, m] = time24.split(':').map(Number);
   const suffix = h >= 12 ? 'PM' : 'AM';
@@ -52,11 +29,12 @@ function formatTime(time24) {
   return `${h}:${m.toString().padStart(2, '0')} ${suffix}`;
 }
 
-// GET slots by date
+// GET slots by date for students/staff
 router.get('/', async (req, res) => {
   if (!checkDb()) {
     return res.status(503).json({ error: 'Database not available' });
   }
+
   const { date } = req.query;
 
   if (!date) {
@@ -68,57 +46,96 @@ router.get('/', async (req, res) => {
   }
 
   const { data, error } = await supabase
-    .from('slot_bookings')
-    .select('booking_time')
-    .eq('booking_date', date);
+    .from('trade_slots')
+    .select('*')
+    .eq('date', date)
+    .order('time', { ascending: true });
 
   if (error) {
-    return res.status(500).json({ error: 'Failed to load booked slots' });
+    return res.status(500).json({ error: 'Failed to load slots' });
   }
 
-  const bookedTimes = new Set((data || []).map(row => row.booking_time));
-  const allSlots = generateSlots();
+  const slots = (data || []).map(
+    (row) =>
+      new Slot(
+        row.id,
+        row.date,
+        formatTime((row.time || "").slice(0, 5)),
+        row.capacity,
+        row.booked_count || 0
+      )
+  );
 
-  const available = allSlots
-    .filter(slot => !bookedTimes.has(slot.time))
-    .map(slot => new Slot(slot.id, formatTime(slot.time)));
-
-  res.json(available);
+  res.json(slots);
 });
 
-// BOOK slot
-router.post('/book', async (req, res) => {
+// CREATE slot - staff
+router.post('/', async (req, res) => {
   if (!checkDb()) {
     return res.status(503).json({ error: 'Database not available' });
   }
-  const { date, time } = req.body || {};
 
-  if (!date || !time) {
-    return res.status(400).json({ error: 'Missing date or time' });
+  const { date, time, capacity } = req.body || {};
+
+  if (!date || !time || capacity === undefined) {
+    return res.status(400).json({ error: 'Date, time and capacity are required' });
   }
 
   if (!isWeekday(date)) {
-    return res.status(400).json({ error: 'No booking on weekends' });
+    return res.status(400).json({ error: 'Slots can only be created on weekdays' });
   }
 
-  const { error } = await supabase
-    .from('slot_bookings')
+  if (Number(capacity) < 1) {
+    return res.status(400).json({ error: 'Capacity must be at least 1' });
+  }
+
+  const { data, error } = await supabase
+    .from('trade_slots')
     .insert([
       {
-        booking_date: date,
-        booking_time: time
+        date,
+        time,
+        capacity: Number(capacity),
+        booked_count: 0
       }
-    ]);
+    ])
+    .select();
 
   if (error) {
-    if (error.code === '23505') {
-      return res.status(400).json({ error: 'Slot already booked' });
-    }
-
-    return res.status(500).json({ error: 'Failed to book slot' });
+    return res.status(500).json({ error: error.message || 'Failed to create slot' });
   }
 
-  res.json({ message: 'Slot has been booked' });
+  res.status(201).json({
+    message: 'Slot created successfully',
+    slot: data[0]
+  });
+});
+
+// DELETE slot - staff
+router.delete('/:id', async (req, res) => {
+  if (!checkDb()) {
+    return res.status(503).json({ error: 'Database not available' });
+  }
+
+  const { id } = req.params;
+
+  const { error } = await supabase
+    .from('trade_slots')
+    .delete()
+    .eq('id', id);
+
+  if (error) {
+    return res.status(500).json({ error: 'Failed to delete slot' });
+  }
+
+  res.json({ message: 'Slot deleted successfully' });
+});
+
+// BOOK slot - keep for later
+router.post('/book', async (req, res) => {
+  return res.status(501).json({
+    error: 'Booking logic will be implemented later'
+  });
 });
 
 module.exports = router;
