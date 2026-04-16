@@ -1,213 +1,221 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Campus Marketplace — Login</title>
 
-  <link rel="stylesheet" href="/styles/global.css">
-  <link rel="stylesheet" href="/styles/login.css">
-
-  <!-- Material Icons -->
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="/styles/global.css" />
+  <link rel="stylesheet" href="/styles/login.css" />
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
 </head>
-
 <body class="login-page">
 
-<main class="page-container">
+  <main class="page-container">
 
-  <!-- LEFT PANEL -->
-  <aside class="left-panel">
-    <section class="hero-content">
+    <aside class="left-panel">
+      <section class="hero-content">
+        <h1 class="logo-title">
+          Campus <br /><span class="highlight">Marketplace</span>
+        </h1>
 
-      <h1 class="logo-title">
-        Campus <br><span class="highlight">Marketplace</span>
-      </h1>
+        <p class="description">
+          Buy, sell, and trade with fellow students. Safe, secure, and
+          exclusively for your university community.
+        </p>
 
-      <p class="description">
-        Buy, sell, and trade with fellow students. Safe, secure, and
-        exclusively for your university community.
+        <ul class="feature-list">
+          <li class="feature-item">
+            <span class="icon-box icon-gold">
+              <span class="material-icons">lock</span>
+            </span>
+            <article class="feature-text">
+              <h3>Secure Trading</h3>
+              <p>Campus-wide secure trade facilities</p>
+            </article>
+          </li>
+
+          <li class="feature-item">
+            <span class="icon-box icon-blue">
+              <span class="material-icons">chat</span>
+            </span>
+            <article class="feature-text">
+              <h3>Built-in Messaging</h3>
+              <p>Chat directly with buyers and sellers</p>
+            </article>
+          </li>
+
+          <li class="feature-item">
+            <span class="icon-box icon-green">
+              <span class="material-icons">verified</span>
+            </span>
+            <article class="feature-text">
+              <h3>Verified Students</h3>
+              <p>Trade only within your campus community</p>
+            </article>
+          </li>
+        </ul>
+      </section>
+    </aside>
+
+    <section class="right-panel">
+      <article class="login-card">
+
+        <header class="card-header">
+          <span class="app-icon">
+            <span class="material-icons">school</span>
+          </span>
+          <h2>Welcome Back!</h2>
+          <p>Sign in to start trading with your campus community</p>
+        </header>
+
+        <nav class="toggle-container">
+          <button class="toggle-btn active" id="tab-login" type="button">Login</button>
+          <button class="toggle-btn" id="tab-register" type="button">Sign Up</button>
+        </nav>
+
+        <p id="error-message" class="form-global-error hidden"></p>
+
+        <section id="panel-login">
+          <form id="loginForm" novalidate>
+            <div class="input-group form-group">
+              <label for="login-email">University Email</label>
+              <div class="input-wrapper">
+                <span class="material-icons input-icon">mail</span>
+                <input
+                  class="form-input"
+                  type="email"
+                  id="login-email"
+                  name="email"
+                  placeholder="student@wits.ac.za"
+                  required
+                />
+              </div>
+              <small class="form-error"></small>
+            </div>
+
+            <div class="input-group form-group">
+              <label for="login-password">Password</label>
+              <div class="input-wrapper">
+                <span class="material-icons input-icon">lock</span>
+                <input
+                  class="form-input"
+                  type="password"
+                  id="login-password"
+                  name="password"
+                  placeholder="••••••••"
+                  required
+                />
+              </div>
+              <small class="form-error"></small>
+            </div>
+
+            <button type="submit" class="submit-btn" id="login-submit-btn">
+              Sign In
+            </button>
+          </form>
+
+          <div class="divider">or</div>
+
+          <button type="button" class="google-btn" id="google-login-btn">
+            <span class="material-icons">login</span>
+            Sign in with Google
+          </button>
+
+          <footer class="card-footer">
+            <a href="#" class="forgot-password">Forgot password?</a>
+          </footer>
+        </section>
+
+        <section id="panel-register" class="hidden">
+          <form id="registerForm" novalidate>
+            <div class="input-group form-group">
+              <label for="reg-name">Full Name</label>
+              <div class="input-wrapper">
+                <span class="material-icons input-icon">person</span>
+                <input
+                  class="form-input"
+                  type="text"
+                  id="reg-name"
+                  name="name"
+                  placeholder="Jane Smith"
+                  required
+                />
+              </div>
+              <small class="form-error"></small>
+            </div>
+
+            <div class="input-group form-group">
+              <label for="reg-email">University Email</label>
+              <div class="input-wrapper">
+                <span class="material-icons input-icon">mail</span>
+                <input
+                  class="form-input"
+                  type="email"
+                  id="reg-email"
+                  name="email"
+                  placeholder="student@wits.ac.za"
+                  required
+                />
+              </div>
+              <small class="form-error"></small>
+            </div>
+
+            <div class="input-group form-group">
+              <label for="reg-password">Password</label>
+              <div class="input-wrapper">
+                <span class="material-icons input-icon">lock</span>
+                <input
+                  class="form-input"
+                  type="password"
+                  id="reg-password"
+                  name="password"
+                  placeholder="Min. 6 characters"
+                  required
+                />
+              </div>
+              <small class="form-error"></small>
+            </div>
+
+            <div class="input-group form-group">
+              <label for="reg-confirm">Confirm Password</label>
+              <div class="input-wrapper">
+                <span class="material-icons input-icon">verified</span>
+                <input
+                  class="form-input"
+                  type="password"
+                  id="reg-confirm"
+                  name="confirm"
+                  placeholder="Repeat password"
+                  required
+                />
+              </div>
+              <small class="form-error"></small>
+            </div>
+
+            <button type="submit" class="submit-btn register-submit-btn" id="register-submit-btn">
+              Create Account
+            </button>
+          </form>
+
+          <footer class="card-footer">
+            <p class="terms-text">
+              By signing up you agree to our
+              <a href="#">Terms</a> and
+              <a href="#">Privacy Policy</a>.
+            </p>
+          </footer>
+        </section>
+      </article>
+
+      <p class="terms-text">
+        By continuing, you agree to our Terms of Service and Privacy Policy
       </p>
-
-      <ul class="feature-list">
-
-        <li class="feature-item">
-          <span class="icon-box icon-gold">
-            <span class="material-icons">lock</span>
-          </span>
-          <article class="feature-text">
-            <h3>Secure Trading</h3>
-            <p>Campus-wide secure trade facilities</p>
-          </article>
-        </li>
-
-        <li class="feature-item">
-          <span class="icon-box icon-blue">
-            <span class="material-icons">chat</span>
-          </span>
-          <article class="feature-text">
-            <h3>Built-in Messaging</h3>
-            <p>Chat directly with buyers and sellers</p>
-          </article>
-        </li>
-
-        <li class="feature-item">
-          <span class="icon-box icon-green">
-            <span class="material-icons">verified</span>
-          </span>
-          <article class="feature-text">
-            <h3>Verified Students</h3>
-            <p>Trade only within your campus community</p>
-          </article>
-        </li>
-
-      </ul>
     </section>
-  </aside>
+  </main>
 
-  <!-- RIGHT PANEL -->
-  <section class="right-panel">
+  <button class="help-btn" type="button">?</button>
 
-    <article class="login-card">
-
-      <header class="card-header">
-        <span class="app-icon">
-          <span class="material-icons">school</span>
-        </span>
-        <h2>Welcome Back!</h2>
-        <p>Sign in to start trading with your campus community</p>
-      </header>
-
-      <nav class="toggle-container">
-        <button class="toggle-btn active" id="tab-login" type="button">Login</button>
-        <button class="toggle-btn" id="tab-register" type="button">Sign Up</button>
-      </nav>
-
-      <!-- LOGIN -->
-      <section id="panel-login">
-        <form id="loginForm" novalidate>
-
-          <p class="input-group form-group">
-            <label for="login-email">University Email</label>
-            <span class="input-wrapper">
-              <span class="material-icons input-icon">mail</span>
-              <input class="form-input" type="email" id="login-email" name="email"
-                placeholder="student@wits.ac.za" required>
-            </span>
-            <small class="form-error"></small>
-          </p>
-
-          <p class="input-group form-group">
-            <label for="login-password">Password</label>
-            <span class="input-wrapper">
-              <span class="material-icons input-icon">lock</span>
-              <input class="form-input" type="password" id="login-password" name="password"
-                placeholder="••••••••" required>
-            </span>
-            <small class="form-error"></small>
-          </p>
-
-          <button type="submit" class="submit-btn" id="login-submit-btn">
-            Sign In
-          </button>
-
-        </form>
-
-        <div class="divider">or</div>
-
-        <button type="button" class="google-btn" id="google-login-btn">
-          <span class="material-icons">login</span>
-          Sign in with Google
-        </button>
-
-        <footer class="card-footer">
-          <a href="#" class="forgot-password">Forgot password?</a>
-        </footer>
-      </section>
-
-      <!-- REGISTER -->
-      <section id="panel-register" class="hidden">
-        <form id="registerForm" novalidate>
-
-          <p class="input-group form-group">
-            <label for="reg-name">Full Name</label>
-            <span class="input-wrapper">
-              <span class="material-icons input-icon">person</span>
-              <input class="form-input" type="text" id="reg-name" name="name"
-                placeholder="Jane Smith" required>
-            </span>
-            <small class="form-error"></small>
-          </p>
-
-          <p class="input-group form-group">
-            <label for="reg-email">University Email</label>
-            <span class="input-wrapper">
-              <span class="material-icons input-icon">mail</span>
-              <input class="form-input" type="email" id="reg-email" name="email"
-                placeholder="student@wits.ac.za" required>
-            </span>
-            <small class="form-error"></small>
-          </p>
-
-          <p class="input-group form-group">
-            <label for="reg-university">University</label>
-            <span class="input-wrapper">
-              <span class="material-icons input-icon">school</span>
-              <input class="form-input" type="text" id="reg-university" name="university"
-                placeholder="Tech University" required>
-            </span>
-            <small class="form-error"></small>
-          </p>
-
-          <p class="input-group form-group">
-            <label for="reg-password">Password</label>
-            <span class="input-wrapper">
-              <span class="material-icons input-icon">lock</span>
-              <input class="form-input" type="password" id="reg-password" name="password"
-                placeholder="Min. 6 characters" required>
-            </span>
-            <small class="form-error"></small>
-          </p>
-
-          <p class="input-group form-group">
-            <label for="reg-confirm">Confirm Password</label>
-            <span class="input-wrapper">
-              <span class="material-icons input-icon">verified</span>
-              <input class="form-input" type="password" id="reg-confirm" name="confirm"
-                placeholder="Repeat password" required>
-            </span>
-            <small class="form-error"></small>
-          </p>
-
-          <button type="submit" class="submit-btn register-submit-btn" id="register-submit-btn">
-            Create Account
-          </button>
-
-        </form>
-
-        <footer class="card-footer">
-          <p class="terms-text">
-            By signing up you agree to our
-            <a href="#">Terms</a> and
-            <a href="#">Privacy Policy</a>.
-          </p>
-        </footer>
-      </section>
-
-    </article>
-
-    <p class="terms-text">
-      By continuing, you agree to our Terms of Service and Privacy Policy
-    </p>
-
-  </section>
-
-</main>
-
-<button class="help-btn" type="button">?</button>
-
-<script src="/scripts/global.js"></script>
-<script src="/scripts/auth.js"></script>
-
+  <script type="module" src="/scripts/auth.js"></script>
 </body>
 </html>
