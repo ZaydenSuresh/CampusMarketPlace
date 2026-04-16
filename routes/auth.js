@@ -253,4 +253,4 @@ async function logout(supabase) {
   }
 }
 
-module.exports = { router };
+module.exports = { router, signup, login, logout };
