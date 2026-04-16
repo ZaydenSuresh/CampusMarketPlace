@@ -95,8 +95,13 @@ router.get("/callback", async (req, res) => {
       });
     }
 
-    // Redirect to dashboard.
-    return res.redirect(302, "/dashboard.html");
+    // Redirect to page based on role
+    if (existingProfile.role === "Student") {
+      return res.redirect(302, "/dashboard.html");
+    } else if (existingProfile.role === "Trade Facility Staff") {
+      return res.redirect(302, "/manage-slots.html");
+    }
+
   } catch (error) {
     console.error("[/auth/callback] OAuth callback error:", error);
     return res.status(500).json({ ok: false, message: error.message });
@@ -122,7 +127,7 @@ router.get("/me", async (req, res) => {
   // Query profiles table to get the user's name from the database
   const { data: profile } = await supabase
     .from("profiles")
-    .select("name")
+    .select("name, role") // select name and role from profiles table
     .eq("id", user.id)
     .single();
 
@@ -133,6 +138,7 @@ router.get("/me", async (req, res) => {
       id: user.id,
       email: user.email,
       name: profile?.name || user.email.split("@")[0],
+      role: profile?.role || 'Student'
     },
   });
 });
