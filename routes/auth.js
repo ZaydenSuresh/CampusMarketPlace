@@ -152,7 +152,7 @@ router.post("/register", async (req, res) => {
   return res.status(200).json({ ok: true, user, message: "Signup successful" });
 });
 
-// login endpoint signs in the user and returns the user object 
+// login endpoint signs in the user and returns the user object
 router.post("/login", async (req, res) => {
   const supabase = createSupabaseClient(req, res);
   const { email, password } = req.body;
@@ -173,7 +173,6 @@ router.post("/logout", async (req, res) => {
   if (error)
     return res.status(400).json({ ok: false, message: "Logout failed" });
 
-  // redirect to login page after logout
   return res.status(200).json({ ok: true, message: "Logout successful" });
 });
 
@@ -190,125 +189,32 @@ async function signup(supabase, newUser) {
       return null;
     }
 
-    // implementation code for profile syncing after manual signup
-    // check if the profile already exists
-    const { data: exisistingProfile } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", authData.user.id)
-      .single();
-
-    // if the profile doesn't exist, add it to the profiles table
-    if (!exisistingProfile) {
-      const { error: profileError } = await supabase.from("profiles").insert({
-        id: authData.user.id,
-        email: authData.user.email,
-        name: newUser.name,
-        role: newUser.role,
-      });
-
-      if (insertError) {
-        console.error("Profile insert error:", insertError);
-        return res.status(500).json({
-          ok: false,
-          message: insertError.message,
-        });
-      }
-    }
-
-    return res.redirect(302, "/dashboard.html");
-  } catch (error) {
-    console.error("[/auth/callback] OAuth callback error:", error);
-    return res.status(500).json({
-      ok: false,
-      message: error.message || "OAuth callback failed",
-    });
-  }
-});
-
-router.post("/register", async (req, res) => {
-  const supabase = createSupabaseClient(req, res);
-  const { name, email, password } = req.body;
-
-  if (!name || !email || !password) {
-    return res.status(400).json({
-      ok: false,
-      message: "Name, email and password are required.",
-    });
-  }
-
-  if (password.length < 6) {
-    return res.status(400).json({
-      ok: false,
-      message: "Password must be at least 6 characters.",
-    });
-  }
-
-  try {
-    const { data: authData, error: authError } = await supabase.auth.signUp({
-      email,
-      password,
-    });
-
-    if (authError || !authData?.user) {
-      return res.status(400).json({
-        ok: false,
-        message: authError?.message || "Registration failed",
-      });
-    }
-
-    const { data: existingProfile, error: lookupError } = await supabase
+    const { data: existingProfile } = await supabase
       .from("profiles")
       .select("*")
       .eq("id", authData.user.id)
       .maybeSingle();
 
-    if (lookupError) {
-      console.error("Profile lookup error:", lookupError);
-    }
-
     if (!existingProfile) {
       const { error: profileError } = await supabase.from("profiles").insert({
         id: authData.user.id,
         email: authData.user.email,
-        name,
-        role: "Student", // ✅ FIXED
+        name: newUser.name,
+        role: newUser.role || "Student",
       });
 
       if (profileError) {
-        console.error("Profile creation error:", profileError);
-        return res.status(500).json({
-          ok: false,
-          message: profileError.message,
-        });
+        console.error("Profile creation error:", profileError.message);
       }
     }
 
-    return res.status(201).json({
-      ok: true,
-      message: "Account created successfully",
-      user: authData.user,
-      session: authData.session || null,
-    });
+    console.log("Signup successful:", authData.user);
+    return authData.user;
   } catch (err) {
     console.error("Unexpected signup error:", err);
-    return res.status(500).json({
-      ok: false,
-      message: "Server error during registration",
-    });
+    return null;
   }
-});
-
-router.post("/login", async (req, res) => {
-  const supabase = createSupabaseClient(req, res);
-  const { email, password } = req.body;
-
-  if (!email || !password) {
-    return res.status(400).json({
-      ok: false,
-      message: "Email and password are required.",
-    });
-  }
+}
 
 async function login(supabase, email, password) {
   try {
@@ -317,84 +223,34 @@ async function login(supabase, email, password) {
       password,
     });
 
-    if (error || !data?.user) {
-      return res.status(401).json({
-        ok: false,
-        message: error?.message || "Login failed",
-      });
+    if (error) {
+      console.error("Login error:", error.message);
+      return null;
     }
 
-    return res.status(200).json({
-      ok: true,
-      message: "Login successful",
-      user: data.user,
-      session: data.session || null,
-    });
+    console.log("Login successful:", data.user);
+    return data.user;
   } catch (err) {
-    console.error("Unexpected login error:", err);
-    return res.status(500).json({
-      ok: false,
-      message: "Server error during login",
-    });
+    console.error("Unexpected error during login:", err);
+    return null;
   }
-});
-
-router.get("/me", async (req, res) => {
-  const supabase = createSupabaseClient(req, res);
-
-  const {
-    data: { user },
-    error,
-  } = await supabase.auth.getUser();
-
-  if (error || !user) {
-    return res.status(401).json({
-      ok: false,
-      message: "Not logged in",
-    });
-  }
-
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("name")
-    .eq("id", user.id)
-    .maybeSingle();
-
-  return res.status(200).json({
-    ok: true,
-    user: {
-      id: user.id,
-      email: user.email,
-      name: profile?.name || user.email?.split("@")[0] || "User",
-    },
-  });
-});
-
-router.post("/logout", async (req, res) => {
-  const supabase = createSupabaseClient(req, res);
+}
 
 async function logout(supabase) {
   try {
     const { error } = await supabase.auth.signOut();
 
     if (error) {
-      return res.status(500).json({
-        ok: false,
-        message: error.message || "Logout failed",
-      });
+      console.error("Logout error:", error.message);
+      return error;
     }
 
-    return res.status(200).json({
-      ok: true,
-      message: "Logout successful",
-    });
+    console.log("Logout successful");
+    return null;
   } catch (err) {
-    console.error("Unexpected logout error:", err);
-    return res.status(500).json({
-      ok: false,
-      message: "Server error during logout",
-    });
+    console.error("Unexpected logout error", err);
+    return err;
   }
-});
+}
 
 module.exports = { router };
