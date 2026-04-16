@@ -386,7 +386,8 @@ body.login-page {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
-.google-btn svg {
+/* Google logo sizing - targets the .google-logo class specifically */
+.google-btn .google-logo {
   width: 20px;
   height: 20px;
   flex-shrink: 0;
