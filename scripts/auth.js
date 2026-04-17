@@ -49,6 +49,39 @@ export async function getCurrentUser() {
   return data.ok ? data.user : null;
 }
 
+/**
+ * Role-based access control helper
+ * @param {string[]} allowedRoles - Array of roles that can access the page
+ * @returns {object|null} - Returns user object if authorized, null if redirected
+ *
+ * If user is not logged in -> redirect to /login.html
+ * If user role is not in allowedRoles -> redirect to appropriate page
+ */
+export async function requireRole(allowedRoles) {
+  const user = await getCurrentUser();
+
+  // User not logged in -> send to login
+  if (!user) {
+    window.location.href = "/login.html";
+    return null;
+  }
+
+  // User role not in allowed list -> redirect based on their role
+  if (!allowedRoles.includes(user.role)) {
+    if (user.role === "Trade Facility Staff") {
+      // Trade Facility Staff trying to access Student page -> go to their page
+      window.location.href = "/manage-slots.html";
+    } else {
+      // Everyone else -> go to dashboard (default Student page)
+      window.location.href = "/dashboard.html";
+    }
+    return null;
+  }
+
+  // User is authorized -> return user object
+  return user;
+}
+
 export async function logoutUser() {
   try {
     await fetch(`${API_BASE}/logout`, {

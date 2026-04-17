@@ -8,6 +8,34 @@
         <link rel="stylesheet" href="/styles/slots.css" />
     </head>
     <body>
+        <!--
+          Manage Slots page - Trade Facility Staff only
+          Auth check runs immediately on page load
+          Only Trade Facility Staff can manage slots
+        -->
+        <script type="module">
+          import { requireRole } from "/scripts/auth.js";
+
+          async function checkAccess() {
+            // requireRole(["Trade Facility Staff"]) will:
+            // - Redirect to /login.html if not logged in
+            // - Redirect to /dashboard.html if Student
+            // - Return user object if authorized (Trade Facility Staff)
+            const user = await requireRole(["Trade Facility Staff"]);
+
+            if (!user) {
+              // requireRole already redirected - stop
+              return;
+            }
+
+            // User is authorized - display their name
+            console.log("Trade Facility Staff authorized:", user.name);
+          }
+
+          // Run access check immediately
+          checkAccess();
+        </script>
+
         <aside class="sidebar">
             <div class="sidebar-logo">
                 Campus<span class="highlight">Market</span>

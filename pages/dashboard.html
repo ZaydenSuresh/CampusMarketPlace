@@ -279,35 +279,24 @@ Campus<span class="highlight">Market</span>
 
 <script type="module">
 import { filterListings } from "/components/search.js";
+import { requireRole } from "/scripts/auth.js";
 
-// Check if user is logged in by calling /auth/me endpoint
-// If not authenticated, redirect to login page
-async function checkAuth() {
-  try {
-    const res = await fetch('/auth/me');
-    // If response not OK, user is not logged in
-    if (!res.ok) {
-      window.location.href = '/login.html';
-      return null;
-    }
-    // Return user object from response
-    const { user } = await res.json();
-    return user;
-  } catch {
-    // Network error or other issues - redirect to login
-    window.location.href = '/login.html';
-    return null;
-  }
-}
+/**
+ * Dashboard page - Student only
+ * Runs role check before loading any page content
+ * Redirects Trade Facility Staff to their page
+ * Redirects unauthenticated users to login
+ */
+async function initPage() {
+  // Check if user is logged in AND has Student role
+  // requireRole will redirect automatically if not authorized
+  const user = await requireRole(["Student"]);
 
-// Run auth check before loading page content
-const user = await checkAuth();
-if (!user) {
-  throw new Error('Redirecting...');
-}
+  // If user is null, requireRole already redirected - stop here
+  if (!user) return;
 
-// Display user's name from profiles table in welcome text
-document.getElementById('welcome-name').textContent = `Welcome back, ${user.name}`;
+  // User is authorized - display their name in welcome message
+  document.getElementById('welcome-name').textContent = `Welcome back, ${user.name}`;
 
 // Store listings data and current active category filter
 let listings = [];
@@ -413,6 +402,9 @@ btn.addEventListener('click', () => {
 
 // Load initial 6 most recent listings on page load
 loadListings();
+
+// Initialize page - runs role check
+initPage();
 </script>
 
 </body>
