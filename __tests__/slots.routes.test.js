@@ -111,3 +111,67 @@ test('PUT /slots/:id updates a slot', async () => {
   expect(res.status).toBe(200);
   expect(res.body.message).toBe('Slot updated successfully');
 });
+
+test('POST /slots/book reduces capacity', async () => {
+  // Step 1: mock existing slot
+  const selectMock = jest.fn().mockResolvedValue({
+    data: [{ id: 1, capacity: 5, booked_count: 2 }],
+    error: null
+  });
+
+  const updateMock = jest.fn().mockReturnValue({
+    eq: jest.fn().mockResolvedValue({ error: null })
+  });
+
+  db.__mockFrom.mockReturnValue({
+    select: selectMock,
+    update: updateMock
+  });
+
+  const res = await request(app).post('/slots/book').send({
+    id: 1
+  });
+
+  expect(res.status).toBe(200);
+  expect(res.body.message).toBe('Slot booked successfully');
+});
+
+//Test: prevent overbooking
+test('POST /slots/book fails if slot is full', async () => {
+  const selectMock = jest.fn().mockResolvedValue({
+    data: [{ id: 1, capacity: 3, booked_count: 3 }],
+    error: null
+  });
+
+  db.__mockFrom.mockReturnValue({
+    select: selectMock
+  });
+
+  const res = await request(app).post('/slots/book').send({
+    id: 1
+  });
+
+  expect(res.status).toBe(400);
+  expect(res.body.error).toBe('Slot is full');
+});
+
+//Test: slot disappears when full
+test('GET /slots does not return full slots', async () => {
+  const selectMock = jest.fn().mockResolvedValue({
+    data: [
+      { id: 1, capacity: 2, booked_count: 2 }, // FULL
+      { id: 2, capacity: 3, booked_count: 1 }  // AVAILABLE
+    ],
+    error: null
+  });
+
+  db.__mockFrom.mockReturnValue({
+    select: selectMock,
+    eq: jest.fn().mockReturnThis(),
+    order: jest.fn().mockReturnThis()
+  });
+
+  const res = await request(app).get('/slots?date=2026-04-21');
+
+  expect(res.body.length).toBe(1); // only available slot
+});
