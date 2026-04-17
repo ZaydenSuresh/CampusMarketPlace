@@ -85,3 +85,29 @@ describe('Slots routes', () => {
     expect(res.body.message).toBe('Slot deleted successfully');
   });
 });
+
+test('PUT /slots/:id updates a slot', async () => {
+  // Mock DB to simulate NOT implemented yet (force failure)
+  const updateMock = jest.fn().mockReturnThis();
+  const eqMock = jest.fn().mockReturnThis();
+  const selectMock = jest.fn().mockResolvedValue({
+    data: [{ id: 1, date: '2026-04-22', time: '10:30:00', capacity: 5 }],
+    error: null
+  });
+
+  db.__mockFrom.mockReturnValue({
+    update: updateMock,
+    eq: eqMock,
+    select: selectMock
+  });
+
+  const res = await request(app).put('/slots/1').send({
+    date: '2026-04-22',
+    time: '10:30',
+    capacity: 5
+  });
+
+  // EXPECT SUCCESS (but it will FAIL because route not implemented yet)
+  expect(res.status).toBe(200);
+  expect(res.body.message).toBe('Slot updated successfully');
+});
