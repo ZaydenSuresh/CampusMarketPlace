@@ -117,6 +117,29 @@ body {
     transition: transform var(--transition-normal);
 }
 
+.card-actions {
+    margin-top: 12px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.edit-btn {
+    background: var(--wits-navy);
+    color: var(--white);
+    border: none;
+    padding: 8px 16px;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.edit-btn:hover {
+    background: var(--wits-navy-dark);
+    transform: translateY(-1px);
+}
+
 .item-card:hover {
     transform: translateY(-5px);
     box-shadow: var(--shadow-md);
@@ -278,106 +301,97 @@ Campus<span class="highlight">Market</span>
 </main>
 
 <script type="module">
-import { filterListings } from "/components/search.js";
+import { createListingCard } from "/components/card.js";
 import { requireRole } from "/scripts/auth.js";
 
-/**
- * Dashboard page - Student only
- * Runs role check before loading any page content
- * Redirects Trade Facility Staff to their page
- * Redirects unauthenticated users to login
- */
 async function initPage() {
-  // Check if user is logged in AND has Student role
-  // requireRole will redirect automatically if not authorized
   const user = await requireRole(["Student"]);
-
-  // If user is null, requireRole already redirected - stop here
   if (!user) return;
 
-  // User is authorized - display their name in welcome message
-  document.getElementById('welcome-name').textContent = `Welcome back, ${user.name}`;
+  const welcomeName = document.getElementById("welcome-name");
+  if (welcomeName) {
+    welcomeName.textContent = `Welcome back, ${user.name}`;
+  }
 }
 
-// Store listings data and current active category filter
 let listings = [];
-let activeCategory = 'All';
+let activeCategory = "All";
 
 const container = document.getElementById("listings-container");
 const input = document.getElementById("searchInput");
 const activeListingsCount = document.getElementById("activeListingsCount");
 
-// Renders the listing cards to the DOM
+window.editListing = function (listingId) {
+  window.location.href = `/create-listing.html?id=${listingId}`;
+};
+
 function render(data) {
-if (!data || data.length === 0) {
-container.innerHTML = `
-<div class="item-card">
-<div class="item-details">
-<h3>No listings found</h3>
-<p>There are no listings yet.</p>
-</div>
-</div>`;
-return;
+  if (!container) return;
+
+  container.innerHTML = "";
+
+  if (!data || data.length === 0) {
+    container.innerHTML = `
+      <div class="item-card">
+        <div class="item-details">
+          <h3>No listings found</h3>
+          <p>There are no listings yet.</p>
+        </div>
+      </div>
+    `;
+    return;
+  }
+
+  data.forEach((item) => {
+    const card = createListingCard(item);
+    container.appendChild(card);
+  });
 }
 
-container.innerHTML = data.map(item => `
-<div class="item-card">
-<div class="item-img">
-<img src="${item.image_url || 'https://via.placeholder.com/300x180'}"
-alt="${item.title || 'Listing'}"
-onerror="this.src='https://via.placeholder.com/300x180'">
-</div>
-
-<div class="item-details">
-<span style="font-size: 0.7rem; font-weight: bold; color: green;">ACTIVE</span>
-
-<span class="badge" style="margin-left: 8px; font-size: 0.7rem;">${item.category || ''}</span>
-<span class="badge" style="margin-left: 4px; font-size: 0.7rem;">${item.condition || ''}</span>
-<span class="badge" style="margin-left: 4px; font-size: 0.7rem;">${item.sale_type || ''}</span>
-
-<h3 style="margin-top: 10px">${item.title || "Untitled Listing"}</h3>
-<p class="item-price">R ${item.price ?? "0.00"}</p>
-<p>${item.description || "No description provided"}</p>
-</div>
-</div>
-`).join("");
-}
-
-// Fetches listings from the API
 async function loadListings() {
-try {
-const response = await fetch("/listings/search");
-const result = await response.json();
-
-listings = result.listings || [];
-activeListingsCount.textContent = String(listings.length).padStart(2, "0");
-
-render(listings);
-} catch {
-container.innerHTML = `<p>Error loading listings</p>`;
-}
-}
-
-// Search listings by query and category
-async function searchListings(query, category) {
   try {
-    // set the url parameters
-    const params = new URLSearchParams();
-    if (query) params.set('q', query);
-    if (category && category !== "All") params.set('category', category);
-
-    // fetch the listings from the API
-    const response = await fetch(`/listings/search?${params.toString()}`);
-    // save the json result
+    const response = await fetch("/listings/search");
     const result = await response.json();
-    activeListingsCount.textContent = String(result.listings.length).padStart(2, "0");
-    render(result.listings || []);
-  } catch {
-    container.innerHTML = `<p>Error loading listings</p>`;
+
+    listings = result.listings || [];
+
+    if (activeListingsCount) {
+      activeListingsCount.textContent = String(listings.length).padStart(2, "0");
+    }
+
+    render(listings);
+  } catch (error) {
+    console.error("Load listings error:", error);
+    if (container) {
+      container.innerHTML = `<p>Error loading listings</p>`;
+    }
   }
 }
 
-// Debounce function to limit API calls while typing
+async function searchListings(query, category) {
+  try {
+    const params = new URLSearchParams();
+    if (query) params.set("q", query);
+    if (category && category !== "All") params.set("category", category);
+
+    const response = await fetch(`/listings/search?${params.toString()}`);
+    const result = await response.json();
+
+    const filteredListings = result.listings || [];
+
+    if (activeListingsCount) {
+      activeListingsCount.textContent = String(filteredListings.length).padStart(2, "0");
+    }
+
+    render(filteredListings);
+  } catch (error) {
+    console.error("Search listings error:", error);
+    if (container) {
+      container.innerHTML = `<p>Error loading listings</p>`;
+    }
+  }
+}
+
 function debounce(func, delay) {
   let timeoutId;
   return function (...args) {
@@ -386,28 +400,27 @@ function debounce(func, delay) {
   };
 }
 
-// Search input handler - fetches all listings and filters (debounced)
 const debouncedSearch = debounce((e) => {
   searchListings(e.target.value, activeCategory);
 }, 300);
 
-input.addEventListener("input", debouncedSearch);
+if (input) {
+  input.addEventListener("input", debouncedSearch);
+}
 
-// Category filter button click handlers - fetches all listings and filters
-document.querySelectorAll('.filter-pill').forEach(btn => {
-btn.addEventListener('click', () => {
-  const allPills = document.querySelectorAll('.filter-pill');
-  allPills.forEach(pill => pill.classList.remove('active'));
-  btn.classList.add('active');
-  activeCategory = btn.dataset.category;
-  searchListings(input.value, activeCategory);
-});
+document.querySelectorAll(".filter-pill").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".filter-pill").forEach((pill) => {
+      pill.classList.remove("active");
+    });
+
+    btn.classList.add("active");
+    activeCategory = btn.dataset.category;
+    searchListings(input ? input.value : "", activeCategory);
+  });
 });
 
-// Load initial 6 most recent listings on page load
 loadListings();
-
-// Initialize page - runs role check
 initPage();
 </script>
 
