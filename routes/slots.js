@@ -138,4 +138,39 @@ router.post('/book', async (req, res) => {
   });
 });
 
+//Allow edit existing slots
+router.put('/:id', async (req, res) => {
+  const { id } = req.params;
+  let { date, time, capacity } = req.body;
+
+  console.log("UPDATE REQUEST:", { id, date, time, capacity }); // 👈 DEBUG
+
+  if (!date || !time || capacity === undefined) {
+    return res.status(400).json({ error: 'All fields are required' });
+  }
+
+  // 🔥 ensure correct formats
+  date = date.replaceAll("/", "-");
+
+  if (time.length === 5) {
+    time = time + ":00";
+  }
+
+  const { data, error } = await supabase
+    .from('trade_slots')
+    .update({
+      date,
+      time,
+      capacity: Number(capacity)
+    })
+    .eq('id', id)
+    .select();
+
+  if (error) {
+    console.log("DB ERROR:", error); // 👈 THIS IS IMPORTANT
+    return res.status(500).json({ error: error.message });
+  }
+
+  res.json({ message: 'Slot updated successfully', slot: data[0] });
+});
 module.exports = router;
