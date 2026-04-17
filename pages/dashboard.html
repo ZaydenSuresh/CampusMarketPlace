@@ -297,6 +297,7 @@ async function initPage() {
 
   // User is authorized - display their name in welcome message
   document.getElementById('welcome-name').textContent = `Welcome back, ${user.name}`;
+}
 
 // Store listings data and current active category filter
 let listings = [];
@@ -345,7 +346,7 @@ onerror="this.src='https://via.placeholder.com/300x180'">
 // Fetches listings from the API
 async function loadListings() {
 try {
-const response = await fetch("/listings");
+const response = await fetch("/listings/search");
 const result = await response.json();
 
 listings = result.listings || [];
@@ -357,17 +358,20 @@ container.innerHTML = `<p>Error loading listings</p>`;
 }
 }
 
-// Fetches all listings from API and filters by search text and category
+// Search listings by query and category
 async function searchListings(query, category) {
   try {
-    const response = await fetch("/listings/all");
+    // set the url parameters
+    const params = new URLSearchParams();
+    if (query) params.set('q', query);
+    if (category && category !== "All") params.set('category', category);
+
+    // fetch the listings from the API
+    const response = await fetch(`/listings/search?${params.toString()}`);
+    // save the json result
     const result = await response.json();
-    
-    const allListings = result.listings || [];
-    const filtered = filterListings(allListings, query, category);
-    
-    activeListingsCount.textContent = String(filtered.length).padStart(2, "0");
-    render(filtered);
+    activeListingsCount.textContent = String(result.listings.length).padStart(2, "0");
+    render(result.listings || []);
   } catch {
     container.innerHTML = `<p>Error loading listings</p>`;
   }
