@@ -30,6 +30,11 @@ app.use(express.json());
 app.use("/auth", authRouter);
 app.use("/slots", slotsRouter);
 
+// show login page on server startup
+app.get("/", (req, res) => {
+  res.sendFile(__dirname + "/pages/login.html");
+});
+
 // check server health
 app.get("/health", (req, res) => {
   res.status(200).json({ ok: true, service: "campus-marketplace-api" });
@@ -38,7 +43,9 @@ app.get("/health", (req, res) => {
 // check database connection
 app.get("/db-check", async (req, res) => {
   if (!supabase) {
-    return res.status(503).json({ ok: false, message: "Database not initialized" });
+    return res
+      .status(503)
+      .json({ ok: false, message: "Database not initialized" });
   }
   try {
     const { data, error } = await supabase
