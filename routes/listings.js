@@ -109,6 +109,36 @@ router.get('/all', async (req, res) => {
   }
 });
 
+// GET listings based on search parameters
+router.get('/search', async(req, res) => {
+  // validate that the database is running
+  if (!checkDb()) {
+    return res.status(503).json({error: 'Database not available'});
+  }
+
+  try {
+    // get the query information from URL
+    const { q, category } = req.query;
+
+    // build the query
+    let query = supabase.from('listings').select('*').order('created_at', { ascending: false });
+
+    // if the user filtered by category
+    if (category && category !== 'All') query = query.eq('category', category);
+
+    // if the user searched by title or description
+    if (q && q.trim() != '') query = query.or(`title.ilike.%${q}%,description.ilike.%${q}%`);
+
+    // send the query to the database
+    const {data, error } = await query;
+
+    if (error) return res.status(500).json({ error: error.message });
+    res.json({ok: true, listings: data});
+  } catch (err) {
+    res.status(500).json({error: err.message});
+  }
+})
+
 // GET single listing by ID
 router.get('/:id', async (req, res) => {
   if (!checkDb()) {
