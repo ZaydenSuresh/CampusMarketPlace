@@ -22,6 +22,7 @@ const { router: authRouter } = require("./routes/auth");
 const slotsRouter = require("./routes/slots");
 
 app.use(cors());
+app.use("/lib", express.static("lib"));
 app.use("/styles", express.static("styles"));
 app.use("/scripts", express.static("scripts"));
 app.use("/components", express.static("components"));

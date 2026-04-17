@@ -4,15 +4,12 @@
  * @returns {HTMLElement} card element
  */
 export function createListingCard(listing) {
-
-    console.log("IMAGE:", listing.image_url);
-
     const currentUserId = localStorage.getItem("user_id");
 
     const card = document.createElement("div");
     card.className = "item-card";
 
-    // Ensures a valid image is always shown (fallback if missing or empty)
+    // Ensures a valid image is always shown
     const imageUrl =
         listing.image_url && listing.image_url.trim() !== ""
             ? listing.image_url
@@ -22,7 +19,7 @@ export function createListingCard(listing) {
         <div class="item-img">
             <img src="${imageUrl}" 
                  alt="listing image" 
-                 style="width:100%; height:150px; object-fit:cover;" />
+                 style="width:100%; height:180px; object-fit:contain; background:white;" />
         </div>
 
         <div class="item-details">
@@ -54,6 +51,7 @@ export function createListingCard(listing) {
                 Condition: ${listing.condition || "N/A"}
             </p>
 
+            <div class="card-actions"></div>
         </div>
     `;
 
@@ -68,12 +66,13 @@ export function createListingCard(listing) {
         editBtn.className = "edit-btn";
 
         editBtn.addEventListener("click", () => {
-            if (typeof window.editListing === "function") {
-                window.editListing(listing.id);
-            }
+            window.location.href = `/create-listing.html?mode=edit&id=${listing.id}`;
         });
 
-        card.appendChild(editBtn);
+        const actions = card.querySelector(".card-actions");
+        if (actions) {
+            actions.appendChild(editBtn);
+        }
     }
 
     return card;
