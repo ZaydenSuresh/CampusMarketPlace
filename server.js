@@ -4,6 +4,7 @@ require("dotenv").config();
 const supabase = require("./database");
 const { router: authRouter } = require("./routes/auth");
 const slotsRouter = require("./routes/slots");
+const messageRoutes = require("./routes/messages");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -17,6 +18,7 @@ app.use(express.static("pages"));
 app.use(express.json());
 app.use("/auth", authRouter);
 app.use("/slots", slotsRouter);
+app.use("/messages",messageRoutes);
 
 // check server health
 app.get("/health", (req, res) => {
