@@ -1,5 +1,6 @@
 const API_BASE = "/auth";
 
+// Helper function to handle API responses - throws an error for non-JSON responses or failed requests
 async function handleResponse(response) {
   const contentType = response.headers.get("content-type") || "";
 
