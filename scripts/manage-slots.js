@@ -52,7 +52,11 @@ async function renderSlots() {
         <div class="slot-view">
           <p><strong>${slot.time}</strong></p>
           <p>Date: ${slot.date}</p>
-          <p>Capacity: ${slot.capacity}</p>
+
+          <p>Total Capacity: ${slot.capacity}</p>
+          <p>Booked: ${slot.bookedCount}</p>
+          <p>Remaining: ${slot.capacity - slot.bookedCount}</p>
+
           <p>Status: ${slot.status}</p>
 
           <button class="edit-btn">Edit</button>
@@ -93,7 +97,6 @@ async function renderSlots() {
         const newTime = div.querySelector(".edit-time").value;
         const newCapacity = div.querySelector(".edit-capacity").value;
 
-        // 🔥 FIX DATE FORMAT
         newDate = newDate.replaceAll("/", "-");
 
         if (!newDate || !newTime || !newCapacity) {
