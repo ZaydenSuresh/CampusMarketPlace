@@ -607,3 +607,18 @@ ol {
 .hidden {
     display: none !important;
 }
+
+.btn-primary {
+    background-color: var(--wits-navy);
+    color: var(--white);
+    border: none;
+    padding: 8px 16px;
+    border-radius: var(--radius-pill);
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.btn-primary:hover {
+    background-color: var(--wits-navy-dark);
+}
