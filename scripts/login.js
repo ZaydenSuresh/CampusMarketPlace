@@ -41,15 +41,14 @@ function showLoginPanel() {
   if (loginTab) loginTab.classList.add("active");
   if (registerTab) registerTab.classList.remove("active");
 
-  cardHeading.textContent = loginHeading;
-  cardSubheading.textContent = loginSubheading;
+  if (cardHeading) cardHeading.textContent = loginHeading;
+  if (cardSubheading) cardSubheading.textContent = loginSubheading;
 
   clearError();
 }
 
 const signupHeading = "Join Our Community!";
-const signupSubheading =
-  "Create an account to start trading with your campus community";
+const signupSubheading = "Create an account to start trading with your campus community";
 
 function showRegisterPanel() {
   if (registerPanel) registerPanel.classList.remove("hidden");
@@ -58,20 +57,17 @@ function showRegisterPanel() {
   if (registerTab) registerTab.classList.add("active");
   if (loginTab) loginTab.classList.remove("active");
 
-  cardHeading.textContent = signupHeading;
-  cardSubheading.textContent = signupSubheading;
+  if (cardHeading) cardHeading.textContent = signupHeading;
+  if (cardSubheading) cardSubheading.textContent = signupSubheading;
 
   clearError();
 }
 
-// login form event handlers
-
-// show login form
+// Toggle tabs
 if (loginTab) {
   loginTab.addEventListener("click", showLoginPanel);
 }
 
-// show register form
 if (registerTab) {
   registerTab.addEventListener("click", showRegisterPanel);
 }
