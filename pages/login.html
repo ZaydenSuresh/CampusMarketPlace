@@ -14,6 +14,7 @@
     </head>
     <body class="login-page">
         <main class="page-container">
+            <!--left panel with CTA & app information-->
             <aside class="left-panel">
                 <section class="hero-content">
                     <h1 class="logo-title">
@@ -59,18 +60,18 @@
                 </section>
             </aside>
 
+            <!--right panel with login & sign up forms-->
             <section class="right-panel">
                 <article class="login-card">
+                    <!--text at the top of the card-->
                     <header class="card-header">
-                        <span class="app-icon">
-                            <span class="material-icons">school</span>
-                        </span>
-                        <h2>Welcome Back!</h2>
-                        <p>
+                        <h2 id="card-heading">Welcome Back!</h2>
+                        <p id="card-subheading">
                             Sign in to start trading with your campus community
                         </p>
                     </header>
 
+                    <!--navbar to switch between login & signup forms-->
                     <nav class="toggle-container">
                         <button
                             class="toggle-btn active"
@@ -90,8 +91,10 @@
 
                     <p id="error-message" class="form-global-error hidden"></p>
 
+                    <!--login form-->
                     <section id="panel-login">
                         <form id="loginForm" novalidate>
+                            <!--login form email input-->
                             <div class="input-group form-group">
                                 <label for="login-email"
                                     >University Email</label
@@ -112,6 +115,7 @@
                                 <small class="form-error"></small>
                             </div>
 
+                            <!--login form password input-->
                             <div class="input-group form-group">
                                 <label for="login-password">Password</label>
                                 <div class="input-wrapper">
@@ -183,8 +187,10 @@
                         </footer>
                     </section>
 
+                    <!--sign up form-->
                     <section id="panel-register" class="hidden">
                         <form id="registerForm" novalidate>
+                            <!--sign up form full name input-->
                             <div class="input-group form-group">
                                 <label for="reg-name">Full Name</label>
                                 <div class="input-wrapper">
@@ -203,6 +209,7 @@
                                 <small class="form-error"></small>
                             </div>
 
+                            <!--sign up form email input-->
                             <div class="input-group form-group">
                                 <label for="reg-email">University Email</label>
                                 <div class="input-wrapper">
@@ -221,6 +228,7 @@
                                 <small class="form-error"></small>
                             </div>
 
+                            <!--sign up form password input-->
                             <div class="input-group form-group">
                                 <label for="reg-password">Password</label>
                                 <div class="input-wrapper">
@@ -239,6 +247,8 @@
                                 <small class="form-error"></small>
                             </div>
 
+                            <!--TODO: delete the password confirmation-->
+                            <!--sign up form password confirmation input-->
                             <div class="input-group form-group">
                                 <label for="reg-confirm"
                                     >Confirm Password</label
@@ -259,6 +269,7 @@
                                 <small class="form-error"></small>
                             </div>
 
+                            <!--create account button-->
                             <button
                                 type="submit"
                                 class="submit-btn register-submit-btn"
@@ -268,13 +279,6 @@
                             </button>
                         </form>
 
-                        <footer class="card-footer">
-                            <p class="terms-text">
-                                By signing up you agree to our
-                                <a href="#">Terms</a> and
-                                <a href="#">Privacy Policy</a>.
-                            </p>
-                        </footer>
                     </section>
                 </article>
 
