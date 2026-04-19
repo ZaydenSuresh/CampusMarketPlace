@@ -23,7 +23,11 @@
                 padding: var(--space-xl);
                 position: fixed;
                 height: 100vh;
-                box-shadow: var(--shadow-lg);
+                left: 0;
+                top: 0;
+                z-index: 100;
+                /* Remove any border-radius like 50% or 100px that might be here */
+                border-radius: 0;
             }
 
             .sidebar-logo {
@@ -63,9 +67,11 @@
             }
 
             .main-content {
-                margin-left: 280px;
+                margin-left: 280px; /* This pushes the content past the sidebar */
                 flex: 1;
                 padding: var(--space-2xl);
+                min-height: 100vh;
+                background-color: var(--bg-light);
             }
 
             .dashboard-header {
