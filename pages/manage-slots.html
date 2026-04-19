@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Manage Trade Slots | Campus Marketplace</title>
+        <link rel="stylesheet" href="/styles/global.css" />
+        <link rel="stylesheet" href="/styles/slots.css" />
+    </head>
+    <body>
+        <!--
+          Manage Slots page - Trade Facility Staff only
+          Auth check runs immediately on page load
+          Only Trade Facility Staff can manage slots
+        -->
+        <script type="module">
+          import { requireRole } from "/scripts/auth.js";
+
+          async function checkAccess() {
+            // requireRole(["Trade Facility Staff"]) will:
+            // - Redirect to /login.html if not logged in
+            // - Redirect to /dashboard.html if Student
+            // - Return user object if authorized (Trade Facility Staff)
+            const user = await requireRole(["Trade Facility Staff"]);
+
+            if (!user) {
+              // requireRole already redirected - stop
+              return;
+            }
+
+            // User is authorized - display their name
+            console.log("Trade Facility Staff authorized:", user.name);
+          }
+
+          // Run access check immediately
+          checkAccess();
+        </script>
+
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                Campus<span class="highlight">Market</span>
+            </div>
+            <nav class="nav-list">
+                <a href="dashboard.html" class="nav-item">
+                    <span>🏠 Dashboard</span>
+                </a>
+                <a href="manage-slots.html" class="nav-item active">
+                    <span>🛠️ Manage Slots</span>
+                </a>
+                <a href="trade-slots.html" class="nav-item">
+                    <span>📅 Student View</span>
+                </a>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <header class="page-header">
+                <h1>Manage Trade Slots</h1>
+                <p class="text-muted">
+                    Create and delete trade slots for students.
+                </p>
+            </header>
+
+            <section class="manage-slot-form-card">
+                <h2>Create Slot</h2>
+                <form id="create-slot-form">
+                    <div class="form-row">
+                        <div>
+                            <label for="slot-date">Date</label>
+                            <input type="date" id="slot-date" required />
+                        </div>
+                        <div>
+                            <label for="slot-time">Time</label>
+                            <input type="time" id="slot-time" required />
+                        </div>
+                        <div>
+                            <label for="slot-capacity">Capacity</label>
+                            <input type="number" id="slot-capacity" min="1" required />
+                        </div>
+                    </div>
+                    <button type="submit" class="primary-btn">Create Slot</button>
+                </form>
+            </section>
+
+            <div id="feedback-message" class="feedback-message"></div>
+
+            <section>
+                <h2 class="section-title">Existing Slots</h2>
+                <div id="staff-slots-container">
+                    <p class="loading-text">Loading slots...</p>
+                </div>
+            </section>
+        </main>
+
+        <script src="/scripts/manage-slots.js"></script>
+    </body>
+</html>

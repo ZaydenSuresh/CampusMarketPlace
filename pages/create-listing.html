@@ -175,25 +175,38 @@
     </form>
   </div>
 
-  <!-- Auth check - verify user is logged in before showing form -->
-  <script>
-    async function checkAuth() {
+  <!--
+    Create Listing page - Student only
+    Auth check runs immediately on page load
+    Only Students can create listings
+  -->
+  <script type="module">
+    import { requireRole } from "/scripts/auth.js";
+
+    async function checkAccess() {
       try {
-        const res = await fetch('/auth/me');
-        if (!res.ok) {
-          window.location.href = '/pages/login.html';
-          return null;
+        // requireRole(["Student"]) will:
+        // - Redirect to /login.html if not logged in
+        // - Redirect to /manage-slots.html if Trade Facility Staff
+        // - Return user object if authorized (Student)
+        const user = await requireRole(["Student"]);
+
+        if (!user) {
+          // requireRole already redirected - stop
+          return;
         }
-        const { user } = await res.json();
-        return user;
-      } catch {
-        window.location.href = '/pages/login.html';
-        return null;
+
+        // User is authorized - load the listing creation form
+        console.log("User authorized:", user.name);
+
+      } catch (error) {
+        console.error("Access check failed:", error);
+        window.location.href = "/login.html";
       }
     }
-    
-    // Run auth check immediately - redirect if not logged in
-    checkAuth();
+
+    // Run access check immediately
+    checkAccess();
   </script>
   <script src="/scripts/create-listing.js"></script>
 </body>

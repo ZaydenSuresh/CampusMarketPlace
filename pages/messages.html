@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Campus Marketplace — Messages</title>
+  <link rel="stylesheet" href="../styles/global.css" />
+  <link rel="stylesheet" href="../styles/messages.css" />
+</head>
+<body>
+
+  <nav class="topnav">
+    <span class="topnav-brand">
+      🎓 <strong>Campus</strong><em>Marketplace</em>
+    </span>
+    <span class="topnav-title">Messages</span>
+  </nav>
+
+  <main class="layout">
+
+    <aside class="sidebar">
+      <section class="sidebar-search">
+        <span class="search-icon" aria-hidden="true">🔍</span>
+        <input
+          id="search-input"
+          type="text"
+          class="search-field"
+          placeholder="Search conversations..."
+          autocomplete="off"
+        />
+      </section>
+
+      <ul id="conversation-list" class="conversation-list"></ul>
+    </aside>
+
+    <section class="chat-pane">
+
+      <section class="empty-state hidden" id="empty-state">
+        <span class="empty-icon" aria-hidden="true">💬</span>
+        <p>Select a conversation to start chatting</p>
+      </section>
+
+      <section class="chat-view" id="chat-view">
+
+        <header class="chat-header">
+          <section class="chat-header-avatar" id="chat-header-avatar"></section>
+          <section class="chat-header-details">
+            <section class="chat-header-name" id="chat-header-name"></section>
+            <section class="chat-header-status" id="chat-header-status">Active now</section>
+          </section>
+        </header>
+
+        <section class="messages-scroll" id="messages-scroll">
+          <ul class="messages-list" id="messages-list"></ul>
+        </section>
+
+        <section class="composer">
+          <input
+            id="message-input"
+            type="text"
+            class="composer-input"
+            placeholder="Type a message..."
+            autocomplete="off"
+          />
+          <button id="send-btn" class="send-btn" type="button" title="Send" disabled>
+            ➤
+          </button>
+        </section>
+
+      </section>
+    </section>
+
+  </main>
+
+  <script src="../scripts/messages.js"></script>
+</body>
+</html>

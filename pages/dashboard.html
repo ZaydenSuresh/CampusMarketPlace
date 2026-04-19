@@ -117,6 +117,29 @@ body {
     transition: transform var(--transition-normal);
 }
 
+.card-actions {
+    margin-top: 12px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.edit-btn {
+    background: var(--wits-navy);
+    color: var(--white);
+    border: none;
+    padding: 8px 16px;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.edit-btn:hover {
+    background: var(--wits-navy-dark);
+    transform: translateY(-1px);
+}
+
 .item-card:hover {
     transform: translateY(-5px);
     box-shadow: var(--shadow-md);
@@ -225,6 +248,7 @@ Campus<span class="highlight">Market</span>
 <a href="dashboard.html" class="nav-item active">🏠 Dashboard</a>
 <a href="trade-slots.html" class="nav-item">📅 Trade Slots</a>
 <a href="#" class="nav-item">📦 My Listings</a>
+<a href="messages.html" class="nav-item">💬 Messages</a>
 </nav>
 </aside>
 
@@ -238,6 +262,9 @@ Campus<span class="highlight">Market</span>
 
 <button class="action-btn" onclick="window.location.href='/create-listing.html'">
 + Create Listing
+</button>
+<button class="action-btn" onclick="window.location.href='messages.html'">
+  💬 Open Messages
 </button>
 </header>
 
@@ -278,113 +305,97 @@ Campus<span class="highlight">Market</span>
 </main>
 
 <script type="module">
-import { filterListings } from "/components/search.js";
+import { createListingCard } from "/components/card.js";
+import { requireRole } from "/scripts/auth.js";
 
-// Check if user is logged in by calling /auth/me endpoint
-// If not authenticated, redirect to login page
-async function checkAuth() {
-  try {
-    const res = await fetch('/auth/me');
-    // If response not OK, user is not logged in
-    if (!res.ok) {
-      window.location.href = '/login.html';
-      return null;
-    }
-    // Return user object from response
-    const { user } = await res.json();
-    return user;
-  } catch {
-    // Network error or other issues - redirect to login
-    window.location.href = '/login.html';
-    return null;
+async function initPage() {
+  const user = await requireRole(["Student"]);
+  if (!user) return;
+
+  const welcomeName = document.getElementById("welcome-name");
+  if (welcomeName) {
+    welcomeName.textContent = `Welcome back, ${user.name}`;
   }
 }
 
-// Run auth check before loading page content
-const user = await checkAuth();
-if (!user) {
-  throw new Error('Redirecting...');
-}
-
-// Display user's name from profiles table in welcome text
-document.getElementById('welcome-name').textContent = `Welcome back, ${user.name}`;
-
-// Store listings data and current active category filter
 let listings = [];
-let activeCategory = 'All';
+let activeCategory = "All";
 
 const container = document.getElementById("listings-container");
 const input = document.getElementById("searchInput");
 const activeListingsCount = document.getElementById("activeListingsCount");
 
-// Renders the listing cards to the DOM
+window.editListing = function (listingId) {
+  window.location.href = `/create-listing.html?id=${listingId}`;
+};
+
 function render(data) {
-if (!data || data.length === 0) {
-container.innerHTML = `
-<div class="item-card">
-<div class="item-details">
-<h3>No listings found</h3>
-<p>There are no listings yet.</p>
-</div>
-</div>`;
-return;
+  if (!container) return;
+
+  container.innerHTML = "";
+
+  if (!data || data.length === 0) {
+    container.innerHTML = `
+      <div class="item-card">
+        <div class="item-details">
+          <h3>No listings found</h3>
+          <p>There are no listings yet.</p>
+        </div>
+      </div>
+    `;
+    return;
+  }
+
+  data.forEach((item) => {
+    const card = createListingCard(item);
+    container.appendChild(card);
+  });
 }
 
-container.innerHTML = data.map(item => `
-<div class="item-card">
-<div class="item-img">
-<img src="${item.image_url || 'https://via.placeholder.com/300x180'}"
-alt="${item.title || 'Listing'}"
-onerror="this.src='https://via.placeholder.com/300x180'">
-</div>
-
-<div class="item-details">
-<span style="font-size: 0.7rem; font-weight: bold; color: green;">ACTIVE</span>
-
-<span class="badge" style="margin-left: 8px; font-size: 0.7rem;">${item.category || ''}</span>
-<span class="badge" style="margin-left: 4px; font-size: 0.7rem;">${item.condition || ''}</span>
-<span class="badge" style="margin-left: 4px; font-size: 0.7rem;">${item.sale_type || ''}</span>
-
-<h3 style="margin-top: 10px">${item.title || "Untitled Listing"}</h3>
-<p class="item-price">R ${item.price ?? "0.00"}</p>
-<p>${item.description || "No description provided"}</p>
-</div>
-</div>
-`).join("");
-}
-
-// Fetches listings from the API
 async function loadListings() {
-try {
-const response = await fetch("/listings");
-const result = await response.json();
-
-listings = result.listings || [];
-activeListingsCount.textContent = String(listings.length).padStart(2, "0");
-
-render(listings);
-} catch {
-container.innerHTML = `<p>Error loading listings</p>`;
-}
-}
-
-// Fetches all listings from API and filters by search text and category
-async function searchListings(query, category) {
   try {
-    const response = await fetch("/listings/all");
+    const response = await fetch("/listings/search");
     const result = await response.json();
-    
-    const allListings = result.listings || [];
-    const filtered = filterListings(allListings, query, category);
-    
-    activeListingsCount.textContent = String(filtered.length).padStart(2, "0");
-    render(filtered);
-  } catch {
-    container.innerHTML = `<p>Error loading listings</p>`;
+
+    listings = result.listings || [];
+
+    if (activeListingsCount) {
+      activeListingsCount.textContent = String(listings.length).padStart(2, "0");
+    }
+
+    render(listings);
+  } catch (error) {
+    console.error("Load listings error:", error);
+    if (container) {
+      container.innerHTML = `<p>Error loading listings</p>`;
+    }
   }
 }
 
-// Debounce function to limit API calls while typing
+async function searchListings(query, category) {
+  try {
+    const params = new URLSearchParams();
+    if (query) params.set("q", query);
+    if (category && category !== "All") params.set("category", category);
+
+    const response = await fetch(`/listings/search?${params.toString()}`);
+    const result = await response.json();
+
+    const filteredListings = result.listings || [];
+
+    if (activeListingsCount) {
+      activeListingsCount.textContent = String(filteredListings.length).padStart(2, "0");
+    }
+
+    render(filteredListings);
+  } catch (error) {
+    console.error("Search listings error:", error);
+    if (container) {
+      container.innerHTML = `<p>Error loading listings</p>`;
+    }
+  }
+}
+
 function debounce(func, delay) {
   let timeoutId;
   return function (...args) {
@@ -393,25 +404,28 @@ function debounce(func, delay) {
   };
 }
 
-// Search input handler - fetches all listings and filters (debounced)
 const debouncedSearch = debounce((e) => {
   searchListings(e.target.value, activeCategory);
 }, 300);
 
-input.addEventListener("input", debouncedSearch);
+if (input) {
+  input.addEventListener("input", debouncedSearch);
+}
 
-// Category filter button click handlers - fetches all listings and filters
-document.querySelectorAll('.filter-pill').forEach(btn => {
-btn.addEventListener('click', () => {
-  document.querySelectorAll('.filter-pill').forEach(b => b.class.remove('active'));
-  btn.classList.add('active');
-  activeCategory = btn.dataset.category;
-  searchListings(input.value, activeCategory);
-});
+document.querySelectorAll(".filter-pill").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".filter-pill").forEach((pill) => {
+      pill.classList.remove("active");
+    });
+
+    btn.classList.add("active");
+    activeCategory = btn.dataset.category;
+    searchListings(input ? input.value : "", activeCategory);
+  });
 });
 
-// Load initial 6 most recent listings on page load
 loadListings();
+initPage();
 </script>
 
 </body>

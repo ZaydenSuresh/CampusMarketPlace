@@ -1,6 +1,7 @@
 // frontend/scripts/listings.js
 
 import { filterListings } from "../components/search.js";
+import { createListingCard } from "../components/card.js";
 
 let allListings = [];
 
@@ -9,10 +10,12 @@ let allListings = [];
  */
 export async function loadListings() {
     try {
-        const res = await fetch("/listings");
+        // Fetch ALL listings (not limited to 6)
+        const res = await fetch("/listings/all");
         const data = await res.json();
 
-        allListings = data.listings || data;
+        // Ensure correct data format
+        allListings = data.listings || [];
 
         displayListings(allListings);
 
@@ -23,6 +26,7 @@ export async function loadListings() {
 
 /**
  * Render listings into dashboard UI
+ * Uses reusable card component (card.js)
  */
 function displayListings(listings) {
     const container = document.getElementById("listings-container");
@@ -31,53 +35,45 @@ function displayListings(listings) {
     container.innerHTML = "";
 
     if (!listings.length) {
-        container.innerHTML = `
-            <p class="text-muted">No listings available</p>
-        `;
+        container.innerHTML = `<p class="text-muted">No listings available</p>`;
         return;
     }
 
     listings.forEach(listing => {
-        const card = document.createElement("div");
-        card.className = "item-card";
-
-        card.innerHTML = `
-            <div class="item-img">
-                No Image Provided
-            </div>
-
-            <div class="item-details">
-
-                <span
-                    style="
-                        padding: 2px 8px;
-                        border-radius: 4px;
-                        font-size: 0.7rem;
-                        font-weight: bold;
-                        background: rgba(0, 200, 0, 0.1);
-                        color: green;
-                    "
-                >
-                    ACTIVE
-                </span>
-
-                <h3 style="margin-top: 10px;">
-                    ${escapeHtml(listing.title)}
-                </h3>
-
-                <p class="item-price">
-                    R ${Number(listing.price).toFixed(2)}
-                </p>
-
-                <p class="text-small text-muted">
-                    ${escapeHtml(listing.description || "")}
-                </p>
-
-            </div>
-        `;
-
+        const card = createListingCard(listing);
         container.appendChild(card);
     });
+}
+
+/**
+ * EDIT + UPDATE LISTING (PUT request)
+ * After update, we refresh listings so UI stays in sync with database
+ */
+async function editListing(id) {
+    try {
+        const newTitle = prompt("Enter new title:");
+        const newPrice = prompt("Enter new price:");
+
+        // Prevent empty updates (basic validation)
+        if (!newTitle && !newPrice) return;
+
+        await fetch(`/listings/${id}`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                title: newTitle,
+                price: newPrice
+            })
+        });
+
+        // Refresh UI after update
+        await loadListings();
+
+    } catch (err) {
+        console.error("Error updating listing:", err);
+    }
 }
 
 /**
@@ -95,16 +91,6 @@ function setupSearch() {
 }
 
 /**
- * Escape HTML to prevent breaking UI
- */
-function escapeHtml(text) {
-    return String(text || "")
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;");
-}
-
-/**
  * Init page
  */
 export function initListingsPage() {
@@ -116,3 +102,8 @@ export function initListingsPage() {
  * Auto-run
  */
 initListingsPage();
+
+/**
+ * Expose edit function globally for card button access
+ */
+window.editListing = editListing;

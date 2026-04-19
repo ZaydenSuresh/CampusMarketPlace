@@ -1,93 +1,94 @@
-
-const API_BASE = 'http://localhost:3000/api/auth';
-
+const API_BASE = "/auth";
 
 async function handleResponse(response) {
-    const data = await response.json();
+  const contentType = response.headers.get("content-type") || "";
 
-    if (!response.ok) {
-        throw new Error(data.message || 'Something went wrong');
-    }
+  if (!contentType.includes("application/json")) {
+    const text = await response.text();
+    console.error("Non-JSON response from server:", text);
+    throw new Error("Server returned HTML instead of JSON.");
+  }
 
-    return data;
+  const data = await response.json();
+
+  if (!response.ok || !data.ok) {
+    throw new Error(data.message || "Something went wrong");
+  }
+
+  return data;
 }
-
 
 export async function registerUser({ name, email, password }) {
-    try {
-        const response = await fetch(`${API_BASE}/register`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ name, email, password })
-        });
+  const response = await fetch(`${API_BASE}/register`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ name, email, password }),
+  });
 
-        const data = await handleResponse(response);
-
-        console.log(' Registered:', data);
-
-        
-        window.location.href = '/login.html';
-
-    } catch (err) {
-        console.error(' Register error:', err.message);
-        showError(err.message);
-    }
+  return handleResponse(response);
 }
-
 
 export async function loginUser({ email, password }) {
-    try {
-        const response = await fetch(`${API_BASE}/login`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ email, password })
-        });
+  const response = await fetch(`${API_BASE}/login`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ email, password }),
+  });
 
-        const data = await handleResponse(response);
-
-        console.log(' Login success:', data);
-
-        localStorage.setItem('token', data.token);
-
-        window.location.href = '/dashboard.html';
-
-    } catch (err) {
-        console.error('Login error:', err.message);
-        showError(err.message);
-    }
+  return handleResponse(response);
 }
 
-
-export function logoutUser() {
-    localStorage.removeItem('token');
-    window.location.href = '/login.html';
+export async function getCurrentUser() {
+  const response = await fetch(`${API_BASE}/me`);
+  if (!response.ok) return null;
+  const data = await response.json();
+  return data.ok ? data.user : null;
 }
 
+/**
+ * Role-based access control helper
+ * @param {string[]} allowedRoles - Array of roles that can access the page
+ * @returns {object|null} - Returns user object if authorized, null if redirected
+ *
+ * If user is not logged in -> redirect to /login.html
+ * If user role is not in allowedRoles -> redirect to appropriate page
+ */
+export async function requireRole(allowedRoles) {
+  const user = await getCurrentUser();
 
-export function isAuthenticated() {
-    return !!localStorage.getItem('token');
-}
+  // User not logged in -> send to login
+  if (!user) {
+    window.location.href = "/login.html";
+    return null;
+  }
 
-
-export function authHeader() {
-    const token = localStorage.getItem('token');
-
-    return token
-        ? { Authorization: `Bearer ${token}` }
-        : {};
-}
-
-function showError(message) {
-    const errorBox = document.getElementById('error-message');
-
-    if (errorBox) {
-        errorBox.textContent = message;
-        errorBox.style.display = 'block';
+  // User role not in allowed list -> redirect based on their role
+  if (!allowedRoles.includes(user.role)) {
+    if (user.role === "Trade Facility Staff") {
+      // Trade Facility Staff trying to access Student page -> go to their page
+      window.location.href = "/manage-slots.html";
     } else {
-        alert(message);
+      // Everyone else -> go to dashboard (default Student page)
+      window.location.href = "/dashboard.html";
     }
+    return null;
+  }
+
+  // User is authorized -> return user object
+  return user;
+}
+
+export async function logoutUser() {
+  try {
+    await fetch(`${API_BASE}/logout`, {
+      method: "POST",
+    });
+    window.location.href = "/login.html";
+  } catch (err) {
+    console.error("Logout request failed:", err);
+  }
 }

@@ -1,42 +1,46 @@
 const express = require("express");
 const { createSupabaseClient } = require("../lib/supabase");
+
 const router = express.Router();
 
-// Google Authentication Flow
+// handles the Google OAuth flow by redirecting the user to Google's OAuth page
 router.get("/google", async (req, res) => {
   try {
     const supabase = createSupabaseClient(req, res);
+
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: "http://localhost:3000/auth/callback" },
+      options: {
+        redirectTo: `${process.env.APP_URL}/auth/callback`,
+      },
     });
 
     if (error) {
       return res.status(500).json({
         ok: false,
-        message: `Failed to start Google OAuth`,
+        message: "Failed to start Google OAuth",
       });
     }
 
-    if (!data || !data.url) {
-      return res
-        .status(500)
-        .json({ ok: false, message: "OAuth URL was not returned by Supabase" });
+    if (!data?.url) {
+      return res.status(500).json({
+        ok: false,
+        message: "OAuth URL was not returned by Supabase",
+      });
     }
 
-    // DEBUG OUTPUT
-    console.log("[DEBUG] Redirecting to Google OAuth at:", data.url);
-
-    // Redirect to Supabase's Google OAuth URL
     return res.redirect(302, data.url);
   } catch (error) {
     console.error("[/auth/google] OAuth start error:", error);
-    return res.status(500).json({ ok: false, message: error.message });
+    return res.status(500).json({
+      ok: false,
+      message: error.message || "Google OAuth failed",
+    });
   }
 });
 
+// callback endpoint handles the OAuth callback from Google and inserts the user into the database
 router.get("/callback", async (req, res) => {
-  // parse request parameters
   const code = req.query.code;
   const oauthError = req.query.error;
   const errorMsg = req.query.error_description;
@@ -55,26 +59,35 @@ router.get("/callback", async (req, res) => {
     });
   }
 
-  // Use SSR-aware Supabase client for proper PKCE state
   const supabase = createSupabaseClient(req, res);
+
   try {
     const {
       data: { user },
       error,
     } = await supabase.auth.exchangeCodeForSession(code);
+
     if (error) throw error;
 
-    // NOTE: implementation code for adding profile after GOOGLE signup
-    // check if profile exits
-    const { data: existingProfile } = await supabase
+    if (!user) {
+      return res.status(400).json({
+        ok: false,
+        message: "No user returned after Google sign-in.",
+      });
+    }
+
+    const { data: existingProfile, error: lookupError } = await supabase
       .from("profiles")
       .select("*")
       .eq("id", user.id)
-      .single();
+      .maybeSingle();
 
-    // add profile only if it doesn't exist yet
+    if (lookupError) {
+      console.error("Profile lookup error:", lookupError);
+    }
+
     if (!existingProfile) {
-      await supabase.from("profiles").insert({
+      const { error: insertError } = await supabase.from("profiles").insert({
         id: user.id,
         email: user.email,
         name: user.user_metadata?.full_name || user.email.split("@")[0],
@@ -82,53 +95,114 @@ router.get("/callback", async (req, res) => {
       });
     }
 
-    // Redirect to dashboard.
-    return res.redirect(302, "/dashboard.html");
+    // Redirect to page based on role
+    if (existingProfile.role === "Student") {
+      return res.redirect(302, "/dashboard.html");
+    } else if (existingProfile.role === "Trade Facility Staff") {
+      return res.redirect(302, "/manage-slots.html");
+    }
+
   } catch (error) {
     console.error("[/auth/callback] OAuth callback error:", error);
     return res.status(500).json({ ok: false, message: error.message });
   }
 });
 
+// me endpoint returns the user's profile information & supabase session
 router.get("/me", async (req, res) => {
   // Use SSR-aware Supabase client to read session cookies
   const supabase = createSupabaseClient(req, res);
-  
+
   // Get user from Supabase session (validates cookies from browser)
-  const { data: { user }, error } = await supabase.auth.getUser();
-  
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser();
+
   // If no valid session, user is not logged in
   if (error || !user) {
     return res.status(401).json({ ok: false, message: "Not logged in" });
   }
-  
+
   // Query profiles table to get the user's name from the database
   const { data: profile } = await supabase
     .from("profiles")
-    .select("name")
+    .select("name, role") // select name and role from profiles table
     .eq("id", user.id)
     .single();
-  
+
   // Return user info to client
   return res.status(200).json({
     ok: true,
     user: {
       id: user.id,
       email: user.email,
-      name: profile?.name || user.email.split("@")[0]
-    }
+      name: profile?.name || user.email.split("@")[0],
+      role: profile?.role || 'Student'
+    },
   });
 });
 
-// Placeholder for logout; expands as needed for Supabase signOut
+router.get("/profiles/:id", async (req, res) => {
+  const supabase = createSupabaseClient(req, res);
+
+  const { id } = req.params;
+
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("name")
+    .eq("id", id)
+    .single();
+
+  if (error) {
+    console.error("PROFILE ERROR:", error);
+    return res.status(500).json({ error: error.message });
+  }
+
+  res.json(data);
+});
+
+// register endpoint inserts the user into the database
+router.post("/register", async (req, res) => {
+  // create supabase client
+  const supabase = createSupabaseClient(req, res);
+  // send user info in request body
+  const { email, password, name, role } = req.body;
+  const user = await signup(supabase, { email, password, name, role });
+
+  // check if the user was made successfully
+  if (!user)
+    return res.status(400).json({ ok: false, message: "Signup failed" });
+
+  return res.status(200).json({ ok: true, user, message: "Signup successful" });
+});
+
+// login endpoint signs in the user and returns the user object
+router.post("/login", async (req, res) => {
+  const supabase = createSupabaseClient(req, res);
+  const { email, password } = req.body;
+
+  const user = await login(supabase, email, password);
+
+  if (!user)
+    return res.status(400).json({ ok: false, message: "Login failed" });
+  console.log(req.params.name);
+  return res.status(200).json({ ok: true, user, message: "Login successful" });
+});
+
+// logout endpoint call clears supabase session
 router.post("/logout", async (req, res) => {
-  return res
-    .status(200)
-    .json({ ok: true, route: "/auth/logout", message: "placeholder" });
+  const supabase = createSupabaseClient(req, res);
+  const { error } = await logout(supabase);
+
+  if (error)
+    return res.status(400).json({ ok: false, message: "Logout failed" });
+
+  return res.status(200).json({ ok: true, message: "Logout successful" });
 });
 
 // Classic Authentication Flow
-async function signup(newUser) {
+async function signup(supabase, newUser) {
   try {
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email: newUser.email,
@@ -140,21 +214,18 @@ async function signup(newUser) {
       return null;
     }
 
-    // NOTE: implementation code for profile syncing after manual signup
-    // check if the profile already exists
-    const { data: exisistingProfile } = await supabase
+    const { data: existingProfile } = await supabase
       .from("profiles")
       .select("*")
       .eq("id", authData.user.id)
-      .single();
+      .maybeSingle();
 
-    // if the profile doesn't exist, add it to the profiles table
-    if (!exisistingProfile) {
+    if (!existingProfile) {
       const { error: profileError } = await supabase.from("profiles").insert({
         id: authData.user.id,
         email: authData.user.email,
         name: newUser.name,
-        role: newUser.role || "Student", // default role
+        role: newUser.role || "Student",
       });
 
       if (profileError) {
@@ -170,7 +241,7 @@ async function signup(newUser) {
   }
 }
 
-async function login(email, password) {
+async function login(supabase, email, password) {
   try {
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
@@ -183,6 +254,7 @@ async function login(email, password) {
     }
 
     console.log("Login successful:", data.user);
+    console.log(data.user.name);
     return data.user;
   } catch (err) {
     console.error("Unexpected error during login:", err);
@@ -190,18 +262,21 @@ async function login(email, password) {
   }
 }
 
-async function logout() {
+async function logout(supabase) {
   try {
     const { error } = await supabase.auth.signOut();
 
     if (error) {
       console.error("Logout error:", error.message);
-    } else {
-      console.log("Logout successful");
+      return error;
     }
+
+    console.log("Logout successful");
+    return null;
   } catch (err) {
     console.error("Unexpected logout error", err);
+    return err;
   }
 }
 
-module.exports = { signup, login, logout, router };
+module.exports = { router, signup, login, logout };
