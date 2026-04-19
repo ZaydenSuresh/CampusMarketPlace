@@ -1,382 +1,431 @@
 <!doctype html>
 <html lang="en">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Dashboard | Campus Marketplace</title>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Dashboard | Campus Marketplace</title>
 
-<link rel="stylesheet" href="/styles/global.css" />
+        <link rel="stylesheet" href="/styles/global.css" />
 
-<style>
-body {
-    display: flex;
-    min-height: 100vh;
-    background-color: var(--bg-light);
-}
+        <style>
+            body {
+                display: flex;
+                min-height: 100vh;
+                background-color: var(--bg-light);
+            }
 
-.sidebar {
-    width: 280px;
-    background: var(--clr-bg-gradient);
-    color: var(--white);
-    display: flex;
-    flex-direction: column;
-    padding: var(--space-xl);
-    position: fixed;
-    height: 100vh;
-    box-shadow: var(--shadow-lg);
-}
+            .sidebar {
+                width: 280px;
+                background: var(--clr-bg-gradient);
+                color: var(--white);
+                display: flex;
+                flex-direction: column;
+                padding: var(--space-xl);
+                position: fixed;
+                height: 100vh;
+                box-shadow: var(--shadow-lg);
+            }
 
-.sidebar-logo {
-    font-size: 1.5rem;
-    font-weight: 800;
-    margin-bottom: var(--space-2xl);
-    color: var(--white);
-}
+            .sidebar-logo {
+                font-size: 1.5rem;
+                font-weight: 800;
+                margin-bottom: var(--space-2xl);
+                color: var(--white);
+            }
 
-.sidebar-logo .highlight {
-    color: var(--wits-gold);
-}
+            .sidebar-logo .highlight {
+                color: var(--wits-gold);
+            }
 
-.nav-list {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-sm);
-}
+            .nav-list {
+                display: flex;
+                flex-direction: column;
+                gap: var(--space-sm);
+            }
 
-.nav-item {
-    display: flex;
-    align-items: center;
-    padding: var(--space-md);
-    border-radius: var(--radius-md);
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    transition: all var(--transition-normal);
-    font-weight: 600;
-    font-size: 0.9rem;
-}
+            .nav-item {
+                display: flex;
+                align-items: center;
+                padding: var(--space-md);
+                border-radius: var(--radius-md);
+                background: rgba(255, 255, 255, 0.08);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                transition: all var(--transition-normal);
+                font-weight: 600;
+                font-size: 0.9rem;
+            }
 
-.nav-item:hover,
-.nav-item.active {
-    background: rgba(255, 255, 255, 0.2);
-    border-color: var(--wits-gold);
-    transform: translateX(5px);
-}
+            .nav-item:hover,
+            .nav-item.active {
+                background: rgba(255, 255, 255, 0.2);
+                border-color: var(--wits-gold);
+                transform: translateX(5px);
+            }
 
-.main-content {
-    margin-left: 280px;
-    flex: 1;
-    padding: var(--space-2xl);
-}
+            .main-content {
+                margin-left: 280px;
+                flex: 1;
+                padding: var(--space-2xl);
+            }
 
-.dashboard-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: var(--space-2xl);
-}
+            .dashboard-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: var(--space-2xl);
+            }
 
-.stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: var(--space-lg);
-    margin-bottom: var(--space-2xl);
-}
+            .stats-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+                gap: var(--space-lg);
+                margin-bottom: var(--space-2xl);
+            }
 
-.stat-card {
-    background: var(--white);
-    padding: var(--space-xl);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-sm);
-    border: 1px solid var(--grey-border);
-    text-align: center;
-}
+            .stat-card {
+                background: var(--white);
+                padding: var(--space-xl);
+                border-radius: var(--radius-lg);
+                box-shadow: var(--shadow-sm);
+                border: 1px solid var(--grey-border);
+                text-align: center;
+            }
 
-.stat-card .value {
-    font-size: 2rem;
-    font-weight: 800;
-    color: var(--wits-navy);
-}
+            .stat-card .value {
+                font-size: 2rem;
+                font-weight: 800;
+                color: var(--wits-navy);
+            }
 
-.section-title {
-    color: var(--wits-navy-dark);
-    margin-bottom: var(--space-lg);
-    font-weight: 700;
-}
+            .section-title {
+                color: var(--wits-navy-dark);
+                margin-bottom: var(--space-lg);
+                font-weight: 700;
+            }
 
-.listings-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: var(--space-lg);
-}
+            .listings-container {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+                gap: var(--space-lg);
+            }
 
-.item-card {
-    background: var(--white);
-    border-radius: var(--radius-lg);
-    overflow: hidden;
-    border: 1px solid var(--grey-border);
-    transition: transform var(--transition-normal);
-}
+            .item-card {
+                background: var(--white);
+                border-radius: var(--radius-lg);
+                overflow: hidden;
+                border: 1px solid var(--grey-border);
+                transition: transform var(--transition-normal);
+            }
 
-.card-actions {
-    margin-top: 12px;
-    display: flex;
-    justify-content: flex-end;
-}
+            .card-actions {
+                margin-top: 12px;
+                display: flex;
+                justify-content: flex-end;
+            }
 
-.edit-btn {
-    background: var(--wits-navy);
-    color: var(--white);
-    border: none;
-    padding: 8px 16px;
-    border-radius: 999px;
-    font-size: 0.8rem;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
+            .edit-btn {
+                background: var(--wits-navy);
+                color: var(--white);
+                border: none;
+                padding: 8px 16px;
+                border-radius: 999px;
+                font-size: 0.8rem;
+                font-weight: 700;
+                cursor: pointer;
+                transition: all 0.2s ease;
+            }
 
-.edit-btn:hover {
-    background: var(--wits-navy-dark);
-    transform: translateY(-1px);
-}
+            .edit-btn:hover {
+                background: var(--wits-navy-dark);
+                transform: translateY(-1px);
+            }
 
-.item-card:hover {
-    transform: translateY(-5px);
-    box-shadow: var(--shadow-md);
-}
+            .item-card:hover {
+                transform: translateY(-5px);
+                box-shadow: var(--shadow-md);
+            }
 
-/* ✅ FIXED IMAGE SECTION */
-.item-img {
-    height: 200px;
-    background: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
+            /* ✅ FIXED IMAGE SECTION */
+            .item-img {
+                height: 200px;
+                background: white;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
 
-.item-img img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain; /* 🔥 THIS FIXES YOUR ISSUE */
-}
+            .item-img img {
+                width: 100%;
+                height: 100%;
+                object-fit: contain; /* 🔥 THIS FIXES YOUR ISSUE */
+            }
 
-.item-details {
-    padding: var(--space-lg);
-}
+            .item-details {
+                padding: var(--space-lg);
+            }
 
-.item-price {
-    color: var(--wits-navy);
-    font-weight: 800;
-    font-size: 1.2rem;
-}
+            .item-price {
+                color: var(--wits-navy);
+                font-weight: 800;
+                font-size: 1.2rem;
+            }
 
-.action-btn {
-    background-color: var(--wits-navy);
-    color: var(--white);
-    border: none;
-    padding: 12px 24px;
-    border-radius: var(--radius-pill);
-    font-weight: 700;
-    cursor: pointer;
-}
+            .action-btn {
+                background-color: var(--wits-navy);
+                color: var(--white);
+                border: none;
+                padding: 12px 24px;
+                border-radius: var(--radius-pill);
+                font-weight: 700;
+                cursor: pointer;
+            }
 
-.action-btn:hover {
-    background-color: var(--wits-navy-dark);
-}
+            .action-btn:hover {
+                background-color: var(--wits-navy-dark);
+            }
 
-#searchInput {
-    width: 100%;
-    padding: 12px;
-    margin-bottom: 15px;
-    border-radius: 8px;
-    border: 1px solid var(--grey-border);
-}
+            #searchInput {
+                width: 100%;
+                padding: 12px;
+                margin-bottom: 15px;
+                border-radius: 8px;
+                border: 1px solid var(--grey-border);
+            }
 
-/* Category filter buttons container - wraps buttons and allows them to wrap on smaller screens */
-.category-filters {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-bottom: 20px;
-}
+            /* Category filter buttons container - wraps buttons and allows them to wrap on smaller screens */
+            .category-filters {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+                margin-bottom: 20px;
+            }
 
-/* Individual category filter button styling */
-.filter-pill {
-    padding: 6px 14px;
-    border-radius: 20px;
-    border: 1px solid var(--grey-border);
-    background: var(--white);
-    cursor: pointer;
-    font-size: 0.85rem;
-    transition: all 0.2s ease;
-}
+            /* Individual category filter button styling */
+            .filter-pill {
+                padding: 6px 14px;
+                border-radius: 20px;
+                border: 1px solid var(--grey-border);
+                background: var(--white);
+                cursor: pointer;
+                font-size: 0.85rem;
+                transition: all 0.2s ease;
+            }
 
-/* Hover state for filter pills */
-.filter-pill:hover {
-    background: var(--bg-light);
-}
+            /* Hover state for filter pills */
+            .filter-pill:hover {
+                background: var(--bg-light);
+            }
 
-/* Active state - selected category button */
-.filter-pill.active {
-    background: var(--wits-navy);
-    color: var(--white);
-    border-color: var(--wits-navy);
-}
+            /* Active state - selected category button */
+            .filter-pill.active {
+                background: var(--wits-navy);
+                color: var(--white);
+                border-color: var(--wits-navy);
+            }
 
-/* Badge styling for category, condition, and sale_type labels */
-.badge {
-    display: inline-flex;
-    align-items: center;
-    padding: 4px 10px;
-    border-radius: 20px;
-    font-size: 0.7rem;
-    font-weight: 700;
-    background: rgba(212, 175, 55, 0.15);
-    color: #9a7a10;
-}
+            /* Badge styling for category, condition, and sale_type labels */
+            .badge {
+                display: inline-flex;
+                align-items: center;
+                padding: 4px 10px;
+                border-radius: 20px;
+                font-size: 0.7rem;
+                font-weight: 700;
+                background: rgba(212, 175, 55, 0.15);
+                color: #9a7a10;
+            }
 
-.filter-group-label {
-    font-size: 0.8rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    color: #6b7a99;
-    margin: 1rem 0 0.5rem 0;
-    letter-spacing: 0.05em;
-}
+            .filter-group-label {
+                font-size: 0.8rem;
+                font-weight: 700;
+                text-transform: uppercase;
+                color: #6b7a99;
+                margin: 1rem 0 0.5rem 0;
+                letter-spacing: 0.05em;
+            }
 
-.price-filters {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    margin-bottom: 2rem;
-}
+            .price-filters {
+                display: flex;
+                gap: 10px;
+                align-items: center;
+                margin-bottom: 2rem;
+            }
 
-.filter-input {
-    padding: 8px 12px;
-    border: 1px solid var(--grey-border);
-    border-radius: 8px;
-    width: 100px;
-    font-size: 0.9rem;
-}
+            .filter-input {
+                padding: 8px 12px;
+                border: 1px solid var(--grey-border);
+                border-radius: 8px;
+                width: 100px;
+                font-size: 0.9rem;
+            }
 
-.filter-input:focus {
-    border-color: var(--wits-navy);
-    outline: none;
-}
-</style>
-</head>
+            .filter-input:focus {
+                border-color: var(--wits-navy);
+                outline: none;
+            }
 
-<body>
+            .btn-primary {
+                background: var(--wits-navy);
+                color: white;
+                padding: 8px 16px;
+                border-radius: 8px;
+                border: none;
+                cursor: pointer;
+            }
+        </style>
+    </head>
 
-<aside class="sidebar">
-<div class="sidebar-logo">
-Campus<span class="highlight">Market</span>
-</div>
+    <body>
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                Campus<span class="highlight">Market</span>
+            </div>
 
-<nav class="nav-list">
-<a href="dashboard.html" class="nav-item active">🏠 Dashboard</a>
-<a href="trade-slots.html" class="nav-item">📅 Trade Slots</a>
-<a href="#" class="nav-item">📦 My Listings</a>
-</nav>
-</aside>
+            <nav class="nav-list">
+                <a href="dashboard.html" class="nav-item active"
+                    >🏠 Dashboard</a
+                >
+                <a href="trade-slots.html" class="nav-item">📅 Trade Slots</a>
+                <a href="#" class="nav-item">📦 My Listings</a>
+            </nav>
+        </aside>
 
-<main class="main-content">
+        <main class="main-content">
+            <header class="dashboard-header">
+                <div>
+                    <h1 id="welcome-name">Welcome back</h1>
+                    <p>Here's what's happening with your trades today.</p>
+                </div>
 
-<header class="dashboard-header">
-<div>
-<h1 id="welcome-name">Welcome back</h1>
-<p>Here's what's happening with your trades today.</p>
-</div>
+                <button
+                    class="action-btn"
+                    onclick="window.location.href = '/create-listing.html'"
+                >
+                    + Create Listing
+                </button>
+            </header>
 
-<button class="action-btn" onclick="window.location.href='/create-listing.html'">
-+ Create Listing
-</button>
-</header>
+            <section class="stats-grid">
+                <div class="stat-card">
+                    <h3>Active Listings</h3>
+                    <div class="value" id="activeListingsCount">00</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Items Sold</h3>
+                    <div class="value">12</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Pending Trades</h3>
+                    <div class="value">02</div>
+                </div>
+            </section>
 
-<section class="stats-grid">
-<div class="stat-card">
-<h3>Active Listings</h3>
-<div class="value" id="activeListingsCount">00</div>
-</div>
-<div class="stat-card">
-<h3>Items Sold</h3>
-<div class="value">12</div>
-</div>
-<div class="stat-card">
-<h3>Pending Trades</h3>
-<div class="value">02</div>
-</div>
-</section>
+            <h2 class="section-title">Recent Listings</h2>
 
-<h2 class="section-title">Recent Listings</h2>
+            <input
+                id="searchInput"
+                type="text"
+                placeholder="Search listings..."
+            />
 
-<input id="searchInput" type="text" placeholder="Search listings..." />
+            <!-- Category filter buttons for filtering listings -->
+            <div class="category-filters" id="categoryFilters">
+                <button class="filter-pill active" data-category="All">
+                    All
+                </button>
+                <button class="filter-pill" data-category="Textbooks">
+                    Textbooks
+                </button>
+                <button class="filter-pill" data-category="Electronics">
+                    Electronics
+                </button>
+                <button class="filter-pill" data-category="Furniture">
+                    Furniture
+                </button>
+                <button class="filter-pill" data-category="Clothing">
+                    Clothing
+                </button>
+                <button class="filter-pill" data-category="Appliances">
+                    Appliances
+                </button>
+                <button class="filter-pill" data-category="Stationary">
+                    Stationary
+                </button>
+                <button class="filter-pill" data-category="Tickets">
+                    Tickets
+                </button>
+                <button class="filter-pill" data-category="Miscellaneous">
+                    Miscellaneous
+                </button>
+            </div>
+            <div class="filter-group-label">Condition</div>
+            <div class="category-filters" id="conditionFilters">
+                <button class="filter-pill active" data-condition="All">
+                    All
+                </button>
+                <button class="filter-pill" data-condition="New">New</button>
+                <button class="filter-pill" data-condition="Like New">
+                    Like New
+                </button>
+                <button class="filter-pill" data-condition="Used">Used</button>
+            </div>
 
-<!-- Category filter buttons for filtering listings -->
-<div class="category-filters" id="categoryFilters">
-  <button class="filter-pill active" data-category="All">All</button>
-  <button class="filter-pill" data-category="Textbooks">Textbooks</button>
-  <button class="filter-pill" data-category="Electronics">Electronics</button>
-  <button class="filter-pill" data-category="Furniture">Furniture</button>
-  <button class="filter-pill" data-category="Clothing">Clothing</button>
-  <button class="filter-pill" data-category="Appliances">Appliances</button>
-  <button class="filter-pill" data-category="Stationary">Stationary</button>
-  <button class="filter-pill" data-category="Tickets">Tickets</button>
-  <button class="filter-pill" data-category="Miscellaneous">Miscellaneous</button>
-</div>
-<div class="filter-group-label">Condition</div>
-<div class="category-filters" id="conditionFilters">
-    <button class="filter-pill active" data-condition="All">All</button>
-    <button class="filter-pill" data-condition="New">New</button>
-    <button class="filter-pill" data-condition="Like New">Like New</button>
-    <button class="filter-pill" data-condition="Used">Used</button>
-</div>
+            <div class="filter-group-label">Price Range</div>
+            <div class="price-filters">
+                <input
+                    type="number"
+                    id="minPrice"
+                    class="filter-input"
+                    placeholder="Min R"
+                />
+                <input
+                    type="number"
+                    id="maxPrice"
+                    class="filter-input"
+                    placeholder="Max R"
+                />
+                <button class="btn-primary" id="applyPriceBtn">Apply</button>
+            </div>
+            <div class="listings-container" id="listings-container"></div>
+        </main>
 
-<div class="filter-group-label">Price Range</div>
-<div class="price-filters">
-    <input type="number" id="minPrice" class="filter-input" placeholder="Min R">
-    <input type="number" id="maxPrice" class="filter-input" placeholder="Max R">
-    <button class="btn-primary" id="applyPriceBtn">Apply</button>
-</div>
-<div class="listings-container" id="listings-container"></div>
+        <script type="module">
+            import { createListingCard } from "/components/card.js";
+            import { requireRole } from "/scripts/auth.js";
 
-</main>
+            async function initPage() {
+                const user = await requireRole(["Student"]);
+                if (!user) return;
 
-<script type="module">
-import { createListingCard } from "/components/card.js";
-import { requireRole } from "/scripts/auth.js";
+                const welcomeName = document.getElementById("welcome-name");
+                if (welcomeName) {
+                    welcomeName.textContent = `Welcome back, ${user.name}`;
+                }
+            }
 
-async function initPage() {
-  const user = await requireRole(["Student"]);
-  if (!user) return;
+            let listings = [];
+            let activeCategory = "All";
+            let activeCondition = "All";
 
-  const welcomeName = document.getElementById("welcome-name");
-  if (welcomeName) {
-    welcomeName.textContent = `Welcome back, ${user.name}`;
-  }
-}
+            const container = document.getElementById("listings-container");
+            const input = document.getElementById("searchInput");
+            const activeListingsCount = document.getElementById(
+                "activeListingsCount",
+            );
+            const minPriceInput = document.getElementById("minPrice");
+            const maxPriceInput = document.getElementById("maxPrice");
 
-let listings = [];
-let activeCategory = "All";
-let activeCondition = "All";
+            window.editListing = function (listingId) {
+                window.location.href = `/create-listing.html?id=${listingId}`;
+            };
 
-const container = document.getElementById("listings-container");
-const input = document.getElementById("searchInput");
-const activeListingsCount = document.getElementById("activeListingsCount");
-const minPriceInput = document.getElementById("minPrice");
-const maxPriceInput = document.getElementById("maxPrice");
+            function render(data) {
+                if (!container) return;
 
-window.editListing = function (listingId) {
-  window.location.href = `/create-listing.html?id=${listingId}`;
-};
+                container.innerHTML = "";
 
-function render(data) {
-  if (!container) return;
-
-  container.innerHTML = "";
-
-  if (!data || data.length === 0) {
-    container.innerHTML = `
+                if (!data || data.length === 0) {
+                    container.innerHTML = `
       <div class="item-card">
         <div class="item-details">
           <h3>No listings found</h3>
@@ -384,121 +433,149 @@ function render(data) {
         </div>
       </div>
     `;
-    return;
-  }
+                    return;
+                }
 
-  data.forEach((item) => {
-    const card = createListingCard(item);
-    container.appendChild(card);
-  });
-}
+                data.forEach((item) => {
+                    const card = createListingCard(item);
+                    container.appendChild(card);
+                });
+            }
 
-async function loadListings() {
-  try {
-    const response = await fetch("/listings/search");
-    const result = await response.json();
+            async function loadListings() {
+                try {
+                    const response = await fetch("/listings/search");
+                    const result = await response.json();
 
-    listings = result.listings || [];
+                    listings = result.listings || [];
 
-    if (activeListingsCount) {
-      activeListingsCount.textContent = String(listings.length).padStart(2, "0");
-    }
+                    if (activeListingsCount) {
+                        activeListingsCount.textContent = String(
+                            listings.length,
+                        ).padStart(2, "0");
+                    }
 
-    render(listings);
-  } catch (error) {
-    console.error("Load listings error:", error);
-    if (container) {
-      container.innerHTML = `<p>Error loading listings</p>`;
-    }
-  }
-}
+                    render(listings);
+                } catch (error) {
+                    console.error("Load listings error:", error);
+                    if (container) {
+                        container.innerHTML = `<p>Error loading listings</p>`;
+                    }
+                }
+            }
 
-async function searchListings(query, category, condition) {
-  try {
-    const params = new URLSearchParams();
-    
-    // Pack all filters into the URL request
-    if (query) params.set("q", query);
-    if (category && category !== "All") params.set("category", category);
-    if (condition && condition !== "All") params.set("condition", condition);
-    
-    // Grabbing the price values directly from new UI inputs
-    const minPrice = document.getElementById("minPrice")?.value;
-    const maxPrice = document.getElementById("maxPrice")?.value;
-    if (minPrice) params.set("minPrice", minPrice);
-    if (maxPrice) params.set("maxPrice", maxPrice);
+            async function searchListings(query, category, condition) {
+                try {
+                    const params = new URLSearchParams();
 
-    // Fetch the data from the server
-    const response = await fetch(`/listings/search?${params.toString()}`);
-    const result = await response.json();
+                    // Pack all filters into the URL request
+                    if (query) params.set("q", query);
+                    if (category && category !== "All")
+                        params.set("category", category);
+                    if (condition && condition !== "All")
+                        params.set("condition", condition);
 
-    const filteredListings = result.listings || [];
+                    // Grabbing the price values directly from new UI inputs
+                    const minPrice = document.getElementById("minPrice")?.value;
+                    const maxPrice = document.getElementById("maxPrice")?.value;
+                    if (minPrice) params.set("minPrice", minPrice);
+                    if (maxPrice) params.set("maxPrice", maxPrice);
 
-    if (activeListingsCount) {
-      activeListingsCount.textContent = String(filteredListings.length).padStart(2, "0");
-    }
+                    // Fetch the data from the server
+                    const response = await fetch(
+                        `/listings/search?${params.toString()}`,
+                    );
+                    const result = await response.json();
 
-    // Send the final list to the renderer to draw the cards
-    render(filteredListings);
+                    const filteredListings = result.listings || [];
 
-  } catch (error) {
-    console.error("Search listings error:", error);
-    if (container) {
-      container.innerHTML = `<p>Error loading listings</p>`;
-    }
-  }
-}
+                    if (activeListingsCount) {
+                        activeListingsCount.textContent = String(
+                            filteredListings.length,
+                        ).padStart(2, "0");
+                    }
 
-function debounce(func, delay) {
-  let timeoutId;
-  return function (...args) {
-    clearTimeout(timeoutId);
-    timeoutId = setTimeout(() => func.apply(this, args), delay);
-  };
-}
+                    // Send the final list to the renderer to draw the cards
+                    render(filteredListings);
+                } catch (error) {
+                    console.error("Search listings error:", error);
+                    if (container) {
+                        container.innerHTML = `<p>Error loading listings</p>`;
+                    }
+                }
+            }
 
-const debouncedSearch = debounce((e) => {
-  searchListings(e.target.value, activeCategory, activeCondition);
-}, 300);
+            function debounce(func, delay) {
+                let timeoutId;
+                return function (...args) {
+                    clearTimeout(timeoutId);
+                    timeoutId = setTimeout(() => func.apply(this, args), delay);
+                };
+            }
 
-if (input) {
-  input.addEventListener("input", debouncedSearch);
-}
+            const debouncedSearch = debounce((e) => {
+                searchListings(e.target.value, activeCategory, activeCondition);
+            }, 300);
 
-// This listener tells the button to run the search when clicked
-document.getElementById("applyPriceBtn").addEventListener("click", () => {
-    searchListings(input ? input.value : "", activeCategory, activeCondition);
-});
+            if (input) {
+                input.addEventListener("input", debouncedSearch);
+            }
 
-document.querySelectorAll("#categoryFilters .filter-pill").forEach((btn) => {
-  btn.addEventListener("click", () => {
-    document.querySelectorAll("#categoryFilters .filter-pill").forEach((pill) => {
-      pill.classList.remove("active");
-    });
+            // This listener tells the button to run the search when clicked
+            document
+                .getElementById("applyPriceBtn")
+                .addEventListener("click", () => {
+                    searchListings(
+                        input ? input.value : "",
+                        activeCategory,
+                        activeCondition,
+                    );
+                });
 
-    btn.classList.add("active");
-    activeCategory = btn.dataset.category;
-    searchListings(input ? input.value : "", activeCategory, activeCondition);
-  });
-});
+            document
+                .querySelectorAll("#categoryFilters .filter-pill")
+                .forEach((btn) => {
+                    btn.addEventListener("click", () => {
+                        document
+                            .querySelectorAll("#categoryFilters .filter-pill")
+                            .forEach((pill) => {
+                                pill.classList.remove("active");
+                            });
 
-document.querySelectorAll("#conditionFilters .filter-pill").forEach((btn) => {
-  btn.addEventListener("click", () => {
-    document.querySelectorAll("#conditionFilters .filter-pill").forEach((pill) => {
-      pill.classList.remove("active");
-    });
+                        btn.classList.add("active");
+                        activeCategory = btn.dataset.category;
+                        searchListings(
+                            input ? input.value : "",
+                            activeCategory,
+                            activeCondition,
+                        );
+                    });
+                });
 
-    btn.classList.add("active"); // Adds Wits Navy styling to the clicked pill
-    activeCondition = btn.dataset.condition; // Updates the condition variable added 
-    
-    // Refresh the listings using all current filters
-    searchListings(input ? input.value : "", activeCategory, activeCondition);
-  });
-});
+            document
+                .querySelectorAll("#conditionFilters .filter-pill")
+                .forEach((btn) => {
+                    btn.addEventListener("click", () => {
+                        document
+                            .querySelectorAll("#conditionFilters .filter-pill")
+                            .forEach((pill) => {
+                                pill.classList.remove("active");
+                            });
 
-loadListings();
-initPage();
-</script>
+                        btn.classList.add("active"); // Adds Wits Navy styling to the clicked pill
+                        activeCondition = btn.dataset.condition; // Updates the condition variable added
 
-</body>
+                        // Refresh the listings using all current filters
+                        searchListings(
+                            input ? input.value : "",
+                            activeCategory,
+                            activeCondition,
+                        );
+                    });
+                });
+
+            loadListings();
+            initPage();
+        </script>
+    </body>
 </html>
