@@ -234,6 +234,35 @@ body {
     background: rgba(212, 175, 55, 0.15);
     color: #9a7a10;
 }
+
+.filter-group-label {
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #6b7a99;
+    margin: 1rem 0 0.5rem 0;
+    letter-spacing: 0.05em;
+}
+
+.price-filters {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.filter-input {
+    padding: 8px 12px;
+    border: 1px solid var(--grey-border);
+    border-radius: 8px;
+    width: 100px;
+    font-size: 0.9rem;
+}
+
+.filter-input:focus {
+    border-color: var(--wits-navy);
+    outline: none;
+}
 </style>
 </head>
 
@@ -295,7 +324,20 @@ Campus<span class="highlight">Market</span>
   <button class="filter-pill" data-category="Tickets">Tickets</button>
   <button class="filter-pill" data-category="Miscellaneous">Miscellaneous</button>
 </div>
+<div class="filter-group-label">Condition</div>
+<div class="category-filters" id="conditionFilters">
+    <button class="filter-pill active" data-condition="All">All</button>
+    <button class="filter-pill" data-condition="New">New</button>
+    <button class="filter-pill" data-condition="Like New">Like New</button>
+    <button class="filter-pill" data-condition="Used">Used</button>
+</div>
 
+<div class="filter-group-label">Price Range</div>
+<div class="price-filters">
+    <input type="number" id="minPrice" class="filter-input" placeholder="Min R">
+    <input type="number" id="maxPrice" class="filter-input" placeholder="Max R">
+    <button class="btn-primary" id="applyPriceBtn">Apply</button>
+</div>
 <div class="listings-container" id="listings-container"></div>
 
 </main>
@@ -316,10 +358,13 @@ async function initPage() {
 
 let listings = [];
 let activeCategory = "All";
+let activeCondition = "All";
 
 const container = document.getElementById("listings-container");
 const input = document.getElementById("searchInput");
 const activeListingsCount = document.getElementById("activeListingsCount");
+const minPriceInput = document.getElementById("minPrice");
+const maxPriceInput = document.getElementById("maxPrice");
 
 window.editListing = function (listingId) {
   window.location.href = `/create-listing.html?id=${listingId}`;
@@ -368,12 +413,22 @@ async function loadListings() {
   }
 }
 
-async function searchListings(query, category) {
+async function searchListings(query, category, condition) {
   try {
     const params = new URLSearchParams();
+    
+    // Pack all filters into the URL request
     if (query) params.set("q", query);
     if (category && category !== "All") params.set("category", category);
+    if (condition && condition !== "All") params.set("condition", condition);
+    
+    // Grabbing the price values directly from new UI inputs
+    const minPrice = document.getElementById("minPrice")?.value;
+    const maxPrice = document.getElementById("maxPrice")?.value;
+    if (minPrice) params.set("minPrice", minPrice);
+    if (maxPrice) params.set("maxPrice", maxPrice);
 
+    // Fetch the data from the server
     const response = await fetch(`/listings/search?${params.toString()}`);
     const result = await response.json();
 
@@ -383,7 +438,9 @@ async function searchListings(query, category) {
       activeListingsCount.textContent = String(filteredListings.length).padStart(2, "0");
     }
 
+    // Send the final list to the renderer to draw the cards
     render(filteredListings);
+
   } catch (error) {
     console.error("Search listings error:", error);
     if (container) {
@@ -401,22 +458,41 @@ function debounce(func, delay) {
 }
 
 const debouncedSearch = debounce((e) => {
-  searchListings(e.target.value, activeCategory);
+  searchListings(e.target.value, activeCategory, activeCondition);
 }, 300);
 
 if (input) {
   input.addEventListener("input", debouncedSearch);
 }
 
-document.querySelectorAll(".filter-pill").forEach((btn) => {
+// This listener tells the button to run the search when clicked
+document.getElementById("applyPriceBtn").addEventListener("click", () => {
+    searchListings(input ? input.value : "", activeCategory, activeCondition);
+});
+
+document.querySelectorAll("#categoryFilters .filter-pill").forEach((btn) => {
   btn.addEventListener("click", () => {
-    document.querySelectorAll(".filter-pill").forEach((pill) => {
+    document.querySelectorAll("#categoryFilters .filter-pill").forEach((pill) => {
       pill.classList.remove("active");
     });
 
     btn.classList.add("active");
     activeCategory = btn.dataset.category;
-    searchListings(input ? input.value : "", activeCategory);
+    searchListings(input ? input.value : "", activeCategory, activeCondition);
+  });
+});
+
+document.querySelectorAll("#conditionFilters .filter-pill").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll("#conditionFilters .filter-pill").forEach((pill) => {
+      pill.classList.remove("active");
+    });
+
+    btn.classList.add("active"); // Adds Wits Navy styling to the clicked pill
+    activeCondition = btn.dataset.condition; // Updates the condition variable added 
+    
+    // Refresh the listings using all current filters
+    searchListings(input ? input.value : "", activeCategory, activeCondition);
   });
 });
 
