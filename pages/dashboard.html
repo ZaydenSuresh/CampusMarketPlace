@@ -320,6 +320,36 @@
                 </div>
             </section>
 
+            <div class="filter-group-label">Condition</div>
+            <div class="category-filters" id="conditionFilters">
+                <button class="filter-pill active" data-condition="All">
+                    All
+                </button>
+                <button class="filter-pill" data-condition="New">New</button>
+                <button class="filter-pill" data-condition="Like New">
+                    Like New
+                </button>
+                <button class="filter-pill" data-condition="Used">Used</button>
+            </div>
+
+            <div class="filter-group-label">Price Range</div>
+            <div class="price-filters">
+                <input
+                    type="number"
+                    id="minPrice"
+                    class="filter-input"
+                    placeholder="Min R"
+                />
+                <input
+                    type="number"
+                    id="maxPrice"
+                    class="filter-input"
+                    placeholder="Max R"
+                />
+                <button class="btn-primary" id="applyPriceBtn">Apply</button>
+            </div>
+            <div class="listings-container" id="listings-container"></div>
+
             <h2 class="section-title">Recent Listings</h2>
 
             <input
@@ -358,41 +388,6 @@
                     Miscellaneous
                 </button>
             </div>
-            <div class="filter-group-label">Condition</div>
-            <div class="category-filters" id="conditionFilters">
-                <button class="filter-pill active" data-condition="All">
-                    All
-                </button>
-                <button class="filter-pill" data-condition="New">New</button>
-                <button class="filter-pill" data-condition="Like New">
-                    Like New
-                </button>
-                <button class="filter-pill" data-condition="Used">Used</button>
-            </div>
-
-            <div class="filter-group-label">Price Range</div>
-            <div
-                class="price-filters"
-                style="
-                    border: 5px solid red !important;
-                    background: yellow !important;
-                "
-            >
-                <input
-                    type="number"
-                    id="minPrice"
-                    class="filter-input"
-                    placeholder="Min R"
-                />
-                <input
-                    type="number"
-                    id="maxPrice"
-                    class="filter-input"
-                    placeholder="Max R"
-                />
-                <button class="btn-primary" id="applyPriceBtn">Apply</button>
-            </div>
-            <div class="listings-container" id="listings-container"></div>
         </main>
 
         <script type="module">
