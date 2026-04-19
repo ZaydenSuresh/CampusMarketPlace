@@ -35,14 +35,44 @@ const loginHeading = "Welcome Back!";
 const loginSubheading = "Sign in to start trading with your campus community";
 
 function showLoginPanel() {
-  if (loginPanel) loginPanel.classList.remove("hidden");
-  if (registerPanel) registerPanel.classList.add("hidden");
+  if (registerPanel) {
+    registerPanel.style.opacity = '0';
+    registerPanel.style.transform = 'translateX(10px)';
+  }
 
   if (loginTab) loginTab.classList.add("active");
   if (registerTab) registerTab.classList.remove("active");
 
-  if (cardHeading) cardHeading.textContent = loginHeading;
-  if (cardSubheading) cardSubheading.textContent = loginSubheading;
+  if (cardHeading && cardSubheading) {
+    cardHeading.style.opacity = 0;
+    cardHeading.style.transform = 'translateX(-10px)';
+    cardSubheading.style.opacity = 0;
+    cardSubheading.style.transform = 'translateX(-10px)';
+    setTimeout(() => {
+      cardHeading.textContent = loginHeading;
+      cardSubheading.textContent = loginSubheading;
+      cardHeading.style.opacity = 1;
+      cardHeading.style.transform = 'translateX(0)';
+      cardSubheading.style.opacity = 1;
+      cardSubheading.style.transform = 'translateX(0)';
+    }, 200);
+  }
+
+  setTimeout(() => {
+    if (loginPanel) {
+      loginPanel.style.opacity = '0';
+      loginPanel.style.transform = 'translateX(-10px)';
+      loginPanel.classList.remove("hidden");
+      setTimeout(() => {
+        loginPanel.style.opacity = '1';
+        loginPanel.style.transform = 'translateX(0)';
+      }, 50);
+    }
+    if (registerPanel) registerPanel.classList.add("hidden");
+  }, 200);
+
+  const slider = document.querySelector('.toggle-slider');
+  if (slider) slider.style.transform = 'translateX(0)';
 
   clearError();
 }
@@ -51,14 +81,44 @@ const signupHeading = "Join Our Community!";
 const signupSubheading = "Create an account to start trading with your campus community";
 
 function showRegisterPanel() {
-  if (registerPanel) registerPanel.classList.remove("hidden");
-  if (loginPanel) loginPanel.classList.add("hidden");
+  if (loginPanel) {
+    loginPanel.style.opacity = '0';
+    loginPanel.style.transform = 'translateX(10px)';
+  }
 
   if (registerTab) registerTab.classList.add("active");
   if (loginTab) loginTab.classList.remove("active");
 
-  if (cardHeading) cardHeading.textContent = signupHeading;
-  if (cardSubheading) cardSubheading.textContent = signupSubheading;
+  if (cardHeading && cardSubheading) {
+    cardHeading.style.opacity = 0;
+    cardHeading.style.transform = 'translateX(-10px)';
+    cardSubheading.style.opacity = 0;
+    cardSubheading.style.transform = 'translateX(-10px)';
+    setTimeout(() => {
+      cardHeading.textContent = signupHeading;
+      cardSubheading.textContent = signupSubheading;
+      cardHeading.style.opacity = 1;
+      cardHeading.style.transform = 'translateX(0)';
+      cardSubheading.style.opacity = 1;
+      cardSubheading.style.transform = 'translateX(0)';
+    }, 200);
+  }
+
+  setTimeout(() => {
+    if (registerPanel) {
+      registerPanel.style.opacity = '0';
+      registerPanel.style.transform = 'translateX(-10px)';
+      registerPanel.classList.remove("hidden");
+      setTimeout(() => {
+        registerPanel.style.opacity = '1';
+        registerPanel.style.transform = 'translateX(0)';
+      }, 50);
+    }
+    if (loginPanel) loginPanel.classList.add("hidden");
+  }, 200);
+
+  const slider = document.querySelector('.toggle-slider');
+  if (slider) slider.style.transform = 'translateX(100%)';
 
   clearError();
 }
