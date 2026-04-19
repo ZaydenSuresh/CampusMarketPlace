@@ -12,6 +12,9 @@ const registerForm = document.getElementById("registerForm");
 const googleLoginBtn = document.getElementById("google-login-btn");
 const errorBox = document.getElementById("error-message");
 
+const cardHeading = document.getElementById("card-heading");
+const cardSubheading = document.getElementById("card-subheading");
+
 function showError(message) {
   if (!errorBox) {
     alert(message);
@@ -28,6 +31,9 @@ function clearError() {
   errorBox.classList.add("hidden");
 }
 
+const loginHeading = "Welcome Back!";
+const loginSubheading = "Sign in to start trading with your campus community";
+
 function showLoginPanel() {
   if (loginPanel) loginPanel.classList.remove("hidden");
   if (registerPanel) registerPanel.classList.add("hidden");
@@ -35,8 +41,15 @@ function showLoginPanel() {
   if (loginTab) loginTab.classList.add("active");
   if (registerTab) registerTab.classList.remove("active");
 
+  cardHeading.textContent = loginHeading;
+  cardSubheading.textContent = loginSubheading;
+
   clearError();
 }
+
+const signupHeading = "Join Our Community!";
+const signupSubheading =
+  "Create an account to start trading with your campus community";
 
 function showRegisterPanel() {
   if (registerPanel) registerPanel.classList.remove("hidden");
@@ -44,6 +57,9 @@ function showRegisterPanel() {
 
   if (registerTab) registerTab.classList.add("active");
   if (loginTab) loginTab.classList.remove("active");
+
+  cardHeading.textContent = signupHeading;
+  cardSubheading.textContent = signupSubheading;
 
   clearError();
 }
