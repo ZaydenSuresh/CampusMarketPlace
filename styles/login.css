@@ -11,15 +11,16 @@ body.login-page {
     width: 100%;
 }
 
-/* ── CTA Section (70%) ── */
+/* ── CTA Section ── */
 .cta-section {
-    flex: 0 0 70%;
+    flex: 1 1 60%;
+    max-width: 70%;
+    min-height: 100vh;
     position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
     overflow: hidden;
-    min-height: 100vh;
 }
 
 .cta-bg {
@@ -46,11 +47,11 @@ body.login-page {
 }
 
 .cta-title {
-    font-size: 5rem;
-    font-weight: 800;
+    font-size: clamp(2rem, 5vw, 4rem);
+    font-weight: 700;
     line-height: 1.1;
     margin-bottom: 1.2rem;
-    position: relative;
+    margin-top: -30px;
     color: white;
     text-shadow: 0 2px 10px rgba(0, 0, 0, 0.7);
 }
@@ -61,7 +62,7 @@ body.login-page {
 }
 
 .cta-tagline {
-    font-size: 1.5rem;
+    font-size: clamp(1rem, 1.5vw, 1.5rem);
     line-height: 1.6;
     color: white;
     text-shadow: 0 1px 8px rgba(0, 0, 0, 0.7);
@@ -92,9 +93,12 @@ body.login-page {
     width: 100%;
 }
 
-/* ── Login Section (30%) ── */
+/* ── Login Section ── */
 .login-section {
-    flex: 0 0 30%;
+    flex: 1 1 30%;
+    min-width: 280px;
+    max-width: 40%;
+    min-height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -103,18 +107,18 @@ body.login-page {
 }
 
 .login-container {
-    width: 100%;
+    width: 90%;
     max-width: 340px;
+    min-width: 300px;
 }
 
 .login-header {
     text-align: center;
-    margin-bottom: 1.25rem;
-    min-height: 70px;
+    margin-bottom: 2rem;
+    min-height: 100px;
     display: flex;
     flex-direction: column;
     justify-content: center;
-    align-items: center;
 }
 
 .login-header h2 {
@@ -359,47 +363,111 @@ body.login-page {
 }
 
 /* Responsive */
-@media (max-width: 768px) {
-    .page-container {
-        flex-direction: column;
+
+/* Mobile (≤900px) */
+@media (max-width: 900px) {
+    /* Enable scrolling */
+    body.login-page {
+        overflow-y: auto;
+        height: auto;
+        min-height: 100vh;
     }
 
+    .page-container {
+        flex-direction: column;
+        height: auto;
+        min-height: 100vh;
+        gap: 0.5rem;
+    }
+
+    /* CTA as header strip - full width, centered */
     .cta-section {
-        flex: 0 0 auto;
-        min-height: 280px;
+        width: 100%;
+        max-width: unset;
+        min-height: 180px;
+        flex: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .cta-bg {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .cta-overlay {
+        position: absolute;
+        inset: 0;
     }
 
     .cta-content {
-        padding: 2rem;
+        width: 100%;
+        padding: 1rem;
+        text-align: center;
+        margin-top: 0;
     }
 
-.cta-title {
-    font-size: 4rem;
-    font-weight: 700;
-    line-height: 1.1;
-    margin-bottom: 1.2rem;
-    margin-top: -30px;
-    color: #003b7e;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-}
-
-.cta-title .highlight {
-    color: #c9a84c;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-}
-
-.cta-description {
-    font-size: 1.25rem;
-    line-height: 1.6;
-    color: #003b7e;
-    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-}
-
-    .cta-description {
-        font-size: 1rem;
+    .cta-title {
+        font-size: clamp(1.5rem, 4vw, 1.75rem);
+        margin-bottom: 0.5rem;
+        margin-top: 0;
     }
 
+    .cta-tagline {
+        font-size: clamp(0.85rem, 1.5vw, 0.8rem);
+        margin-top: 0;
+    }
+
+    /* Login section - full width, centered */
     .login-section {
-        padding: 2rem;
+        width: 100%;
+        min-width: unset;
+        max-width: unset;
+        flex: none;
+        padding: 0.5rem;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        justify-content: flex-start;
+    }
+
+    .login-container {
+        width: 100%;
+        max-width: 380px;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    /* Reduced spacing */
+    .login-header {
+        width: 100%;
+        text-align: center;
+        margin-bottom: 0.5rem;
+    }
+
+    .toggle-container {
+        width: 100%;
+        margin-bottom: 0.75rem;
+    }
+
+    .panels-container {
+        width: 100%;
+        min-height: 220px;
+    }
+}
+
+/* Large desktop (≥1400px) */
+@media (min-width: 1400px) {
+    .cta-title {
+        font-size: clamp(2.5rem, 5vw, 4.5rem);
+    }
+
+    .cta-tagline {
+        font-size: clamp(1rem, 1.5vw, 1.35rem);
     }
 }
