@@ -1,4 +1,4 @@
-import { loginUser, registerUser, logoutUser, getCurrentUser } from './auth.js';
+import { loginUser, registerUser, logoutUser, getCurrentUser } from "./auth.js";
 
 const loginTab = document.getElementById("tab-login");
 const registerTab = document.getElementById("tab-register");
@@ -75,9 +75,8 @@ if (registerForm) {
     const name = document.getElementById("reg-name")?.value.trim();
     const email = document.getElementById("reg-email")?.value.trim();
     const password = document.getElementById("reg-password")?.value;
-    const confirm = document.getElementById("reg-confirm")?.value;
 
-    if (!name || !email || !password || !confirm) {
+    if (!name || !email || !password) {
       showError("Please fill in all fields.");
       return;
     }
@@ -87,13 +86,9 @@ if (registerForm) {
       return;
     }
 
-    if (password !== confirm) {
-      showError("Passwords do not match.");
-      return;
-    }
-
     try {
       await registerUser({ name, email, password });
+      // TODO: make the alert align with page design
       alert("Account created successfully. You can now log in.");
       registerForm.reset();
       showLoginPanel();
@@ -129,10 +124,9 @@ if (loginForm) {
 
       if (user.role === "Student") {
         window.location.href = "/dashboard.html";
-      } else if (user.role === 'Trade Facility Staff') {
+      } else if (user.role === "Trade Facility Staff") {
         window.location.href = "/manage-slots.html";
       }
-
     } catch (err) {
       console.error("Login error:", err.message);
       showError(err.message);
