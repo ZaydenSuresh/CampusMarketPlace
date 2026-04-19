@@ -27,6 +27,7 @@ app.use("/lib", express.static("lib"));
 app.use("/styles", express.static("styles"));
 app.use("/scripts", express.static("scripts"));
 app.use("/components", express.static("components"));
+app.use("/images", express.static("images"));
 app.use(express.static("pages"));
 app.use(express.json());
 app.use("/auth", authRouter);
