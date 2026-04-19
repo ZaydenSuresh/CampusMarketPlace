@@ -622,3 +622,34 @@ ol {
 .btn-primary:hover {
     background-color: var(--wits-navy-dark);
 }
+
+/* Dashboard Layout Fix */
+.sidebar {
+    width: 280px;
+    background: var(--clr-bg-gradient);
+    color: var(--white);
+    display: flex;
+    flex-direction: column;
+    padding: var(--space-xl);
+    position: fixed;
+    height: 100vh;
+    left: 0;
+    top: 0;
+    z-index: 100;
+}
+
+.main-content {
+    margin-left: 280px; /* Pushes content away from sidebar */
+    flex: 1;
+    padding: var(--space-2xl);
+    min-height: 100vh;
+    background-color: var(--bg-light);
+}
+
+/* Fix for the blue "arches" - check if any element has a weird radius */
+.sidebar-logo {
+    font-size: 1.5rem;
+    font-weight: 800;
+    margin-bottom: var(--space-2xl);
+    border-radius: 0; /* Ensures no weird rounding */
+}

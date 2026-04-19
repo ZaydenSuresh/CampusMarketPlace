@@ -5,7 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Dashboard | Campus Marketplace</title>
 
-        <link rel="stylesheet" href="/styles/global.css" />
+        <link rel="stylesheet" href="/styles/global.css?v=1.1" />
 
         <style>
             body {
@@ -15,26 +15,35 @@
             }
 
             .sidebar {
-                width: 280px;
-                background: var(--clr-bg-gradient);
-                color: var(--white);
-                display: flex;
-                flex-direction: column;
-                padding: var(--space-xl);
-                position: fixed;
-                height: 100vh;
-                box-shadow: var(--shadow-lg);
+                width: 280px !important;
+                background: var(--clr-bg-gradient) !important;
+                color: var(--white) !important;
+                display: flex !important;
+                flex-direction: column !important;
+                padding: var(--space-xl) !important;
+                position: fixed !important;
+                height: 100vh !important;
+                left: 0 !important;
+                top: 0 !important;
+                z-index: 100 !important;
+                /* This is the arch-killer */
+                border-radius: 0 !important;
+                clip-path: none !important;
+                transform: none !important;
             }
 
             .sidebar-logo {
-                font-size: 1.5rem;
-                font-weight: 800;
-                margin-bottom: var(--space-2xl);
-                color: var(--white);
+                font-size: 1.5rem !important;
+                font-weight: 800 !important;
+                margin-bottom: var(--space-2xl) !important;
+                color: var(--white) !important;
+                border-radius: 0 !important;
+                background: none !important;
+                clip-path: none !important;
             }
 
             .sidebar-logo .highlight {
-                color: var(--wits-gold);
+                color: var(--wits-gold)!important;
             }
 
             .nav-list {
@@ -63,9 +72,11 @@
             }
 
             .main-content {
-                margin-left: 280px;
+                margin-left: 280px; /* This pushes the content past the sidebar */
                 flex: 1;
                 padding: var(--space-2xl);
+                min-height: 100vh;
+                background-color: var(--bg-light);
             }
 
             .dashboard-header {
