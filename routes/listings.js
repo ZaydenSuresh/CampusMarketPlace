@@ -233,7 +233,7 @@ router.get("/search", async (req, res) => {
   const supabase = createSupabaseClient(req, res);
 
   try {
-    const { q, category } = req.query;
+    const { q, category, condition, minPrice, maxPrice } = req.query;
 
     let query = supabase
       .from("listings")
@@ -242,6 +242,18 @@ router.get("/search", async (req, res) => {
 
     if (category && category !== "All") {
       query = query.eq("category", category);
+    }
+
+    if (condition && condition !== "All") {
+      query = query.eq("condition", condition);
+    }
+
+    if (minPrice && minPrice !== "") {
+      query = query.gte("price", parseFloat(minPrice));
+    }
+
+    if (maxPrice && maxPrice !== "") {
+      query = query.lte("price", parseFloat(maxPrice));
     }
 
     if (q && q.trim() !== "") {
