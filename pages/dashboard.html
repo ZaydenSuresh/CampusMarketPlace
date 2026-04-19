@@ -5,13 +5,14 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Dashboard | Campus Marketplace</title>
 
-        <link rel="stylesheet" href="/styles/global.css?v=1.1" />
+        <link rel="stylesheet" href="/styles/global.css" />
 
         <style>
             body {
                 display: flex;
                 min-height: 100vh;
                 background-color: var(--bg-light);
+                margin: 0;
             }
 
             .sidebar {
@@ -43,7 +44,7 @@
             }
 
             .sidebar-logo .highlight {
-                color: var(--wits-gold)!important;
+                color: var(--wits-gold) !important;
             }
 
             .nav-list {
@@ -62,6 +63,8 @@
                 transition: all var(--transition-normal);
                 font-weight: 600;
                 font-size: 0.9rem;
+                text-decoration: none;
+                color: white;
             }
 
             .nav-item:hover,
@@ -84,6 +87,11 @@
                 justify-content: space-between;
                 align-items: center;
                 margin-bottom: var(--space-2xl);
+            }
+
+            .header-actions {
+                display: flex;
+                gap: var(--space-md);
             }
 
             .stats-grid {
@@ -128,12 +136,6 @@
                 transition: transform var(--transition-normal);
             }
 
-            .card-actions {
-                margin-top: 12px;
-                display: flex;
-                justify-content: flex-end;
-            }
-
             .edit-btn {
                 background: var(--wits-navy);
                 color: var(--white);
@@ -144,11 +146,6 @@
                 font-weight: 700;
                 cursor: pointer;
                 transition: all 0.2s ease;
-            }
-
-            .edit-btn:hover {
-                background: var(--wits-navy-dark);
-                transform: translateY(-1px);
             }
 
             .item-card:hover {
@@ -171,16 +168,6 @@
                 object-fit: contain; /* 🔥 THIS FIXES YOUR ISSUE */
             }
 
-            .item-details {
-                padding: var(--space-lg);
-            }
-
-            .item-price {
-                color: var(--wits-navy);
-                font-weight: 800;
-                font-size: 1.2rem;
-            }
-
             .action-btn {
                 background-color: var(--wits-navy);
                 color: var(--white);
@@ -189,10 +176,6 @@
                 border-radius: var(--radius-pill);
                 font-weight: 700;
                 cursor: pointer;
-            }
-
-            .action-btn:hover {
-                background-color: var(--wits-navy-dark);
             }
 
             #searchInput {
@@ -222,28 +205,10 @@
                 transition: all 0.2s ease;
             }
 
-            /* Hover state for filter pills */
-            .filter-pill:hover {
-                background: var(--bg-light);
-            }
-
-            /* Active state - selected category button */
             .filter-pill.active {
                 background: var(--wits-navy);
                 color: var(--white);
                 border-color: var(--wits-navy);
-            }
-
-            /* Badge styling for category, condition, and sale_type labels */
-            .badge {
-                display: inline-flex;
-                align-items: center;
-                padding: 4px 10px;
-                border-radius: 20px;
-                font-size: 0.7rem;
-                font-weight: 700;
-                background: rgba(212, 175, 55, 0.15);
-                color: #9a7a10;
             }
 
             .filter-group-label {
@@ -262,17 +227,12 @@
                 margin-bottom: 2rem;
             }
 
-<nav class="nav-list">
-<a href="dashboard.html" class="nav-item active">🏠 Dashboard</a>
-<a href="trade-slots.html" class="nav-item">📅 Trade Slots</a>
-<a href="#" class="nav-item">📦 My Listings</a>
-<a href="messages.html" class="nav-item">💬 Messages</a>
-</nav>
-</aside>
-
-            .filter-input:focus {
-                border-color: var(--wits-navy);
-                outline: none;
+            .filter-input {
+                padding: 8px 12px;
+                border: 1px solid var(--grey-border);
+                border-radius: 8px;
+                width: 100px;
+                font-size: 0.9rem;
             }
 
             .btn-primary {
@@ -286,13 +246,11 @@
         </style>
     </head>
 
-<button class="action-btn" onclick="window.location.href='/create-listing.html'">
-+ Create Listing
-</button>
-<button class="action-btn" onclick="window.location.href='messages.html'">
-  💬 Open Messages
-</button>
-</header>
+    <body>
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                Campus<span class="highlight">Market</span>
+            </div>
 
             <nav class="nav-list">
                 <a href="dashboard.html" class="nav-item active"
@@ -300,6 +258,7 @@
                 >
                 <a href="trade-slots.html" class="nav-item">📅 Trade Slots</a>
                 <a href="#" class="nav-item">📦 My Listings</a>
+                <a href="messages.html" class="nav-item">💬 Messages</a>
             </nav>
         </aside>
 
@@ -310,12 +269,20 @@
                     <p>Here's what's happening with your trades today.</p>
                 </div>
 
-                <button
-                    class="action-btn"
-                    onclick="window.location.href = '/create-listing.html'"
-                >
-                    + Create Listing
-                </button>
+                <div class="header-actions">
+                    <button
+                        class="action-btn"
+                        onclick="window.location.href = '/create-listing.html'"
+                    >
+                        + Create Listing
+                    </button>
+                    <button
+                        class="action-btn"
+                        onclick="window.location.href = 'messages.html'"
+                    >
+                        💬 Open Messages
+                    </button>
+                </div>
             </header>
 
             <section class="stats-grid">
@@ -402,6 +369,7 @@
                 />
                 <button class="btn-primary" id="applyPriceBtn">Apply</button>
             </div>
+
             <div class="listings-container" id="listings-container"></div>
         </main>
 
@@ -428,8 +396,6 @@
             const activeListingsCount = document.getElementById(
                 "activeListingsCount",
             );
-            const minPriceInput = document.getElementById("minPrice");
-            const maxPriceInput = document.getElementById("maxPrice");
 
             window.editListing = function (listingId) {
                 window.location.href = `/create-listing.html?id=${listingId}`;
@@ -442,13 +408,13 @@
 
                 if (!data || data.length === 0) {
                     container.innerHTML = `
-      <div class="item-card">
-        <div class="item-details">
-          <h3>No listings found</h3>
-          <p>There are no listings yet.</p>
-        </div>
-      </div>
-    `;
+                        <div class="item-card">
+                            <div class="item-details">
+                                <h3>No listings found</h3>
+                                <p>There are no listings yet.</p>
+                            </div>
+                        </div>
+                    `;
                     return;
                 }
 
@@ -474,9 +440,6 @@
                     render(listings);
                 } catch (error) {
                     console.error("Load listings error:", error);
-                    if (container) {
-                        container.innerHTML = `<p>Error loading listings</p>`;
-                    }
                 }
             }
 
@@ -515,9 +478,6 @@
                     render(filteredListings);
                 } catch (error) {
                     console.error("Search listings error:", error);
-                    if (container) {
-                        container.innerHTML = `<p>Error loading listings</p>`;
-                    }
                 }
             }
 
