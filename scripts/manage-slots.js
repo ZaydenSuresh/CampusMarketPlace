@@ -49,16 +49,88 @@ async function renderSlots() {
       div.className = "slot-card";
 
       div.innerHTML = `
-        <p><strong>${slot.time}</strong></p>
-        <p>Date: ${slot.date}</p>
-        <p>Capacity: ${slot.capacity}</p>
-        <p>Status: ${slot.status}</p>
-        <button class="delete-btn" data-id="${slot.id}">Delete</button>
+        <div class="slot-view">
+          <p><strong>${slot.time}</strong></p>
+          <p>Date: ${slot.date}</p>
+
+          <p>Total Capacity: ${slot.capacity}</p>
+          <p>Booked: ${slot.bookedCount}</p>
+          <p>Remaining: ${slot.capacity - slot.bookedCount}</p>
+
+          <p>Status: ${slot.status}</p>
+
+          <button class="edit-btn">Edit</button>
+          <button class="delete-btn">Delete</button>
+        </div>
+
+        <div class="slot-edit" style="display:none;">
+          <input type="date" value="${slot.date.replaceAll("/", "-")}" class="edit-date" />
+          <input type="time" value="${to24(slot.time)}" class="edit-time" />
+          <input type="number" value="${slot.capacity}" class="edit-capacity" min="1" />
+
+          <button class="save-btn">Save</button>
+          <button class="cancel-btn">Cancel</button>
+        </div>
       `;
 
-      div.querySelector(".delete-btn").addEventListener("click", async () => {
-        await deleteSlot(slot.id);
-      });
+      const view = div.querySelector(".slot-view");
+      const edit = div.querySelector(".slot-edit");
+
+      // DELETE
+      div.querySelector(".delete-btn").onclick = () => deleteSlot(slot.id);
+
+      // EDIT
+      div.querySelector(".edit-btn").onclick = () => {
+        view.style.display = "none";
+        edit.style.display = "block";
+      };
+
+      // CANCEL
+      div.querySelector(".cancel-btn").onclick = () => {
+        edit.style.display = "none";
+        view.style.display = "block";
+      };
+
+      // SAVE
+      div.querySelector(".save-btn").onclick = async () => {
+        let newDate = div.querySelector(".edit-date").value;
+        const newTime = div.querySelector(".edit-time").value;
+        const newCapacity = div.querySelector(".edit-capacity").value;
+
+        newDate = newDate.replaceAll("/", "-");
+
+        if (!newDate || !newTime || !newCapacity) {
+          showMessage("Fill all fields", "error");
+          return;
+        }
+
+        try {
+          const res = await fetch(`${API}/slots/${slot.id}`, {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              date: newDate,
+              time: newTime,
+              capacity: Number(newCapacity)
+            })
+          });
+
+          const data = await res.json();
+
+          if (!res.ok) {
+            showMessage(data.error || "Update failed", "error");
+            return;
+          }
+
+          showMessage("Slot updated successfully", "success");
+          renderSlots();
+        } catch (err) {
+          console.error(err);
+          showMessage("Update failed", "error");
+        }
+      };
 
       container.appendChild(div);
     });
@@ -140,6 +212,20 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   if (dateInput) {
+    const today = new Date().toISOString().split("T")[0];
+    dateInput.value = today;
+
     dateInput.addEventListener("change", renderSlots);
+    renderSlots();
   }
 });
+
+function to24(time) {
+  let [t, p] = time.split(" ");
+  let [h, m] = t.split(":").map(Number);
+
+  if (p === "PM" && h !== 12) h += 12;
+  if (p === "AM" && h === 12) h = 0;
+
+  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+}

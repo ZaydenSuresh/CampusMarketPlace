@@ -27,7 +27,7 @@
       color: #0f2b5b;
     }
 
-    p {
+    .page-description {
       margin-bottom: 24px;
       color: #555;
     }
@@ -63,6 +63,7 @@
       display: flex;
       gap: 12px;
       margin-top: 24px;
+      flex-wrap: wrap;
     }
 
     .btn {
@@ -89,6 +90,7 @@
     .message {
       margin-top: 18px;
       font-weight: 600;
+      min-height: 22px;
     }
 
     .success {
@@ -98,12 +100,24 @@
     .error {
       color: crimson;
     }
+
+    .image-note {
+      margin-top: 6px;
+      font-size: 13px;
+      color: #666;
+    }
+
+    .hidden {
+      display: none;
+    }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>Create New Listing</h1>
-    <p>Fill in the details below to add an item for sale.</p>
+    <h1 id="pageTitle">Create New Listing</h1>
+    <p id="pageDescription" class="page-description">
+      Fill in the details below to add an item for sale or trade.
+    </p>
 
     <form id="createListingForm">
       <div class="form-group">
@@ -131,7 +145,6 @@
         </select>
       </div>
 
-      <!-- Condition dropdown - required field for listing condition -->
       <div class="form-group">
         <label for="condition">Condition</label>
         <select id="condition" name="condition" required>
@@ -144,7 +157,6 @@
         </select>
       </div>
 
-      <!-- Sale type dropdown - required field for sale/trade preference -->
       <div class="form-group">
         <label for="sale_type">Sale Type</label>
         <select id="sale_type" name="sale_type" required>
@@ -160,54 +172,62 @@
         <textarea id="description" name="description" required></textarea>
       </div>
 
-      <!-- Image URL - required field for listing -->
-      <div class="form-group">
-        <label for="image_url">Image URL</label>
-        <input type="url" id="image_url" name="image_url" placeholder="https://example.com/image.jpg" required />
+      <div class="form-group" id="imageGroup">
+        <label for="image">Listing Image</label>
+        <input type="file" id="image" name="image" accept="image/*" required />
+        <p id="imageNote" class="image-note hidden">
+          Leave the image empty if you want to keep the current image.
+        </p>
       </div>
 
       <div class="actions">
-        <button type="submit" class="btn btn-primary">Save Listing</button>
+        <button id="submitBtn" type="submit" class="btn btn-primary">Save Listing</button>
         <a href="/dashboard.html" class="btn btn-secondary">Back to Dashboard</a>
+  <button id="deleteBtn" type="button" class="btn btn-secondary hidden">
+    Delete Listing
+  </button>
       </div>
 
       <div id="formMessage" class="message"></div>
     </form>
   </div>
 
-  <!--
-    Create Listing page - Student only
-    Auth check runs immediately on page load
-    Only Students can create listings
-  -->
-  <script type="module">
-    import { requireRole } from "/scripts/auth.js";
-
-    async function checkAccess() {
+  <script>
+    async function checkAuth() {
       try {
-        // requireRole(["Student"]) will:
-        // - Redirect to /login.html if not logged in
-        // - Redirect to /manage-slots.html if Trade Facility Staff
-        // - Return user object if authorized (Student)
-        const user = await requireRole(["Student"]);
+        const res = await fetch("/auth/me", {
+          credentials: "include"
+        });
 
-        if (!user) {
-          // requireRole already redirected - stop
+        if (!res.ok) {
+          window.location.href = "/login.html";
           return;
         }
-
-        // User is authorized - load the listing creation form
-        console.log("User authorized:", user.name);
-
-      } catch (error) {
-        console.error("Access check failed:", error);
+      } catch {
         window.location.href = "/login.html";
       }
     }
 
-    // Run access check immediately
-    checkAccess();
+    checkAuth();
+
+    const params = new URLSearchParams(window.location.search);
+    const mode = params.get("mode");
+    const listingId = params.get("id");
+
+    if (mode === "edit" && listingId) {
+      document.title = "Edit Listing | CampusMarket";
+      document.getElementById("pageTitle").textContent = "Edit Listing";
+      document.getElementById("pageDescription").textContent =
+        "Update the details below for your listing.";
+      document.getElementById("submitBtn").textContent = "Update Listing";
+
+      const imageInput = document.getElementById("image");
+      imageInput.required = false;
+
+      document.getElementById("imageNote").classList.remove("hidden");
+    }
   </script>
-  <script src="/scripts/create-listing.js"></script>
+
+  <script type="module" src="/scripts/create-listing.js"></script>
 </body>
 </html>

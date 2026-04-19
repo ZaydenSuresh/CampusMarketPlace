@@ -38,6 +38,11 @@ app.get("/", (req, res) => {
   res.sendFile(__dirname + "/pages/login.html");
 });
 
+// show login page on server startup
+app.get("/", (req, res) => {
+  res.sendFile(__dirname + "/pages/login.html");
+});
+
 // check server health
 app.get("/health", (req, res) => {
   res.status(200).json({ ok: true, service: "campus-marketplace-api" });

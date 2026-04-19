@@ -1,5 +1,6 @@
 const API_BASE = "/auth";
 
+// Helper function to handle API responses - throws an error for non-JSON responses or failed requests
 async function handleResponse(response) {
   const contentType = response.headers.get("content-type") || "";
 
@@ -18,6 +19,7 @@ async function handleResponse(response) {
   return data;
 }
 
+// Registers a new user by sending a POST request to the server with the user's name, email, and password
 export async function registerUser({ name, email, password }) {
   const response = await fetch(`${API_BASE}/register`, {
     method: "POST",

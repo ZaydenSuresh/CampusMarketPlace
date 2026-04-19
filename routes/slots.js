@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Slot = require('../models/slots');
+
 let supabase = null;
 
 try {
@@ -29,7 +30,7 @@ function formatTime(time24) {
   return `${h}:${m.toString().padStart(2, '0')} ${suffix}`;
 }
 
-// GET slots by date for students/staff
+// ================= GET SLOTS =================
 router.get('/', async (req, res) => {
   if (!checkDb()) {
     return res.status(503).json({ error: 'Database not available' });
@@ -55,21 +56,24 @@ router.get('/', async (req, res) => {
     return res.status(500).json({ error: 'Failed to load slots' });
   }
 
-  const slots = (data || []).map(
-    (row) =>
-      new Slot(
-        row.id,
-        row.date,
-        formatTime((row.time || "").slice(0, 5)),
-        row.capacity,
-        row.booked_count || 0
-      )
-  );
+  const slots = (data || [])
+    .map(
+      (row) =>
+        new Slot(
+          row.id,
+          row.date,
+          formatTime((row.time || "").slice(0, 5)),
+          row.capacity,
+          row.booked_count || 0
+        )
+    )
+    // 🔥 filter out full slots (required for tests)
+    .filter(slot => slot.bookedCount < slot.capacity);
 
   res.json(slots);
 });
 
-// CREATE slot - staff
+// ================= CREATE SLOT =================
 router.post('/', async (req, res) => {
   if (!checkDb()) {
     return res.status(503).json({ error: 'Database not available' });
@@ -102,7 +106,7 @@ router.post('/', async (req, res) => {
     .select();
 
   if (error) {
-    return res.status(500).json({ error: error.message || 'Failed to create slot' });
+    return res.status(500).json({ error: error.message });
   }
 
   res.status(201).json({
@@ -111,7 +115,7 @@ router.post('/', async (req, res) => {
   });
 });
 
-// DELETE slot - staff
+// ================= DELETE SLOT =================
 router.delete('/:id', async (req, res) => {
   if (!checkDb()) {
     return res.status(503).json({ error: 'Database not available' });
@@ -131,10 +135,106 @@ router.delete('/:id', async (req, res) => {
   res.json({ message: 'Slot deleted successfully' });
 });
 
-// BOOK slot - keep for later
+// ================= BOOK SLOT =================
 router.post('/book', async (req, res) => {
-  return res.status(501).json({
-    error: 'Booking logic will be implemented later'
+  if (!checkDb()) {
+    return res.status(503).json({ error: 'Database not available' });
+  }
+
+  const { id } = req.body || {};
+
+  if (!id) {
+    return res.status(400).json({ error: 'Slot ID required' });
+  }
+
+  // 🔥 DO NOT use .single() (breaks tests)
+  const { data, error } = await supabase
+    .from('trade_slots')
+    .select('*')
+    .eq('id', id);
+
+  if (error || !data || !data.length) {
+    return res.status(404).json({ error: 'Slot not found' });
+  }
+
+  const slot = data[0];
+
+  if (slot.booked_count >= slot.capacity) {
+    return res.status(400).json({ error: 'Slot is full' });
+  }
+
+  const { data: updated, error: updateError } = await supabase
+    .from('trade_slots')
+    .update({
+      booked_count: slot.booked_count + 1
+    })
+    .eq('id', id)
+    .select();
+
+  if (updateError) {
+    return res.status(500).json({ error: 'Failed to book slot' });
+  }
+
+  res.json({
+    message: 'Slot booked successfully',
+    slot: updated[0]
+  });
+});
+
+// ================= EDIT SLOT =================
+router.put('/:id', async (req, res) => {
+  if (!checkDb()) {
+    return res.status(503).json({ error: 'Database not available' });
+  }
+
+  const { id } = req.params;
+  let { date, time, capacity } = req.body;
+
+  if (!date || !time || capacity === undefined) {
+    return res.status(400).json({ error: 'All fields are required' });
+  }
+
+  // 🔥 no .single()
+  const { data: existingArr, error: fetchError } = await supabase
+    .from('trade_slots')
+    .select('*')
+    .eq('id', id);
+
+  if (fetchError || !existingArr || !existingArr.length) {
+    return res.status(404).json({ error: 'Slot not found' });
+  }
+
+  const existing = existingArr[0];
+
+  if (Number(capacity) < existing.booked_count) {
+    return res.status(400).json({
+      error: 'Capacity cannot be less than booked slots'
+    });
+  }
+
+  date = date.replaceAll("/", "-");
+
+  if (time.length === 5) {
+    time = time + ":00";
+  }
+
+  const { data, error } = await supabase
+    .from('trade_slots')
+    .update({
+      date,
+      time,
+      capacity: Number(capacity)
+    })
+    .eq('id', id)
+    .select();
+
+  if (error) {
+    return res.status(500).json({ error: error.message });
+  }
+
+  res.json({
+    message: 'Slot updated successfully',
+    slot: data[0]
   });
 });
 
