@@ -21,6 +21,7 @@ try {
 const { router: authRouter } = require("./routes/auth");
 const slotsRouter = require("./routes/slots");
 const MessageAuth = require("./routes/messages");
+const ratingsRouter = require("./routes/ratings");
 
 app.use(cors());
 app.use("/lib", express.static("lib"));
@@ -30,6 +31,7 @@ app.use("/components", express.static("components"));
 app.use("/images", express.static("images"));
 app.use(express.static("pages"));
 app.use(express.json());
+app.use("/ratings", ratingsRouter);
 app.use("/auth", authRouter);
 app.use("/slots", slotsRouter);
 app.use("/messages",MessageAuth);
