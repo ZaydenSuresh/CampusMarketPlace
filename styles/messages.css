@@ -1,23 +1,23 @@
-body {
+body {/*styles page bg and def text color*/
     background: var(--bg-light);
     color: var(--text-dark);
 }
 
-.topnav {
+.topnav {/*nv bar at top of page*/
     height: 58px;
     background: var(--clr-bg-gradient);
-    display: flex;
-    align-items: center;
-    gap: var(--space-md);
-    padding: 0 var(--space-lg);
+    display: flex;/*place items in row*/
+    align-items: center;/*vert allignment of items*/
+    gap: var(--space-md);/*space btwn items*/
+    padding: 0 var(--space-lg);/*l & r spacing*/
     box-shadow: var(--shadow-md);
-    flex-shrink: 0;
-    z-index: 10;
+    flex-shrink: 0;/*prev nav from shrinking*/
+    z-index: 10;/*keep nav above*/
 }
 
 .topnav-brand {
-    display: flex;
-    align-items: center;
+    display: flex;/*place logo text in row*/
+    align-items: center;/*vert align its*/
     gap: var(--space-xs);
     color: white;
     font-size: 1rem;
@@ -25,56 +25,56 @@ body {
 }
 
 .topnav-brand strong {
-    font-weight: 700;
+    font-weight: 700;/*bold*/
 }
 
-.topnav-brand em {
+.topnav-brand em {/*style brand text*/
     color: var(--wits-gold-light);
-    font-style: normal;
+    font-style: normal;/*no italics(def)*/
     font-weight: 700;
 }
 
 .topnav-title {
-    margin-left: auto;
-    color: rgba(255, 255, 255, 0.8);
+    margin-left: auto;/*ttitle=left*/
+    color: rgba(255, 255, 255, 0.8);/*semi transp white*/
     font-size: 0.85rem;
     font-weight: 600;
     letter-spacing: 0.08em;
     text-transform: uppercase;
 }
 
-.layout {
-    display: flex;
-    min-height: calc(100vh - 58px);
-    overflow: hidden;
+.layout {/*main layout(sidebar+chat area)*/
+    display: flex;/*side bar and main cont=side by side*/
+    min-height: calc(100vh - 58px);/*full screen h-navb h) so we know h of the msg ui*/
+    overflow: hidden;/*prev layout overflow*/
 }
 
-.sidebar {
+.sidebar {/*conv list*/
     width: 300px;
-    flex-shrink: 0;
+    flex-shrink: 0;/*no sidebar shrinking*/
     display: flex;
-    flex-direction: column;
+    flex-direction: column;/*stack conv top to bottom*/
     background: var(--white);
     border-right: 1px solid var(--grey-border);
     overflow: hidden;
 }
 
 .sidebar-search {
-    display: flex;
+    display: flex;/*icon and input place in row*/
     align-items: center;
-    gap: var(--space-sm);
+    gap: var(--space-sm);/*space btwn icon and input*/
     padding: 0.95rem 1rem;
     border-bottom: 1px solid var(--grey-border);
     background: var(--white);
 }
 
-.search-icon {
+.search-icon {/*style search icon*/
     color: var(--grey-text);
     font-size: 1rem;
     flex-shrink: 0;
 }
 
-.search-field {
+.search-field {/*search inp box*/
     flex: 1;
     border: none;
     outline: none;
@@ -83,41 +83,41 @@ body {
     font-size: 0.92rem;
 }
 
-.search-field::placeholder {
+.search-field::placeholder {/*placeholder text inside search*/
     color: var(--grey-text);
 }
 
-.conversation-list {
+.conversation-list {/*scrollable conv list*/
     flex: 1;
     overflow-y: auto;
     padding: var(--space-xs) 0;
 }
 
-.conversation-list::-webkit-scrollbar {
+.conversation-list::-webkit-scrollbar {/*scrollbar supp by chrome, safari.etc*/
     width: 5px;
 }
 
-.conversation-list::-webkit-scrollbar-thumb {
+.conversation-list::-webkit-scrollbar-thumb {/*drag part of scroll*/
     background: var(--grey-border);
     border-radius: 999px;
 }
 
 .conv-item {
-    display: flex;
+    /*eachconvitem*/display: flex;
     align-items: center;
     gap: 0.8rem;
     margin: 2px var(--space-sm);
     padding: 0.8rem 0.9rem;
     border-radius: 10px;
-    cursor: pointer;
-    transition: background var(--transition-fast), transform var(--transition-fast);
+    cursor: pointer;/*clickable cursor*/
+    transition: background var(--transition-fast), transform var(--transition-fast);/*hover effect*/
 }
 
 .conv-item:hover {
-    background: var(--grey-light);
+    background: var(--grey-light);/*color when hover*/
 }
 
-.conv-item.active {
+.conv-item.active {/*selected conv*/
     background: linear-gradient(
         135deg,
         rgba(0, 59, 126, 0.08),
@@ -126,7 +126,7 @@ body {
     border-left: 3px solid var(--wits-gold);
 }
 
-.conv-avatar {
+.conv-avatar {/*avatar for conv item*/
     width: 42px;
     height: 42px;
     border-radius: var(--radius-full);
@@ -138,10 +138,10 @@ body {
     font-size: 0.82rem;
     font-weight: 700;
     letter-spacing: 0.03em;
-    flex-shrink: 0;
+    flex-shrink: 0;/*prev shrink*/
 }
 
-.conv-body {
+.conv-body {/*main text of each conv*/
     flex: 1;
     min-width: 0;
 }
@@ -152,12 +152,12 @@ body {
     font-weight: 600;
 }
 
-.conv-item.active .conv-name {
+.conv-item.active .conv-name {/*selected conv name style*/
     color: var(--wits-navy);
     font-weight: 700;
 }
 
-.conv-preview {
+.conv-preview {/*msg prev*/
     color: var(--grey-text);
     font-size: 0.8rem;
     margin-top: 2px;
@@ -166,17 +166,17 @@ body {
     text-overflow: ellipsis;
 }
 
-.conv-meta {
+.conv-meta {/*meta data=time sent, sender, read/unread*/
     flex-shrink: 0;
     text-align: right;
 }
 
-.conv-time {
+.conv-time {/*time text for last msg*/
     color: var(--grey-text);
     font-size: 0.72rem;
 }
 
-.conv-unread {
+.conv-unread {/*unread msg*/
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -190,17 +190,17 @@ body {
     font-weight: 700;
 }
 
-.chat-pane {
-    flex: 1;
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
+.chat-pane {/*main chat area on right*/
+    flex: 1;/*space after sidebar*/
+    min-width: 0;/*prev overflow issues(ui!=break when cont is long)*/
+    display: flex;/*all els(header, msgs and input)=controlled better*/
+    flex-direction: column;/*stack top to bottom*/
     background: var(--bg-light);
     position: relative;
 }
 
-.empty-state {
-    flex: 1;
+.empty-state {/*when ntn is selected*/
+    flex: 1;/*fill av space*/
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -208,20 +208,20 @@ body {
     gap: var(--space-md);
     color: var(--grey-text);
     text-align: center;
-    padding: var(--space-xl);
+    padding: var(--space-xl);/*inner spacong*/
 }
 
-.empty-icon {
+.empty-icon {/*icons when ntn is selcted*/
     font-size: 3rem;
 }
 
-.chat-view {
+.chat-view {/*full chat view l/o*/
     display: flex;
     flex-direction: column;
     height: 100%;
 }
 
-.chat-header {
+.chat-header {/*header of chat when open*/
     display: flex;
     align-items: center;
     gap: 0.85rem;
@@ -231,13 +231,13 @@ body {
     flex-shrink: 0;
 }
 
-.chat-header-avatar {
+.chat-header-avatar {/*open chat avatar*/
     width: 42px;
     height: 42px;
-    border-radius: var(--radius-full);
+    border-radius: var(--radius-full);/*circle*/
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: center;/*center cont vertically(push everything to middle*/
     background: linear-gradient(135deg, var(--wits-navy-light), var(--wits-navy));
     color: var(--wits-gold-light);
     font-size: 0.85rem;
@@ -245,18 +245,18 @@ body {
     flex-shrink: 0;
 }
 
-.chat-header-name {
+.chat-header-name {/*name of person in chat header*/
     color: var(--text-dark);
     font-size: 1rem;
     font-weight: 700;
 }
 
-.chat-header-status {
+.chat-header-status {/*status text under namr*/
     color: var(--wits-gold-dark);
     font-size: 0.78rem;
 }
-.messages-scroll {
-    flex: 1;
+.messages-scroll {/*scrollable msg area*/
+    flex: 1;/*space btwn header and chat inp*/
     overflow-y: auto;
     padding: 1.2rem 1.4rem;
     background: var(--bg-light);
@@ -271,13 +271,13 @@ body {
     border-radius: 999px;
 }
 
-.messages-list {
+.messages-list {/*all msg rows*/
     display: flex;
     flex-direction: column;
     gap: 0.55rem;
 }
 
-.day-divider {
+.day-divider {/*date div btwn grps of msgs, today,yesterday, date*/
     position: relative;
     text-align: center;
     color: var(--grey-text);
@@ -287,41 +287,41 @@ body {
     margin: var(--space-sm) 0;
 }
 
-.day-divider::before,
+.day-divider::before,/*make lines:-----today-----(yt research)*/
 .day-divider::after {
     content: "";
-    position: absolute;
-    top: 50%;
-    width: calc(50% - 50px);
+    position: absolute;/*place exactly where you want*/
+    top: 50%;/*move to midddle vert of day div*/
+    width: calc(50% - 50px);/*leave space in center fpr text*/
     height: 1px;
     background: var(--grey-border);
 }
 
 .day-divider::before {
-    left: 0;
+    left: 0;/*start from left edge*/
 }
 
 .day-divider::after {
     right: 0;
 }
 
-.msg-row {
+.msg-row {/*avatr,msg bubble, time*/
     display: flex;
     align-items: flex-end;
     gap: 0.5rem;
     max-width: 68%;
 }
 
-.msg-row.me {
+.msg-row.me {/*msgs sent by curr user*/
     align-self: flex-end;
     flex-direction: row-reverse;
 }
 
-.msg-row.them {
+.msg-row.them {/*msgs received*/
     align-self: flex-start;
 }
 
-.msg-avatar {
+.msg-avatar {/*avatar to idnetify users*/
     width: 30px;
     height: 30px;
     border-radius: var(--radius-full);
@@ -335,35 +335,35 @@ body {
     flex-shrink: 0;
 }
 
-.msg-bubble {
+.msg-bubble {/*msg bubs*/
     max-width: 100%;
     padding: 0.58rem 0.92rem;
     border-radius: 18px;
     font-size: 0.9rem;
-    line-height: 1.45;
-    word-break: break-word;
+    line-height: 1.45;/*better readability*/
+    word-break: break-word;/*prev long text overflow*/
 }
 
-.msg-row.me .msg-bubble {
+.msg-row.me .msg-bubble {/*curr user msg bubs*/
     background: var(--wits-navy);
     color: var(--white);
-    border-bottom-right-radius: 4px;
+    border-bottom-right-radius: 4px;/*bub tail(like whatsapp)*/
 }
 
-.msg-row.them .msg-bubble {
+.msg-row.them .msg-bubble {/*received msg bub*/
     background: var(--white);
     color: var(--text-dark);
     border: 1px solid var(--grey-border);
     border-bottom-left-radius: 4px;
 }
 
-.msg-time {
+.msg-time {/*time next to msg*/
     color: var(--grey-text);
     font-size: 0.68rem;
     padding-bottom: 4px;
     flex-shrink: 0;
 }
-.composer {
+.composer {/*msg sender*/
     display: flex;
     align-items: center;
     gap: 0.7rem;
@@ -373,7 +373,7 @@ body {
     flex-shrink: 0;
 }
 
-.composer-input {
+.composer-input {/*user types msg*/
     flex: 1;
     background: var(--grey-light);
     color: var(--text-dark);
@@ -382,14 +382,14 @@ body {
     padding: 0.65rem 1.1rem;
     font-size: 0.92rem;
     outline: none;
-    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);/*border col fades,shadow grow smooth*/
 }
 
 .composer-input::placeholder {
     color: var(--grey-text);
 }
 
-.composer-input:focus {
+.composer-input:focus {/*msg sender=clicked*/
     border-color: var(--wits-navy);
     box-shadow: 0 0 0 3px rgba(0, 59, 126, 0.08);
 }
@@ -414,15 +414,15 @@ body {
     transform: scale(1.06);
 }
 
-.send-btn:active:not(:disabled) {
-    transform: scale(0.96);
+.send-btn:active:not(:disabled) {/*clicking effect*/
+    transform: scale(0.96);/*press down*/
 }
 
-.send-btn:disabled {
+.send-btn:disabled {/*btn  cant be clicked(when empty msg.etc)*/
     opacity: 0.55;
     cursor: not-allowed;
 }
-@media (max-width: 700px) {
+@media (max-width: 700px) {/*smaller screens*/
     .sidebar {
         width: 100%;
         position: absolute;
