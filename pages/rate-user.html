@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rate User | Campus Marketplace</title>
+
+  <link rel="stylesheet" href="/styles/global.css" />
+
+  <style>
+    body {
+      background-color: #f5f7fa;
+      font-family: Arial, sans-serif;
+    }
+
+    .container {
+      max-width: 700px;
+      margin: 50px auto;
+      padding: 30px;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    h1 {
+      margin-bottom: 20px;
+      color: #002f5b; /* Wits navy */
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    input, select, textarea {
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+
+    textarea {
+      resize: vertical;
+    }
+
+    button {
+      background-color: #002f5b;
+      color: white;
+      padding: 10px;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    button:hover {
+      background-color: #001f3d;
+    }
+
+    #feedback-message {
+      margin-top: 15px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+
+<body>
+  <main class="container">
+    <h1>Rate User</h1>
+
+    <form id="rating-form">
+      <label>User to Rate</label>
+      <input type="text" id="rated_user_id" placeholder="Enter user ID" required />
+
+      <label>Listing ID</label>
+      <input type="text" id="listing_id" placeholder="Optional" />
+
+      <label>Rating</label>
+      <select id="score" required>
+        <option value="">Select rating</option>
+        <option value="1">1 - Very Poor</option>
+        <option value="2">2 - Poor</option>
+        <option value="3">3 - Average</option>
+        <option value="4">4 - Good</option>
+        <option value="5">5 - Excellent</option>
+      </select>
+
+      <label>Review</label>
+      <textarea id="review" rows="4" placeholder="Write a short review"></textarea>
+
+      <button type="submit">Submit Rating</button>
+    </form>
+
+    <p id="feedback-message"></p>
+  </main>
+
+  <script src="/scripts/rate-user.js"></script>
+</body>
+</html>

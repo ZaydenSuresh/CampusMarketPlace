@@ -67,7 +67,7 @@ router.get('/', async (req, res) => {
           row.booked_count || 0
         )
     )
-    // 🔥 filter out full slots (required for tests)
+    // filter out full slots (required for tests)
     .filter(slot => slot.bookedCount < slot.capacity);
 
   res.json(slots);
@@ -147,7 +147,7 @@ router.post('/book', async (req, res) => {
     return res.status(400).json({ error: 'Slot ID required' });
   }
 
-  // 🔥 DO NOT use .single() (breaks tests)
+  // DO NOT use .single() (breaks tests)
   const { data, error } = await supabase
     .from('trade_slots')
     .select('*')
@@ -194,7 +194,7 @@ router.put('/:id', async (req, res) => {
     return res.status(400).json({ error: 'All fields are required' });
   }
 
-  // 🔥 no .single()
+  //  no .single()
   const { data: existingArr, error: fetchError } = await supabase
     .from('trade_slots')
     .select('*')

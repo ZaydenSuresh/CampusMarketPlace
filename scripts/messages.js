@@ -3,7 +3,7 @@
 let conversations = [];
 let activeConversationId = null;
 
-
+//Ui elememts refs
 const convList = document.getElementById('conversation-list');
 const searchInput = document.getElementById('search-input');
 const emptyState = document.getElementById('empty-state');
@@ -90,7 +90,7 @@ function getLastMessage(conversation) {
   return conversation.messages[conversation.messages.length - 1];
 }
 
-function scrollMessagesToBottom() {
+function scrollMessagesToBottom() {//scroll chats to latest msg
   messagesScroll.scrollTop = messagesScroll.scrollHeight;
 }
 
@@ -167,7 +167,7 @@ async function fetchMessages(conversationId) {
   }));
 }
 
-function renderConversationList(list) {
+function renderConversationList(list) {//render sidebare conv list(search filtering+active highlight)
   const query = searchInput.value.trim().toLowerCase();
   convList.innerHTML = '';
 
@@ -197,13 +197,13 @@ function renderConversationList(list) {
   });
 }
 
-function renderHeader(conversation) {
+function renderHeader(conversation) {//update chat header when conv open
   chatHeaderAvatar.textContent = initials(conversation.user?.name);
   chatHeaderName.textContent = conversation.user?.name || 'Unknown User';
   chatHeaderStatus.textContent = 'Active now';
 }
 
-function buildMessageItem(message, conversation) {
+function buildMessageItem(message, conversation) {//create single msg elem(bubb+avatar+time)
   const isMine = message.from === 'me';
 
   const item = document.createElement('li');
@@ -234,19 +234,19 @@ function buildMessageItem(message, conversation) {
   return item;
 }
 
-function renderMessages(conversation, messages) {
-  messagesList.innerHTML = '';
+function renderMessages(conversation, messages) {//renders all msgs in chat(date seperators)
+  messagesList.innerHTML = '';//clear prev msgs
 
-  let previousDay = '';
+  let previousDay = '';//tracks last msg day
 
   messages.forEach(message => {
-    const currentDay = formatDayLabel(message.ts);
+    const currentDay = formatDayLabel(message.ts);//get formatted date for msg
 
     if (currentDay !== previousDay) {
-      const divider = document.createElement('li');
+      const divider = document.createElement('li');//date divider
       divider.className = 'day-divider';
-      divider.textContent = currentDay;
-      messagesList.appendChild(divider);
+      divider.textContent = currentDay;//display date
+      messagesList.appendChild(divider);//insert div into list
       previousDay = currentDay;
     }
 
@@ -258,54 +258,54 @@ function renderMessages(conversation, messages) {
 
 
 async function openConversation(conversationId) {
-  const conversation = getConversationById(conversationId);
+  const conversation = getConversationById(conversationId);//find selected conv
   if (!conversation) return;
 
-  activeConversationId = conversationId;
-  conversation.unread = 0;
+  activeConversationId = conversationId;//set active chat
+  conversation.unread = 0;//clear unread count
 
   const messages = await fetchMessages(conversationId);
 
-  emptyState.classList.add('hidden');
+  emptyState.classList.add('hidden');//hide mpt state
   chatView.classList.remove('hidden');
 
-  renderHeader(conversation);
-  renderMessages(conversation, messages);
-  renderConversationList(conversations);
+  renderHeader(conversation);//update header
+  renderMessages(conversation, messages);//display msgs
+  renderConversationList(conversations);//refresh sidebar
 
   messageInput.focus();
   toggleSendButton();
 }
 
-function toggleSendButton() {
+function toggleSendButton() {//enables or disbales send btn
   sendBtn.disabled = messageInput.value.trim() === '' || !activeConversationId;
 }
 
 async function handleSendMessage() {
-  const text = messageInput.value.trim();
-  if (!text || !activeConversationId) return;
+  const text = messageInput.value.trim();//get tuped msg
+  if (!text || !activeConversationId) return;//prev send empty msgs
 
-  await postMessage(activeConversationId, text);
+  await postMessage(activeConversationId, text);//send msg to backend
 
-  messageInput.value = '';
+  messageInput.value = '';//clear input field
 
-  const conversation = getConversationById(activeConversationId);
-  const messages = await fetchMessages(activeConversationId);
+  const conversation = getConversationById(activeConversationId);//get curr conv
+  const messages = await fetchMessages(activeConversationId);//reloads updated msgs
 
   renderMessages(conversation, messages);
-  renderConversationList(conversations);
-  toggleSendButton();
+  renderConversationList(conversations);//update sidebar
+  toggleSendButton();//disable btn if inp is empty
 }
 
 
 
 
-async function initMessagesPage() {
+async function initMessagesPage() {//set up page when load
   conversations = await fetchConversations();
 
   renderConversationList(conversations);
 
-  if (!conversations.length) {
+  if (!conversations.length) {//if no convs,  show page when no conv
     emptyState.classList.remove('hidden');
     chatView.classList.add('hidden');
     activeConversationId = null;
@@ -313,24 +313,24 @@ async function initMessagesPage() {
     return;
   }
 
-  activeConversationId = conversations[0].id;
+  activeConversationId = conversations[0].id;//open first conv automatically
   openConversation(activeConversationId);
 }
 
 searchInput.addEventListener('input', () => {
-  renderConversationList(conversations);
+  renderConversationList(conversations);//filter conv list as user types
 });
 
-messageInput.addEventListener('input', toggleSendButton);
+messageInput.addEventListener('input', toggleSendButton);//check if send btn=enable whil typing
 
-messageInput.addEventListener('keydown', event => {
+messageInput.addEventListener('keydown', event => {//let user press enter to send msg
   if (event.key === 'Enter') {
     event.preventDefault();
     handleSendMessage();
   }
 });
 
-sendBtn.addEventListener('click', handleSendMessage);
+sendBtn.addEventListener('click', handleSendMessage);//send msg when send btn clicked
 
 async function bootstrap() {
   await loadSessionUser();
