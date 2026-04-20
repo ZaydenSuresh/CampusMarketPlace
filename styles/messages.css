@@ -2,7 +2,16 @@ body {/*styles page bg and def text color*/
     background: var(--bg-light);
     color: var(--text-dark);
 }
-
+/* Override global dashboard sidebar styles */
+.layout .sidebar {
+    position: relative !important;
+    width: 300px;
+    height: auto;
+    background: var(--white);
+    z-index: auto;
+    top: auto;
+    left: auto;
+}
 .topnav {/*nv bar at top of page*/
     height: 58px;
     background: var(--clr-bg-gradient);
@@ -102,8 +111,8 @@ body {/*styles page bg and def text color*/
     border-radius: 999px;
 }
 
-.conv-item {
-    /*eachconvitem*/display: flex;
+.conv-item {/*eachconvitem*/
+    display: flex;
     align-items: center;
     gap: 0.8rem;
     margin: 2px var(--space-sm);

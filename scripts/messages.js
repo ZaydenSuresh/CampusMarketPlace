@@ -283,7 +283,7 @@ function toggleSendButton() {//enables or disbales send btn
 
 async function handleSendMessage() {
   const text = messageInput.value.trim();//get tuped msg
-  if (!text || !activeConversationId) return;//prev send empty msgs
+  if (!text || !activeConversationId) return;//prevent send empty msgs
 
   await postMessage(activeConversationId, text);//send msg to backend
 
