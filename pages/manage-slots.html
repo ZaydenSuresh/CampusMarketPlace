@@ -29,6 +29,7 @@ checkAccess();
 </header>
 
 <nav class="sidebar-nav">
+
     <a href="/dashboard.html" class="nav-link">
         📊 Dashboard
     </a>
@@ -37,9 +38,10 @@ checkAccess();
         📅 Manage Slots
     </a>
 
-    <a href="#" class="nav-link">
+    <a href="/transactions.html" class="nav-link">
         💳 Transactions
     </a>
+
 </nav>
 
 <footer class="sidebar-footer">
@@ -59,25 +61,25 @@ checkAccess();
 
 <section class="stats-grid">
 
-<article class="stat-card">
-    <span>Total Slots</span>
-    <strong id="stat-total">0</strong>
-</article>
+    <article class="stat-card">
+        <span>Total Slots</span>
+        <strong id="stat-total">0</strong>
+    </article>
 
-<article class="stat-card">
-    <span>Fully Booked</span>
-    <strong id="stat-booked">0</strong>
-</article>
+    <article class="stat-card">
+        <span>Fully Booked</span>
+        <strong id="stat-booked">0</strong>
+    </article>
 
-<article class="stat-card">
-    <span>Open Slots</span>
-    <strong id="stat-open">0</strong>
-</article>
+    <article class="stat-card">
+        <span>Open Slots</span>
+        <strong id="stat-open">0</strong>
+    </article>
 
-<article class="stat-card">
-    <span>Total Bookings</span>
-    <strong id="stat-capacity">0</strong>
-</article>
+    <article class="stat-card">
+        <span>Total Bookings</span>
+        <strong id="stat-capacity">0</strong>
+    </article>
 
 </section>
 
@@ -154,11 +156,13 @@ class="feedback-message">
 </thead>
 
 <tbody id="slots-table-body">
+
 <tr>
 <td colspan="7" class="loading-text">
 Loading slots...
 </td>
 </tr>
+
 </tbody>
 
 </table>
