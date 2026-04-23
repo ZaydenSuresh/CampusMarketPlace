@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Transactions | Campus Marketplace</title>
+
+<link rel="stylesheet" href="/styles/global.css" />
+<link rel="stylesheet" href="/styles/transactions.css" />
+</head>
+
+<body>
+
+<script type="module">
+import { requireRole } from "/scripts/auth.js";
+
+async function checkAccess() {
+    const user = await requireRole(["Trade Facility Staff"]);
+    if (!user) return;
+}
+checkAccess();
+</script>
+
+<aside class="sidebar">
+    <header class="brand">
+        <h1>Wits Marketplace</h1>
+        <p>Staff Portal</p>
+    </header>
+
+    <nav class="sidebar-nav">
+        <a href="/dashboard.html" class="nav-link">📊 Dashboard</a>
+        <a href="/manage-slots.html" class="nav-link">📅 Manage Slots</a>
+        <a href="/transactions.html" class="nav-link active">💳 Transactions</a>
+    </nav>
+
+    <footer class="sidebar-footer">
+        <a href="/login.html" class="logout-btn">↩ Logout</a>
+    </footer>
+</aside>
+
+<main class="main-content">
+    <header class="page-header">
+        <h2>Transaction Management</h2>
+        <p>Monitor and manage marketplace transactions</p>
+    </header>
+
+    <section class="status-tabs">
+        <button class="tab-btn active" data-filter="all">All Transactions</button>
+        <button class="tab-btn" data-filter="pending">Pending</button>
+        <button class="tab-btn" data-filter="in_progress">In Progress</button>
+        <button class="tab-btn" data-filter="waiting_dropoff">Waiting Drop-Off</button>
+        <button class="tab-btn" data-filter="waiting_pickup">Waiting Pick-Up</button>
+        <button class="tab-btn" data-filter="completed">Completed</button>
+        <button class="tab-btn" data-filter="cancelled">Cancelled</button>
+    </section>
+
+    <section class="content-grid">
+        <section class="transactions-panel">
+            <section class="toolbar">
+                <input
+                    type="text"
+                    id="search-input"
+                    class="search-input"
+                    placeholder="Search by buyer, seller, or listing"
+                />
+
+                <select id="type-filter" class="toolbar-select">
+                    <option value="all">All Categories</option>
+                    <option value="sale">Sale</option>
+                    <option value="trade">Trade</option>
+                </select>
+            </section>
+
+            <section id="feedback-message" class="feedback-message"></section>
+
+            <section id="transactions-container" class="transactions-container">
+                <article class="empty-state-card">
+                    <p>Loading transactions...</p>
+                </article>
+            </section>
+        </section>
+
+        <aside class="stats-sidebar">
+            <article class="stats-card">
+                <h3>Quick Stats</h3>
+
+                <section class="quick-stat">
+                    <span>Total Transactions Today</span>
+                    <strong id="stat-total">0</strong>
+                </section>
+
+                <section class="quick-stat">
+                    <span>In Progress</span>
+                    <strong id="stat-progress">0</strong>
+                </section>
+
+                <section class="quick-stat">
+                    <span>Awaiting Drop-Off</span>
+                    <strong id="stat-dropoff">0</strong>
+                </section>
+
+                <section class="quick-stat">
+                    <span>Awaiting Pick-Up</span>
+                    <strong id="stat-pickup">0</strong>
+                </section>
+
+                <section class="quick-stat">
+                    <span>Completed Today</span>
+                    <strong id="stat-completed">0</strong>
+                </section>
+            </article>
+        </aside>
+    </section>
+</main>
+
+<script src="/scripts/transactions.js"></script>
+
+</body>
+</html>
