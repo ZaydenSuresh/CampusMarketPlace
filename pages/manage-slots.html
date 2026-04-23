@@ -29,7 +29,9 @@ checkAccess();
 </header>
 
 <nav class="sidebar-nav">
-    <a href="/dashboard.html" class="nav-link">🏠 Dashboard</a>
+    <a href="/dashboard.html" class="nav-link">
+        📊 Dashboard
+    </a>
 
     <a href="/manage-slots.html" class="nav-link active">
         📅 Manage Slots
@@ -41,7 +43,9 @@ checkAccess();
 </nav>
 
 <footer class="sidebar-footer">
-    <a href="/login.html" class="logout-btn">↩ Logout</a>
+    <a href="/login.html" class="logout-btn">
+        ↩ Logout
+    </a>
 </footer>
 
 </aside>
@@ -49,32 +53,30 @@ checkAccess();
 <main class="main-content">
 
 <header class="top-header">
-<section>
-<h2>Manage Trade Slots</h2>
-<p>Schedule and manage marketplace booking slots</p>
-</section>
+    <h2>Manage Trade Slots</h2>
+    <p>Schedule and manage marketplace trade time slots</p>
 </header>
 
 <section class="stats-grid">
 
 <article class="stat-card">
-<span>Total Slots</span>
-<strong id="stat-total">0</strong>
+    <span>Total Slots</span>
+    <strong id="stat-total">0</strong>
 </article>
 
 <article class="stat-card">
-<span>Booked</span>
-<strong id="stat-booked">0</strong>
+    <span>Fully Booked</span>
+    <strong id="stat-booked">0</strong>
 </article>
 
 <article class="stat-card">
-<span>Open</span>
-<strong id="stat-open">0</strong>
+    <span>Open Slots</span>
+    <strong id="stat-open">0</strong>
 </article>
 
 <article class="stat-card">
-<span>Total Capacity</span>
-<strong id="stat-capacity">0</strong>
+    <span>Total Bookings</span>
+    <strong id="stat-capacity">0</strong>
 </article>
 
 </section>
@@ -83,9 +85,18 @@ checkAccess();
 
 <form id="create-slot-form" class="slot-form">
 
-<input type="date" id="slot-date" required />
+<section class="form-inputs">
 
-<input type="time" id="slot-time" required />
+<input
+type="date"
+id="slot-date"
+required
+/>
+
+<select
+id="slot-time"
+required>
+</select>
 
 <input
 type="number"
@@ -95,13 +106,30 @@ min="1"
 required
 />
 
-<button type="submit">＋ Create Slot</button>
+</section>
+
+<button type="submit">
+＋ Create New Slot
+</button>
 
 </form>
 
+<section class="filter-bar">
+
+<select id="status-filter" class="filter-select">
+<option value="">All Status ▼</option>
+<option value="available">Available</option>
+<option value="full">Full</option>
+</select>
+
 </section>
 
-<section id="feedback-message" class="feedback-message"></section>
+</section>
+
+<section
+id="feedback-message"
+class="feedback-message">
+</section>
 
 <section class="slots-section">
 
@@ -109,8 +137,32 @@ required
 <h3>Existing Slots</h3>
 </header>
 
-<section id="staff-slots-container" class="slots-grid">
-<p class="loading-text">Loading slots...</p>
+<section class="slots-table-container">
+
+<table class="slots-table">
+
+<thead>
+<tr>
+<th>Date</th>
+<th>Time</th>
+<th>Capacity</th>
+<th>Booked</th>
+<th>Remaining</th>
+<th>Status</th>
+<th>Actions</th>
+</tr>
+</thead>
+
+<tbody id="slots-table-body">
+<tr>
+<td colspan="7" class="loading-text">
+Loading slots...
+</td>
+</tr>
+</tbody>
+
+</table>
+
 </section>
 
 </section>

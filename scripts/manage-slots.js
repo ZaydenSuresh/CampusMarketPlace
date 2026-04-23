@@ -4,8 +4,34 @@ const form = document.getElementById("create-slot-form");
 const dateInput = document.getElementById("slot-date");
 const timeInput = document.getElementById("slot-time");
 const capacityInput = document.getElementById("slot-capacity");
-const container = document.getElementById("staff-slots-container");
+const tableBody = document.getElementById("slots-table-body");
 const feedbackMessage = document.getElementById("feedback-message");
+const statusFilter = document.getElementById("status-filter");
+
+let editingId = null;
+
+/* ---------------- TIME OPTIONS ---------------- */
+
+function populateTimes() {
+    timeInput.innerHTML = "";
+
+    for (let h = 8; h <= 17; h++) {
+        for (let m = 0; m < 60; m += 15) {
+            if (h === 17 && m > 0) continue;
+
+            const hh = String(h).padStart(2, "0");
+            const mm = String(m).padStart(2, "0");
+
+            const option = document.createElement("option");
+            option.value = `${hh}:${mm}`;
+            option.textContent = `${hh}:${mm}`;
+
+            timeInput.appendChild(option);
+        }
+    }
+}
+
+/* ---------------- MESSAGES ---------------- */
 
 function showMessage(message, type) {
     feedbackMessage.textContent = message;
@@ -17,106 +43,210 @@ function clearMessage() {
     feedbackMessage.className = "feedback-message";
 }
 
-async function fetchSlotsByDate(date) {
-    const res = await fetch(`${API}/slots?date=${date}`);
+/* ---------------- FETCH ---------------- */
+
+async function fetchSlots() {
+    const res = await fetch(`${API}/slots`);
     return await res.json();
 }
 
+/* ---------------- STATS FIX ---------------- */
+
 function updateStats(slots) {
-    let total = slots.length;
-    let booked = 0;
-    let open = 0;
-    let capacity = 0;
+    const total = slots.length;
 
-    slots.forEach(slot => {
-        booked += slot.bookedCount;
-        capacity += slot.capacity;
+    const full = slots.filter(
+        slot => slot.bookedCount >= slot.capacity
+    ).length;
 
-        if (slot.capacity - slot.bookedCount > 0) {
-            open++;
-        }
-    });
+    const open = slots.filter(
+        slot => slot.bookedCount < slot.capacity
+    ).length;
+
+    const bookings = slots.reduce(
+        (sum, slot) => sum + Number(slot.bookedCount || 0),
+        0
+    );
 
     document.getElementById("stat-total").textContent = total;
-    document.getElementById("stat-booked").textContent = booked;
+    document.getElementById("stat-booked").textContent = full;
     document.getElementById("stat-open").textContent = open;
-    document.getElementById("stat-capacity").textContent = capacity;
+    document.getElementById("stat-capacity").textContent = bookings;
 }
 
+/* ---------------- TABLE ---------------- */
+
 async function renderSlots() {
-    const date = dateInput.value;
-
-    if (!date) return;
-
-    const slots = await fetchSlotsByDate(date);
+    const slots = await fetchSlots();
 
     updateStats(slots);
 
-    if (!slots.length) {
-        container.innerHTML = `<p class="loading-text">No slots found.</p>`;
+    let filtered = [...slots];
+
+    if (statusFilter.value === "available") {
+        filtered = slots.filter(
+            slot => slot.bookedCount < slot.capacity
+        );
+    }
+
+    if (statusFilter.value === "full") {
+        filtered = slots.filter(
+            slot => slot.bookedCount >= slot.capacity
+        );
+    }
+
+    tableBody.innerHTML = "";
+
+    if (!filtered.length) {
+        tableBody.innerHTML = `
+            <tr>
+                <td colspan="7" class="loading-text">
+                    No slots found.
+                </td>
+            </tr>
+        `;
         return;
     }
 
-    container.innerHTML = "";
+    filtered.forEach(slot => {
+        const isFull = slot.bookedCount >= slot.capacity;
+        const remaining = slot.capacity - slot.bookedCount;
 
-    slots.forEach(slot => {
-        const card = document.createElement("article");
-        card.className = "slot-card";
+        const row = document.createElement("tr");
 
-        card.innerHTML = `
-            <h4>${slot.time}</h4>
-            <p>Date: ${slot.date}</p>
-            <p>Capacity: ${slot.capacity}</p>
-            <p>Booked: ${slot.bookedCount}</p>
-            <p>Remaining: ${slot.capacity - slot.bookedCount}</p>
-            <p>Status: ${slot.status}</p>
+        row.innerHTML = `
+            <td>${slot.date}</td>
+            <td>${slot.time}</td>
+            <td>${slot.capacity}</td>
+            <td>${slot.bookedCount}</td>
+            <td>${remaining}</td>
+            <td>
+                <span class="${
+                    isFull ? "status-full" : "status-available"
+                }">
+                    ${isFull ? "Full" : "Available"}
+                </span>
+            </td>
+            <td>
+                <section class="slot-actions">
+                    <button type="button" class="edit-btn">
+                        Edit
+                    </button>
 
-            <section class="slot-actions">
-                <button class="edit-btn">Edit</button>
-                <button class="delete-btn">Delete</button>
-            </section>
+                    <button type="button" class="delete-btn">
+                        Delete
+                    </button>
+                </section>
+            </td>
         `;
 
-        card.querySelector(".delete-btn").onclick = () => deleteSlot(slot.id);
+        row.querySelector(".edit-btn").onclick =
+            () => loadEdit(slot);
 
-        container.appendChild(card);
+        row.querySelector(".delete-btn").onclick =
+            () => deleteSlot(slot.id);
+
+        tableBody.appendChild(row);
     });
 }
+
+/* ---------------- EDIT ---------------- */
+
+function loadEdit(slot) {
+    editingId = slot.id;
+
+    dateInput.value = slot.date;
+    capacityInput.value = slot.capacity;
+
+    const raw = slot.time
+        .replace(" AM", "")
+        .replace(" PM", "");
+
+    const isPM = slot.time.includes("PM");
+
+    timeInput.value = convertTo24(raw, isPM);
+
+    form.querySelector("button[type='submit']")
+        .textContent = "💾 Save Changes";
+
+    showMessage(
+        "Editing slot. Click Save Changes.",
+        "success"
+    );
+}
+
+function convertTo24(time, isPM) {
+    let [h, m] = time.split(":");
+    h = Number(h);
+
+    if (isPM && h < 12) h += 12;
+    if (!isPM && h === 12) h = 0;
+
+    return `${String(h).padStart(2, "0")}:${m}`;
+}
+
+/* ---------------- SAVE ---------------- */
 
 async function createSlot(e) {
     e.preventDefault();
 
     clearMessage();
 
-    const date = dateInput.value;
-    const time = timeInput.value;
-    const capacity = capacityInput.value;
+    const payload = {
+        date: dateInput.value,
+        time: timeInput.value,
+        capacity: Number(capacityInput.value)
+    };
 
-    const res = await fetch(`${API}/slots`, {
-        method: "POST",
+    let url = `${API}/slots`;
+    let method = "POST";
+
+    if (editingId) {
+        url = `${API}/slots/${editingId}`;
+        method = "PUT";
+    }
+
+    const res = await fetch(url, {
+        method,
         headers: {
             "Content-Type": "application/json"
         },
-        body: JSON.stringify({
-            date,
-            time,
-            capacity: Number(capacity)
-        })
+        body: JSON.stringify(payload)
     });
 
     const data = await res.json();
 
     if (!res.ok) {
-        showMessage(data.error || "Failed", "error");
+        showMessage(
+            data.error || "Failed to save slot",
+            "error"
+        );
         return;
     }
 
-    showMessage("Slot created successfully", "success");
+    showMessage(
+        editingId
+            ? "Slot updated successfully"
+            : "Slot created successfully",
+        "success"
+    );
+
+    editingId = null;
+
+    form.reset();
+    populateTimes();
+
+    form.querySelector("button[type='submit']")
+        .textContent = "＋ Create New Slot";
 
     renderSlots();
 }
 
+/* ---------------- DELETE ---------------- */
+
 async function deleteSlot(id) {
+    if (!confirm("Delete this slot?")) return;
+
     const res = await fetch(`${API}/slots/${id}`, {
         method: "DELETE"
     });
@@ -124,22 +254,31 @@ async function deleteSlot(id) {
     const data = await res.json();
 
     if (!res.ok) {
-        showMessage(data.error || "Delete failed", "error");
+        showMessage(
+            data.error || "Delete failed",
+            "error"
+        );
         return;
     }
 
-    showMessage("Slot deleted", "success");
+    showMessage(
+        "Slot deleted successfully",
+        "success"
+    );
 
     renderSlots();
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-    const today = new Date().toISOString().split("T")[0];
-    dateInput.value = today;
+/* ---------------- START ---------------- */
 
+document.addEventListener("DOMContentLoaded", () => {
+    populateTimes();
     renderSlots();
 
-    dateInput.addEventListener("change", renderSlots);
-
     form.addEventListener("submit", createSlot);
+
+    statusFilter.addEventListener(
+        "change",
+        renderSlots
+    );
 });
