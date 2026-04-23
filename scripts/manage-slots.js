@@ -8,224 +8,138 @@ const container = document.getElementById("staff-slots-container");
 const feedbackMessage = document.getElementById("feedback-message");
 
 function showMessage(message, type) {
-  feedbackMessage.textContent = message;
-  feedbackMessage.classList.remove("success", "error");
-  feedbackMessage.classList.add(type);
-  feedbackMessage.style.display = "block";
+    feedbackMessage.textContent = message;
+    feedbackMessage.className = "feedback-message " + type;
 }
 
 function clearMessage() {
-  feedbackMessage.textContent = "";
-  feedbackMessage.classList.remove("success", "error");
-  feedbackMessage.style.display = "none";
+    feedbackMessage.textContent = "";
+    feedbackMessage.className = "feedback-message";
 }
 
 async function fetchSlotsByDate(date) {
-  const res = await fetch(`${API}/slots?date=${date}`);
-  if (!res.ok) throw new Error("Failed to fetch slots");
-  return res.json();
+    const res = await fetch(`${API}/slots?date=${date}`);
+    return await res.json();
+}
+
+function updateStats(slots) {
+    let total = slots.length;
+    let booked = 0;
+    let open = 0;
+    let capacity = 0;
+
+    slots.forEach(slot => {
+        booked += slot.bookedCount;
+        capacity += slot.capacity;
+
+        if (slot.capacity - slot.bookedCount > 0) {
+            open++;
+        }
+    });
+
+    document.getElementById("stat-total").textContent = total;
+    document.getElementById("stat-booked").textContent = booked;
+    document.getElementById("stat-open").textContent = open;
+    document.getElementById("stat-capacity").textContent = capacity;
 }
 
 async function renderSlots() {
-  const date = dateInput.value;
+    const date = dateInput.value;
 
-  if (!date) {
-    container.innerHTML = "<p class='loading-text'>Select a date to manage slots.</p>";
-    return;
-  }
+    if (!date) return;
 
-  try {
     const slots = await fetchSlotsByDate(date);
 
+    updateStats(slots);
+
     if (!slots.length) {
-      container.innerHTML = "<p class='loading-text'>No slots created for this date.</p>";
-      return;
+        container.innerHTML = `<p class="loading-text">No slots found.</p>`;
+        return;
     }
 
     container.innerHTML = "";
 
-    slots.forEach((slot) => {
-      const div = document.createElement("div");
-      div.className = "slot-card";
+    slots.forEach(slot => {
+        const card = document.createElement("article");
+        card.className = "slot-card";
 
-      div.innerHTML = `
-        <div class="slot-view">
-          <p><strong>${slot.time}</strong></p>
-          <p>Date: ${slot.date}</p>
+        card.innerHTML = `
+            <h4>${slot.time}</h4>
+            <p>Date: ${slot.date}</p>
+            <p>Capacity: ${slot.capacity}</p>
+            <p>Booked: ${slot.bookedCount}</p>
+            <p>Remaining: ${slot.capacity - slot.bookedCount}</p>
+            <p>Status: ${slot.status}</p>
 
-          <p>Total Capacity: ${slot.capacity}</p>
-          <p>Booked: ${slot.bookedCount}</p>
-          <p>Remaining: ${slot.capacity - slot.bookedCount}</p>
+            <section class="slot-actions">
+                <button class="edit-btn">Edit</button>
+                <button class="delete-btn">Delete</button>
+            </section>
+        `;
 
-          <p>Status: ${slot.status}</p>
+        card.querySelector(".delete-btn").onclick = () => deleteSlot(slot.id);
 
-          <button class="edit-btn">Edit</button>
-          <button class="delete-btn">Delete</button>
-        </div>
-
-        <div class="slot-edit" style="display:none;">
-          <input type="date" value="${slot.date.replaceAll("/", "-")}" class="edit-date" />
-          <input type="time" value="${to24(slot.time)}" class="edit-time" />
-          <input type="number" value="${slot.capacity}" class="edit-capacity" min="1" />
-
-          <button class="save-btn">Save</button>
-          <button class="cancel-btn">Cancel</button>
-        </div>
-      `;
-
-      const view = div.querySelector(".slot-view");
-      const edit = div.querySelector(".slot-edit");
-
-      // DELETE
-      div.querySelector(".delete-btn").onclick = () => deleteSlot(slot.id);
-
-      // EDIT
-      div.querySelector(".edit-btn").onclick = () => {
-        view.style.display = "none";
-        edit.style.display = "block";
-      };
-
-      // CANCEL
-      div.querySelector(".cancel-btn").onclick = () => {
-        edit.style.display = "none";
-        view.style.display = "block";
-      };
-
-      // SAVE
-      div.querySelector(".save-btn").onclick = async () => {
-        let newDate = div.querySelector(".edit-date").value;
-        const newTime = div.querySelector(".edit-time").value;
-        const newCapacity = div.querySelector(".edit-capacity").value;
-
-        newDate = newDate.replaceAll("/", "-");
-
-        if (!newDate || !newTime || !newCapacity) {
-          showMessage("Fill all fields", "error");
-          return;
-        }
-
-        try {
-          const res = await fetch(`${API}/slots/${slot.id}`, {
-            method: "PUT",
-            headers: {
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-              date: newDate,
-              time: newTime,
-              capacity: Number(newCapacity)
-            })
-          });
-
-          const data = await res.json();
-
-          if (!res.ok) {
-            showMessage(data.error || "Update failed", "error");
-            return;
-          }
-
-          showMessage("Slot updated successfully", "success");
-          renderSlots();
-        } catch (err) {
-          console.error(err);
-          showMessage("Update failed", "error");
-        }
-      };
-
-      container.appendChild(div);
+        container.appendChild(card);
     });
-  } catch (error) {
-    console.error(error);
-    container.innerHTML = "<p class='loading-text'>Failed to load slots.</p>";
-  }
 }
 
-async function createSlot(event) {
-  event.preventDefault();
-  clearMessage();
+async function createSlot(e) {
+    e.preventDefault();
 
-  const date = dateInput.value;
-  const time = timeInput.value;
-  const capacity = capacityInput.value;
+    clearMessage();
 
-  if (!date || !time || !capacity) {
-    showMessage("Please fill in all fields", "error");
-    return;
-  }
+    const date = dateInput.value;
+    const time = timeInput.value;
+    const capacity = capacityInput.value;
 
-  try {
     const res = await fetch(`${API}/slots`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        date,
-        time,
-        capacity: Number(capacity)
-      })
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            date,
+            time,
+            capacity: Number(capacity)
+        })
     });
 
     const data = await res.json();
 
     if (!res.ok) {
-      showMessage(data.error || "Failed to create slot", "error");
-      return;
+        showMessage(data.error || "Failed", "error");
+        return;
     }
 
     showMessage("Slot created successfully", "success");
-    form.reset();
-    dateInput.value = date;
+
     renderSlots();
-  } catch (error) {
-    console.error(error);
-    showMessage("Failed to create slot", "error");
-  }
 }
 
 async function deleteSlot(id) {
-  clearMessage();
-
-  try {
     const res = await fetch(`${API}/slots/${id}`, {
-      method: "DELETE"
+        method: "DELETE"
     });
 
     const data = await res.json();
 
     if (!res.ok) {
-      showMessage(data.error || "Failed to delete slot", "error");
-      return;
+        showMessage(data.error || "Delete failed", "error");
+        return;
     }
 
-    showMessage("Slot deleted successfully", "success");
+    showMessage("Slot deleted", "success");
+
     renderSlots();
-  } catch (error) {
-    console.error(error);
-    showMessage("Failed to delete slot", "error");
-  }
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  if (form) {
-    form.addEventListener("submit", createSlot);
-  }
-
-  if (dateInput) {
     const today = new Date().toISOString().split("T")[0];
     dateInput.value = today;
 
-    dateInput.addEventListener("change", renderSlots);
     renderSlots();
-  }
+
+    dateInput.addEventListener("change", renderSlots);
+
+    form.addEventListener("submit", createSlot);
 });
-
-function to24(time) {
-  let [t, p] = time.split(" ");
-  let [h, m] = t.split(":").map(Number);
-
-  if (p === "PM" && h !== 12) h += 12;
-  if (p === "AM" && h === 12) h = 0;
-
-  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
-}
