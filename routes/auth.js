@@ -93,6 +93,9 @@ router.get("/callback", async (req, res) => {
         name: user.user_metadata?.full_name || user.email.split("@")[0],
         role: "Student", // default role
       });
+
+      // redirect to dashboard after profile creation
+      return res.redirect(302, "/dashboard.html");
     }
 
     // Redirect to page based on role
@@ -101,7 +104,6 @@ router.get("/callback", async (req, res) => {
     } else if (existingProfile.role === "Trade Facility Staff") {
       return res.redirect(302, "/manage-slots.html");
     }
-
   } catch (error) {
     console.error("[/auth/callback] OAuth callback error:", error);
     return res.status(500).json({ ok: false, message: error.message });
@@ -138,7 +140,7 @@ router.get("/me", async (req, res) => {
       id: user.id,
       email: user.email,
       name: profile?.name || user.email.split("@")[0],
-      role: profile?.role || 'Student'
+      role: profile?.role || "Student",
     },
   });
 });
