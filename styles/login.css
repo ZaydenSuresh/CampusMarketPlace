@@ -235,6 +235,7 @@ body.login-page {
 .input-icon {
     position: absolute;
     left: 14px;
+    top: 12.5px;
     color: var(--grey-text);
     width: 18px;
     height: 18px;
@@ -359,7 +360,7 @@ body.login-page {
 
 /* Material Icons */
 .material-icons {
-    font-size: 20px;
+    font-size: 10px;
 }
 
 /* Responsive */
