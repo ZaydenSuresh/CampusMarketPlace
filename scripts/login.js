@@ -9,7 +9,7 @@ const registerPanel = document.getElementById("panel-register");
 const loginForm = document.getElementById("loginForm");
 const registerForm = document.getElementById("registerForm");
 
-const googleLoginBtn = document.getElementById("google-login-btn");
+const googleLoginBtns = document.querySelectorAll(".google-btn");
 const errorBox = document.getElementById("error-message");
 
 const cardHeading = document.getElementById("card-heading");
@@ -36,8 +36,8 @@ const loginSubheading = "Sign in to start trading with your campus community";
 
 function showLoginPanel() {
   if (registerPanel) {
-    registerPanel.style.opacity = '0';
-    registerPanel.style.transform = 'translateX(10px)';
+    registerPanel.style.opacity = "0";
+    registerPanel.style.transform = "translateX(10px)";
   }
 
   if (loginTab) loginTab.classList.add("active");
@@ -45,45 +45,46 @@ function showLoginPanel() {
 
   if (cardHeading && cardSubheading) {
     cardHeading.style.opacity = 0;
-    cardHeading.style.transform = 'translateX(-10px)';
+    cardHeading.style.transform = "translateX(-10px)";
     cardSubheading.style.opacity = 0;
-    cardSubheading.style.transform = 'translateX(-10px)';
+    cardSubheading.style.transform = "translateX(-10px)";
     setTimeout(() => {
       cardHeading.textContent = loginHeading;
       cardSubheading.textContent = loginSubheading;
       cardHeading.style.opacity = 1;
-      cardHeading.style.transform = 'translateX(0)';
+      cardHeading.style.transform = "translateX(0)";
       cardSubheading.style.opacity = 1;
-      cardSubheading.style.transform = 'translateX(0)';
+      cardSubheading.style.transform = "translateX(0)";
     }, 200);
   }
 
   setTimeout(() => {
     if (loginPanel) {
-      loginPanel.style.opacity = '0';
-      loginPanel.style.transform = 'translateX(-10px)';
+      loginPanel.style.opacity = "0";
+      loginPanel.style.transform = "translateX(-10px)";
       loginPanel.classList.remove("hidden");
       setTimeout(() => {
-        loginPanel.style.opacity = '1';
-        loginPanel.style.transform = 'translateX(0)';
+        loginPanel.style.opacity = "1";
+        loginPanel.style.transform = "translateX(0)";
       }, 50);
     }
     if (registerPanel) registerPanel.classList.add("hidden");
   }, 200);
 
-  const slider = document.querySelector('.toggle-slider');
-  if (slider) slider.style.transform = 'translateX(0)';
+  const slider = document.querySelector(".toggle-slider");
+  if (slider) slider.style.transform = "translateX(0)";
 
   clearError();
 }
 
 const signupHeading = "Join Our Community!";
-const signupSubheading = "Create an account to start trading with your campus community";
+const signupSubheading =
+  "Create an account to start trading with your campus community";
 
 function showRegisterPanel() {
   if (loginPanel) {
-    loginPanel.style.opacity = '0';
-    loginPanel.style.transform = 'translateX(10px)';
+    loginPanel.style.opacity = "0";
+    loginPanel.style.transform = "translateX(10px)";
   }
 
   if (registerTab) registerTab.classList.add("active");
@@ -91,34 +92,34 @@ function showRegisterPanel() {
 
   if (cardHeading && cardSubheading) {
     cardHeading.style.opacity = 0;
-    cardHeading.style.transform = 'translateX(-10px)';
+    cardHeading.style.transform = "translateX(-10px)";
     cardSubheading.style.opacity = 0;
-    cardSubheading.style.transform = 'translateX(-10px)';
+    cardSubheading.style.transform = "translateX(-10px)";
     setTimeout(() => {
       cardHeading.textContent = signupHeading;
       cardSubheading.textContent = signupSubheading;
       cardHeading.style.opacity = 1;
-      cardHeading.style.transform = 'translateX(0)';
+      cardHeading.style.transform = "translateX(0)";
       cardSubheading.style.opacity = 1;
-      cardSubheading.style.transform = 'translateX(0)';
+      cardSubheading.style.transform = "translateX(0)";
     }, 200);
   }
 
   setTimeout(() => {
     if (registerPanel) {
-      registerPanel.style.opacity = '0';
-      registerPanel.style.transform = 'translateX(-10px)';
+      registerPanel.style.opacity = "0";
+      registerPanel.style.transform = "translateX(-10px)";
       registerPanel.classList.remove("hidden");
       setTimeout(() => {
-        registerPanel.style.opacity = '1';
-        registerPanel.style.transform = 'translateX(0)';
+        registerPanel.style.opacity = "1";
+        registerPanel.style.transform = "translateX(0)";
       }, 50);
     }
     if (loginPanel) loginPanel.classList.add("hidden");
   }, 200);
 
-  const slider = document.querySelector('.toggle-slider');
-  if (slider) slider.style.transform = 'translateX(100%)';
+  const slider = document.querySelector(".toggle-slider");
+  if (slider) slider.style.transform = "translateX(100%)";
 
   clearError();
 }
@@ -133,7 +134,7 @@ if (registerTab) {
 }
 
 // google button event handler
-if (googleLoginBtn) {
+for (const googleLoginBtn of googleLoginBtns) {
   googleLoginBtn.addEventListener("click", () => {
     window.location.href = `/auth/google`;
   });

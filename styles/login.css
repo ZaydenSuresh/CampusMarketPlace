@@ -79,7 +79,7 @@ body.login-page {
 }
 
 .cta-link::after {
-    content: '';
+    content: "";
     position: absolute;
     left: 0;
     bottom: -4px;
@@ -114,6 +114,7 @@ body.login-page {
 
 .login-header {
     text-align: center;
+    margin-top: -10rem;
     margin-bottom: 2rem;
     min-height: 100px;
     display: flex;
@@ -126,13 +127,17 @@ body.login-page {
     font-weight: 700;
     margin-bottom: 0.25rem;
     color: var(--wits-navy-dark);
-    transition: opacity 0.3s ease, transform 0.3s ease;
+    transition:
+        opacity 0.3s ease,
+        transform 0.3s ease;
 }
 
 #card-subheading {
     color: var(--grey-text);
     font-size: 0.9rem;
-    transition: opacity 0.3s ease, transform 0.3s ease;
+    transition:
+        opacity 0.3s ease,
+        transform 0.3s ease;
 }
 
 /* Toggle Tabs */
@@ -187,7 +192,9 @@ body.login-page {
 #panel-register {
     opacity: 0;
     visibility: hidden;
-    transition: opacity 0.3s ease, transform 0.3s ease;
+    transition:
+        opacity 0.3s ease,
+        transform 0.3s ease;
     transform: translateX(-10px);
     position: absolute;
     top: 0;
@@ -308,7 +315,7 @@ body.login-page {
 
 .divider::before,
 .divider::after {
-    content: '';
+    content: "";
     flex: 1;
     height: 1px;
     background: var(--grey-border);
@@ -448,6 +455,7 @@ body.login-page {
     .login-header {
         width: 100%;
         text-align: center;
+        margin-top: 0rem;
         margin-bottom: 0.5rem;
     }
 

@@ -16,7 +16,11 @@
         <main class="page-container">
             <!-- CTA section -->
             <aside class="cta-section">
-                <img src="/images/Great-Hall-October-2023-5-scaled.jpg" alt="Campus" class="cta-bg">
+                <img
+                    src="/images/Great-Hall-October-2023-5-scaled.jpg"
+                    alt="Campus"
+                    class="cta-bg"
+                />
                 <div class="cta-overlay"></div>
                 <div class="cta-content">
                     <h1 class="cta-title">
@@ -30,20 +34,34 @@
                 </div>
             </aside>
 
-                 <!-- Login section -->
+            <!-- Login section -->
             <section class="login-section">
                 <div class="login-container">
                     <!-- Header with dynamic headings -->
                     <header class="login-header">
                         <h2 id="card-heading">Welcome Back!</h2>
-                        <p id="card-subheading">Sign in to start trading with your campus community</p>
+                        <p id="card-subheading">
+                            Sign in to start trading with your campus community
+                        </p>
                     </header>
 
                     <!-- Navbar to switch between login & signup forms -->
                     <nav class="toggle-container">
                         <div class="toggle-slider"></div>
-                        <button class="toggle-btn active" id="tab-login" type="button">Login</button>
-                        <button class="toggle-btn" id="tab-register" type="button">Sign Up</button>
+                        <button
+                            class="toggle-btn active"
+                            id="tab-login"
+                            type="button"
+                        >
+                            Login
+                        </button>
+                        <button
+                            class="toggle-btn"
+                            id="tab-register"
+                            type="button"
+                        >
+                            Sign Up
+                        </button>
                     </nav>
 
                     <p id="error-message" class="form-global-error hidden"></p>
@@ -55,10 +73,21 @@
                             <form id="loginForm" novalidate>
                                 <!-- Email input -->
                                 <div class="input-group form-group">
-                                    <label for="login-email">University Email</label>
+                                    <label for="login-email"
+                                        >University Email</label
+                                    >
                                     <div class="input-wrapper">
-                                        <span class="material-icons input-icon">mail</span>
-                                        <input class="form-input" type="email" id="login-email" name="email" placeholder="student@wits.ac.za" required />
+                                        <span class="material-icons input-icon"
+                                            >mail</span
+                                        >
+                                        <input
+                                            class="form-input"
+                                            type="email"
+                                            id="login-email"
+                                            name="email"
+                                            placeholder="student@wits.ac.za"
+                                            required
+                                        />
                                     </div>
                                     <small class="form-error"></small>
                                 </div>
@@ -67,35 +96,72 @@
                                 <div class="input-group form-group">
                                     <label for="login-password">Password</label>
                                     <div class="input-wrapper">
-                                        <span class="material-icons input-icon">lock</span>
-                                        <input class="form-input" type="password" id="login-password" name="password" placeholder="••••••••" required />
+                                        <span class="material-icons input-icon"
+                                            >lock</span
+                                        >
+                                        <input
+                                            class="form-input"
+                                            type="password"
+                                            id="login-password"
+                                            name="password"
+                                            placeholder="••••••••"
+                                            required
+                                        />
                                     </div>
                                     <small class="form-error"></small>
                                 </div>
 
-                                <button type="submit" class="submit-btn" id="login-submit-btn">Sign In</button>
+                                <button
+                                    type="submit"
+                                    class="submit-btn"
+                                    id="login-submit-btn"
+                                >
+                                    Sign In
+                                </button>
                             </form>
 
                             <div class="divider">or</div>
 
                             <!-- Google sign in button -->
-                            <button type="button" class="google-btn" id="google-login-btn">
-                                <svg class="google-logo" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <button
+                                type="button"
+                                class="google-btn"
+                                id="google-login-btn"
+                            >
+                                <svg
+                                    class="google-logo"
+                                    viewBox="0 0 24 24"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                >
                                     <!-- Blue segment - top right -->
-                                    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                                    <path
+                                        d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                                        fill="#4285F4"
+                                    />
                                     <!-- Green segment - bottom -->
-                                    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                                    <path
+                                        d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                                        fill="#34A853"
+                                    />
                                     <!-- Yellow segment - left -->
-                                    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                                    <path
+                                        d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                                        fill="#FBBC05"
+                                    />
                                     <!-- Red segment - top left -->
-                                    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                                    <path
+                                        d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                                        fill="#EA4335"
+                                    />
                                 </svg>
                                 Continue with Google
                             </button>
 
                             <!-- Forgot password link -->
                             <footer class="card-footer">
-                                <a href="#" class="forgot-password">Forgot password?</a>
+                                <a href="#" class="forgot-password"
+                                    >Forgot password?</a
+                                >
                             </footer>
                         </section>
 
@@ -106,18 +172,38 @@
                                 <div class="input-group form-group">
                                     <label for="reg-name">Full Name</label>
                                     <div class="input-wrapper">
-                                        <span class="material-icons input-icon">person</span>
-                                        <input class="form-input" type="text" id="reg-name" name="name" placeholder="Jane Smith" required />
+                                        <span class="material-icons input-icon"
+                                            >person</span
+                                        >
+                                        <input
+                                            class="form-input"
+                                            type="text"
+                                            id="reg-name"
+                                            name="name"
+                                            placeholder="Jane Smith"
+                                            required
+                                        />
                                     </div>
                                     <small class="form-error"></small>
                                 </div>
 
                                 <!-- Email input -->
                                 <div class="input-group form-group">
-                                    <label for="reg-email">University Email</label>
+                                    <label for="reg-email"
+                                        >University Email</label
+                                    >
                                     <div class="input-wrapper">
-                                        <span class="material-icons input-icon">mail</span>
-                                        <input class="form-input" type="email" id="reg-email" name="email" placeholder="student@wits.ac.za" required />
+                                        <span class="material-icons input-icon"
+                                            >mail</span
+                                        >
+                                        <input
+                                            class="form-input"
+                                            type="email"
+                                            id="reg-email"
+                                            name="email"
+                                            placeholder="student@wits.ac.za"
+                                            required
+                                        />
                                     </div>
                                     <small class="form-error"></small>
                                 </div>
@@ -126,13 +212,65 @@
                                 <div class="input-group form-group">
                                     <label for="reg-password">Password</label>
                                     <div class="input-wrapper">
-                                        <span class="material-icons input-icon">lock</span>
-                                        <input class="form-input" type="password" id="reg-password" name="password" placeholder="Min. 6 characters" required />
+                                        <span class="material-icons input-icon"
+                                            >lock</span
+                                        >
+                                        <input
+                                            class="form-input"
+                                            type="password"
+                                            id="reg-password"
+                                            name="password"
+                                            placeholder="Min. 6 characters"
+                                            required
+                                        />
                                     </div>
                                     <small class="form-error"></small>
                                 </div>
 
-                                <button type="submit" class="submit-btn register-submit-btn" id="register-submit-btn">Create Account</button>
+                                <button
+                                    type="submit"
+                                    class="submit-btn register-submit-btn"
+                                    id="register-submit-btn"
+                                >
+                                    Create Account
+                                </button>
+
+                                <div class="divider">or</div>
+
+                                <!-- Google sign in button -->
+                                <button
+                                    type="button"
+                                    class="google-btn"
+                                    id="google-login-btn-2"
+                                >
+                                    <svg
+                                        class="google-logo"
+                                        viewBox="0 0 24 24"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                    >
+                                        <!-- Blue segment - top right -->
+                                        <path
+                                            d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                                            fill="#4285F4"
+                                        />
+                                        <!-- Green segment - bottom -->
+                                        <path
+                                            d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                                            fill="#34A853"
+                                        />
+                                        <!-- Yellow segment - left -->
+                                        <path
+                                            d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                                            fill="#FBBC05"
+                                        />
+                                        <!-- Red segment - top left -->
+                                        <path
+                                            d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                                            fill="#EA4335"
+                                        />
+                                    </svg>
+                                    Continue with Google
+                                </button>
                             </form>
                         </section>
                     </div>
