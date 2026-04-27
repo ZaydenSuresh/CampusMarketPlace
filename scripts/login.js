@@ -15,6 +15,31 @@ const errorBox = document.getElementById("error-message");
 const cardHeading = document.getElementById("card-heading");
 const cardSubheading = document.getElementById("card-subheading");
 
+function setButtonLoading(btn, loading) {
+    if (loading) {
+        btn.dataset.originalText = btn.innerHTML;
+        btn.innerHTML = '<span class="btn-spinner"></span>';
+        btn.disabled = true;
+    } else {
+        btn.innerHTML = btn.dataset.originalText;
+        btn.disabled = false;
+    }
+}
+
+window.addEventListener("pageshow", (e) => {
+    if (e.persisted) {
+        googleLoginBtns.forEach((btn) => {
+            if (btn.disabled) setButtonLoading(btn, false);
+        });
+        if (document.getElementById("login-submit-btn")?.disabled) {
+            setButtonLoading(document.getElementById("login-submit-btn"), false);
+        }
+        if (document.getElementById("register-submit-btn")?.disabled) {
+            setButtonLoading(document.getElementById("register-submit-btn"), false);
+        }
+    }
+});
+
 function showError(message) {
   if (!errorBox) {
     alert(message);
@@ -42,6 +67,9 @@ function showLoginPanel() {
 
   if (loginTab) loginTab.classList.add("active");
   if (registerTab) registerTab.classList.remove("active");
+
+  const regBtn = document.getElementById("register-submit-btn");
+  if (regBtn?.disabled) setButtonLoading(regBtn, false);
 
   if (cardHeading && cardSubheading) {
     cardHeading.style.opacity = 0;
@@ -136,7 +164,10 @@ if (registerTab) {
 // google button event handler
 for (const googleLoginBtn of googleLoginBtns) {
   googleLoginBtn.addEventListener("click", () => {
-    window.location.href = `/auth/google`;
+    setButtonLoading(googleLoginBtn, true);
+    setTimeout(() => {
+      window.location.href = `/auth/google`;
+    }, 100);
   });
 }
 
@@ -148,6 +179,7 @@ if (registerForm) {
     const name = document.getElementById("reg-name")?.value.trim();
     const email = document.getElementById("reg-email")?.value.trim();
     const password = document.getElementById("reg-password")?.value;
+    const submitBtn = document.getElementById("register-submit-btn");
 
     if (!name || !email || !password) {
       showError("Please fill in all fields.");
@@ -159,15 +191,18 @@ if (registerForm) {
       return;
     }
 
+    setButtonLoading(submitBtn, true);
+
     try {
       await registerUser({ name, email, password });
-      // TODO: make the alert align with page design
       alert("Account created successfully. You can now log in.");
       registerForm.reset();
       showLoginPanel();
     } catch (err) {
       console.error("Register error:", err.message);
       showError(err.message);
+    } finally {
+      setButtonLoading(submitBtn, false);
     }
   });
 }
@@ -179,11 +214,14 @@ if (loginForm) {
 
     const email = document.getElementById("login-email")?.value.trim();
     const password = document.getElementById("login-password")?.value;
+    const submitBtn = document.getElementById("login-submit-btn");
 
     if (!email || !password) {
       showError("Please enter your email and password.");
       return;
     }
+
+    setButtonLoading(submitBtn, true);
 
     try {
       const data = await loginUser({ email, password });
@@ -203,6 +241,8 @@ if (loginForm) {
     } catch (err) {
       console.error("Login error:", err.message);
       showError(err.message);
+    } finally {
+      setButtonLoading(submitBtn, false);
     }
   });
 }
