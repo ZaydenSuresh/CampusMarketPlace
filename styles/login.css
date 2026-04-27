@@ -289,6 +289,27 @@ body.login-page {
     transition: background var(--transition-fast);
 }
 
+.submit-btn:disabled {
+    opacity: 0.7;
+}
+
+/* Button loading spinner */
+.btn-spinner {
+    width: 18px;
+    height: 18px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    display: inline-block;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
 .submit-btn:hover {
     background: var(--wits-navy-dark);
 }
@@ -337,6 +358,15 @@ body.login-page {
     justify-content: center;
     gap: 10px;
     transition: background var(--transition-fast);
+}
+
+.google-btn:disabled {
+    opacity: 0.7;
+}
+
+.google-btn .btn-spinner {
+    border-color: rgba(0, 0, 0, 0.2);
+    border-top-color: var(--text-dark);
 }
 
 .google-btn:hover {
