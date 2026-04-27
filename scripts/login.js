@@ -15,29 +15,31 @@ const errorBox = document.getElementById("error-message");
 const cardHeading = document.getElementById("card-heading");
 const cardSubheading = document.getElementById("card-subheading");
 
+// Replaces button text with spinner during async operations
 function setButtonLoading(btn, loading) {
-    if (loading) {
-        btn.dataset.originalText = btn.innerHTML;
-        btn.innerHTML = '<span class="btn-spinner"></span>';
-        btn.disabled = true;
-    } else {
-        btn.innerHTML = btn.dataset.originalText;
-        btn.disabled = false;
-    }
+  if (loading) {
+    btn.dataset.originalText = btn.innerHTML;
+    btn.innerHTML = '<span class="btn-spinner"></span>';
+    btn.disabled = true;
+  } else {
+    btn.innerHTML = btn.dataset.originalText;
+    btn.disabled = false;
+  }
 }
 
+// Reset button states when page is restored from Alt+←
 window.addEventListener("pageshow", (e) => {
-    if (e.persisted) {
-        googleLoginBtns.forEach((btn) => {
-            if (btn.disabled) setButtonLoading(btn, false);
-        });
-        if (document.getElementById("login-submit-btn")?.disabled) {
-            setButtonLoading(document.getElementById("login-submit-btn"), false);
-        }
-        if (document.getElementById("register-submit-btn")?.disabled) {
-            setButtonLoading(document.getElementById("register-submit-btn"), false);
-        }
+  if (e.persisted) {
+    googleLoginBtns.forEach((btn) => {
+      if (btn.disabled) setButtonLoading(btn, false);
+    });
+    if (document.getElementById("login-submit-btn")?.disabled) {
+      setButtonLoading(document.getElementById("login-submit-btn"), false);
     }
+    if (document.getElementById("register-submit-btn")?.disabled) {
+      setButtonLoading(document.getElementById("register-submit-btn"), false);
+    }
+  }
 });
 
 function showError(message) {
@@ -68,6 +70,7 @@ function showLoginPanel() {
   if (loginTab) loginTab.classList.add("active");
   if (registerTab) registerTab.classList.remove("active");
 
+  // Reset register button spinner when switching tabs
   const regBtn = document.getElementById("register-submit-btn");
   if (regBtn?.disabled) setButtonLoading(regBtn, false);
 
