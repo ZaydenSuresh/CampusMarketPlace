@@ -1,50 +1,79 @@
 <!doctype html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Trade Slots | Campus Marketplace</title>
-        <link rel="stylesheet" href="/styles/global.css" />
-        <link rel="stylesheet" href="/styles/slots.css" />
-    </head>
-    <body>
-        <aside class="sidebar">
-            <div class="sidebar-logo">
-                Campus<span class="highlight">Market</span>
-            </div>
-            <nav class="nav-list">
-                <a href="dashboard.html" class="nav-item">
-                    <span>🏠 Dashboard</span>
-                </a>
-                <a href="trade-slots.html" class="nav-item active">
-                    <span>📅 Trade Slots</span>
-                </a>
-                <a href="#" class="nav-item">
-                    <span>📦 My Listings</span>
-                </a>
-            </nav>
-        </aside>
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Trade Slots | Campus Marketplace</title>
 
-        <main class="main-content">
-            <header class="page-header">
-                <h1>Trade Slots</h1>
-                <p class="text-muted">
-                    View the slots that have been made available by the facility staff.
-                </p>
-            </header>
+<link rel="stylesheet" href="/styles/global.css" />
+<link rel="stylesheet" href="/styles/slots.css" />
+</head>
 
-            <section class="slot-controls">
-                <label for="slot-date">Select date:</label>
-                <input type="date" id="slot-date" />
-            </section>
+<body>
 
-            <div id="feedback-message" class="feedback-message"></div>
+<aside class="sidebar">
 
-            <div id="slots-container">
-                <p class="loading-text">Select a date to view available slots.</p>
-            </div>
-        </main>
+<div class="sidebar-logo">
+Campus<span class="highlight">Market</span>
+</div>
 
-        <script src="/scripts/slots.js"></script>
-    </body>
+<nav class="nav-list">
+
+<a href="/dashboard.html" class="nav-item">
+<span>🏠 Dashboard</span>
+</a>
+
+<a href="/trade-slots.html" class="nav-item active">
+<span>📅 Trade Slots</span>
+</a>
+
+<a href="/create-listing.html" class="nav-item">
+<span>📦 My Listings</span>
+</a>
+
+<a href="#" class="nav-item">
+<span>💬 Messages</span>
+</a>
+
+<a href="/rate-user.html" class="nav-item">
+<span>⭐ Ratings</span>
+</a>
+
+</nav>
+
+</aside>
+
+<main class="main-content">
+
+<header class="page-header">
+<h1>Trade Slots</h1>
+
+<p class="text-muted">
+View the slots that have been made available by the facility staff.
+</p>
+</header>
+
+<section class="slot-controls">
+
+<label for="slot-date">Select date:</label>
+
+<input type="date" id="slot-date" />
+
+</section>
+
+<div id="feedback-message" class="feedback-message"></div>
+
+<section id="slots-container">
+
+<p class="loading-text">
+Loading available slots...
+</p>
+
+</section>
+
+</main>
+
+<script src="/scripts/slots.js"></script>
+
+</body>
 </html>
