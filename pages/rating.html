@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Rate Seller | Wits Marketplace</title>
+
+   <link rel="stylesheet" href="/styles/global.css">
+    <link rel="stylesheet" href="/styles/rating.css">
+</head>
+
+<body>
+    <main class="rating-page">
+        <section class="rating-card">
+            <h1>Rate Seller</h1>
+
+            <p class="rating-subtitle">
+                Share your experience after this completed transaction.
+            </p>
+
+            <section class="rating-info">
+                <p>
+                    <strong>Transaction ID:</strong>
+                    <span id="transactionIdText">Not found</span>
+                </p>
+
+                <p>
+                    <strong>Seller ID:</strong>
+                    <span id="sellerIdText">Not found</span>
+                </p>
+            </section>
+
+            <section class="stars" id="stars">
+                <button type="button" data-value="1">★</button>
+                <button type="button" data-value="2">★</button>
+                <button type="button" data-value="3">★</button>
+                <button type="button" data-value="4">★</button>
+                <button type="button" data-value="5">★</button>
+            </section>
+
+            <textarea id="reviewText" placeholder="Write your review..."></textarea>
+
+            <button id="submitRatingBtn" class="submit-rating-btn">
+                Submit Rating
+            </button>
+
+            <p id="ratingMessage"></p>
+        </section>
+    </main>
+
+   <script type="module" src="/scripts/rating.js"></script>
+</body>
+</html>
