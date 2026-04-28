@@ -21,6 +21,7 @@ try {
 const { router: authRouter } = require("./routes/auth");
 const slotsRouter = require("./routes/slots");
 const MessageAuth = require("./routes/messages");
+const historyRouter = require("./routes/history");
 
 app.use(cors());
 app.use("/lib", express.static("lib"));
@@ -34,6 +35,7 @@ app.use(express.json());
 app.use("/auth", authRouter);
 app.use("/slots", slotsRouter);
 app.use("/messages", MessageAuth);
+app.use("/history", historyRouter);
 
 // show login page on server startup
 app.get("/", (req, res) => {

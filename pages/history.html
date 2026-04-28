@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Transaction History</title>
+
+<link rel="stylesheet" href="/styles/global.css">
+<link rel="stylesheet" href="/styles/history.css">
+</head>
+
+<body>
+
+<aside class="sidebar">
+
+<header class="brand">
+<h1>Campus<span>Market</span></h1>
+<p>Student Portal</p>
+</header>
+
+<nav class="sidebar-nav">
+
+<a href="/dashboard.html" class="nav-link">
+<span>🏠</span>
+<span>Dashboard</span>
+</a>
+
+<a href="/history.html" class="nav-link active">
+<span>📜</span>
+<span>History</span>
+</a>
+
+<a href="/login.html" class="nav-link logout-link">
+<span>↩</span>
+<span>Logout</span>
+</a>
+
+</nav>
+
+</aside>
+
+<main class="content">
+
+<header class="page-top">
+<h2>Transaction History</h2>
+<p>Completed trades involving you</p>
+</header>
+
+<section class="panel">
+<h3>Bought Items</h3>
+<section id="bought-container" class="history-grid">
+<p>Loading...</p>
+</section>
+</section>
+
+<section class="panel">
+<h3>Sold Items</h3>
+<section id="sold-container" class="history-grid">
+<p>Loading...</p>
+</section>
+</section>
+
+</main>
+
+<script src="/scripts/history.js"></script>
+</body>
+</html>
