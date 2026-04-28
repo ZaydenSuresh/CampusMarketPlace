@@ -27,46 +27,57 @@ function clearMessage() {
 }
 
 async function fetchSlots() {
-  const date = dateInput.value;
-
   clearMessage();
 
-  if (!date) {
-    container.innerHTML = "<p class='loading-text'>Select a date</p>";
-    return;
-  }
-
-  if (!isWeekday(date)) {
-    container.innerHTML = "<p class='loading-text'>No booking available.</p>";
-    return;
-  }
+  container.innerHTML = "<p class='loading-text'>Loading slots...</p>";
 
   try {
-    const res = await fetch(`${API}/slots?date=${date}`);
+    const res = await fetch(`${API}/slots`);
 
     if (!res.ok) {
       throw new Error("Failed to fetch slots");
     }
 
-    const slots = await res.json();
+    let slots = await res.json();
+
+    /* student selected a date -> filter frontend only */
+    const selectedDate = dateInput.value;
+
+    if (selectedDate) {
+      if (!isWeekday(selectedDate)) {
+        container.innerHTML =
+          "<p class='loading-text'>No booking available on weekends.</p>";
+        return;
+      }
+
+      slots = slots.filter(slot => slot.date === selectedDate);
+    }
+
     displaySlots(slots);
+
   } catch (error) {
     console.error(error);
-    container.innerHTML = "<p class='loading-text'>Failed to load slots.</p>";
+    container.innerHTML =
+      "<p class='loading-text'>Failed to load slots.</p>";
   }
 }
 
 function displaySlots(slots) {
   container.innerHTML = "";
 
-  if (!slots.length) {
-    container.innerHTML = "<p class='loading-text'>No slots available.</p>";
+  /* hide full slots */
+  const availableSlots = slots.filter(
+    slot => slot.bookedCount < slot.capacity
+  );
+
+  if (!availableSlots.length) {
+    container.innerHTML =
+      "<p class='loading-text'>No available slots found.</p>";
     return;
   }
 
-  slots.forEach((slot) => {
-    // hide full slots
-    if (slot.bookedCount >= slot.capacity) return;
+  availableSlots.forEach(slot => {
+    const remaining = slot.capacity - slot.bookedCount;
 
     const div = document.createElement("div");
     div.className = "slot-card";
@@ -74,8 +85,8 @@ function displaySlots(slots) {
     div.innerHTML = `
       <p><strong>${slot.time}</strong></p>
       <p>Date: ${slot.date}</p>
-      <p>Capacity: ${slot.capacity - slot.bookedCount} remaining</p>
-      <button>Book</button>
+      <p>${remaining} remaining</p>
+      <button class="book-btn">Book Slot</button>
     `;
 
     div.querySelector("button").onclick = () => bookSlot(slot.id);
@@ -104,7 +115,9 @@ async function bookSlot(id) {
     }
 
     showMessage("Slot booked successfully", "success");
+
     fetchSlots();
+
   } catch (error) {
     console.error(error);
     showMessage("Booking failed", "error");
@@ -113,5 +126,8 @@ async function bookSlot(id) {
 
 document.addEventListener("DOMContentLoaded", () => {
   if (!dateInput || !container) return;
+
+  fetchSlots(); /* load immediately */
+
   dateInput.addEventListener("change", fetchSlots);
 });
