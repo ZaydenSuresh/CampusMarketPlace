@@ -53,11 +53,6 @@ submitBtn.addEventListener("click", () => {
         return;
     }
 
-    if (review === "") {
-        message.textContent = "Please write a short review.";
-        message.className = "error-message";
-        return;
-    }
 
     const ratingData = {
         transactionId: transactionId,
