@@ -399,5 +399,94 @@ router.delete("/:id", async (req, res) => {
     return res.status(500).json({ error: err.message });
   }
 });
+// RESERVE / BUY listing
+router.post("/:id/reserve", async (req, res) => {
+  const supabase = createSupabaseClient(req, res);
+
+  try {
+    const listingId = req.params.id;
+    const { transaction_type } = req.body;
+
+    if (!["sale", "trade"].includes(transaction_type)) {
+      return res.status(400).json({ error: "Invalid transaction type" });
+    }
+
+    const user = await getCurrentUser(req, res);
+
+    if (!user) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
+
+    const buyerId = user.id;
+
+    const { data: listing, error: listingError } = await supabase
+      .from("listings")
+      .select("*")
+      .eq("id", listingId)
+      .single();
+
+    if (listingError || !listing) {
+      return res.status(404).json({ error: "Listing not found" });
+    }
+
+    if (listing.status !== "available") {
+      return res.status(400).json({ error: "Listing not available" });
+    }
+
+    if (listing.user_id === buyerId) {
+      return res.status(400).json({ error: "Cannot reserve your own listing" });
+    }
+
+    const { data: existingTransaction, error: txError } = await supabase
+      .from("transactions")
+      .select("*")
+      .eq("listing_id", listingId)
+      .not("status", "in", '("completed","cancelled")')
+      .maybeSingle();
+
+    if (txError) throw new Error(txError.message);
+
+    if (existingTransaction) {
+      return res.status(400).json({
+        error: "Listing already has an active transaction",
+      });
+    }
+
+    const { data: transaction, error: insertError } = await supabase
+      .from("transactions")
+      .insert([
+        {
+          listing_id: listingId,
+          buyer_id: buyerId,
+          seller_id: listing.user_id,
+          type: transaction_type,
+          status: "pending",
+          slot_id: null,
+          dropoff_confirmed: false,
+          collection_confirmed: false,
+        },
+      ])
+      .select("*");
+
+    if (insertError) throw new Error(insertError.message);
+
+    const { error: updateError } = await supabase
+      .from("listings")
+      .update({ status: "reserved" })
+      .eq("id", listingId);
+
+    if (updateError) throw new Error(updateError.message);
+
+    return res.json({
+      ok: true,
+      message: "Listing reserved",
+      transaction: transaction[0],
+    });
+  } catch (err) {
+    console.error("Reserve error:", err);
+    return res.status(500).json({ error: err.message });
+  }
+});
 
 module.exports = router;
+ 
