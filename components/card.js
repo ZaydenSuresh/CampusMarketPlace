@@ -48,6 +48,11 @@ export function createListingCard(listing) {
             <p class="text-small">
                 Condition: ${listing.condition || "N/A"}
             </p>
+            <p class="seller-rating">
+                ★ ${listing.seller_average_rating || "No ratings yet"}
+                 ${listing.seller_review_count ? `(${listing.seller_review_count} reviews)` : ""}
+            </p>
+ 
 
             <p class="text-small">
                 Status: ${listing.status || "available"}

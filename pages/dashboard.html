@@ -71,8 +71,16 @@ body {
 .dashboard-header {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-start;
+    gap: 16px;
     margin-bottom: var(--space-2xl);
+    flex-wrap: wrap;
+}
+
+.header-actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
 }
 
 .stats-grid {
@@ -132,12 +140,6 @@ body {
     font-size: 0.8rem;
     font-weight: 700;
     cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.edit-btn:hover {
-    background: var(--wits-navy-dark);
-    transform: translateY(-1px);
 }
 
 .item-card:hover {
@@ -205,28 +207,12 @@ body {
     background: var(--white);
     cursor: pointer;
     font-size: 0.85rem;
-    transition: all 0.2s ease;
-}
-
-.filter-pill:hover {
-    background: var(--bg-light);
 }
 
 .filter-pill.active {
     background: var(--wits-navy);
     color: var(--white);
     border-color: var(--wits-navy);
-}
-
-.badge {
-    display: inline-flex;
-    align-items: center;
-    padding: 4px 10px;
-    border-radius: 20px;
-    font-size: 0.7rem;
-    font-weight: 700;
-    background: rgba(212, 175, 55, 0.15);
-    color: #9a7a10;
 }
 </style>
 </head>
@@ -250,17 +236,31 @@ Campus<span class="highlight">Market</span>
 <main class="main-content">
 
 <header class="dashboard-header">
-<div>
+
+<section>
 <h1 id="welcome-name">Welcome back</h1>
 <p>Here's what's happening with your trades today.</p>
-</div>
+</section>
 
-<button class="action-btn" onclick="window.location.href='/create-listing.html'">
+<section class="header-actions">
+
+<button class="action-btn"
+onclick="window.location.href='/create-listing.html'">
 + Create Listing
 </button>
-<button class="action-btn" onclick="window.location.href='messages.html'">
-  💬 Open Messages
+
+<button class="action-btn"
+onclick="window.location.href='/history.html'">
+📜 Transaction History
 </button>
+
+<button class="action-btn"
+onclick="window.location.href='messages.html'">
+💬 Open Messages
+</button>
+
+</section>
+
 </header>
 
 <section class="stats-grid">
@@ -268,10 +268,12 @@ Campus<span class="highlight">Market</span>
 <h3>Active Listings</h3>
 <div class="value" id="activeListingsCount">00</div>
 </div>
+
 <div class="stat-card">
 <h3>Items Sold</h3>
 <div class="value">12</div>
 </div>
+
 <div class="stat-card">
 <h3>Pending Trades</h3>
 <div class="value">02</div>
@@ -283,15 +285,15 @@ Campus<span class="highlight">Market</span>
 <input id="searchInput" type="text" placeholder="Search listings..." />
 
 <div class="category-filters" id="categoryFilters">
-  <button class="filter-pill active" data-category="All">All</button>
-  <button class="filter-pill" data-category="Textbooks">Textbooks</button>
-  <button class="filter-pill" data-category="Electronics">Electronics</button>
-  <button class="filter-pill" data-category="Furniture">Furniture</button>
-  <button class="filter-pill" data-category="Clothing">Clothing</button>
-  <button class="filter-pill" data-category="Appliances">Appliances</button>
-  <button class="filter-pill" data-category="Stationary">Stationary</button>
-  <button class="filter-pill" data-category="Tickets">Tickets</button>
-  <button class="filter-pill" data-category="Miscellaneous">Miscellaneous</button>
+<button class="filter-pill active" data-category="All">All</button>
+<button class="filter-pill" data-category="Textbooks">Textbooks</button>
+<button class="filter-pill" data-category="Electronics">Electronics</button>
+<button class="filter-pill" data-category="Furniture">Furniture</button>
+<button class="filter-pill" data-category="Clothing">Clothing</button>
+<button class="filter-pill" data-category="Appliances">Appliances</button>
+<button class="filter-pill" data-category="Stationary">Stationary</button>
+<button class="filter-pill" data-category="Tickets">Tickets</button>
+<button class="filter-pill" data-category="Miscellaneous">Miscellaneous</button>
 </div>
 
 <div class="listings-container" id="listings-container"></div>
@@ -359,7 +361,6 @@ async function loadListings() {
 
     render(listings);
   } catch (error) {
-    console.error("Load listings error:", error);
     if (container) {
       container.innerHTML = `<p>Error loading listings</p>`;
     }
@@ -369,6 +370,7 @@ async function loadListings() {
 async function searchListings(query, category) {
   try {
     const params = new URLSearchParams();
+
     if (query) params.set("q", query);
     if (category && category !== "All") params.set("category", category);
 
@@ -383,7 +385,6 @@ async function searchListings(query, category) {
 
     render(filteredListings);
   } catch (error) {
-    console.error("Search listings error:", error);
     if (container) {
       container.innerHTML = `<p>Error loading listings</p>`;
     }
@@ -392,6 +393,7 @@ async function searchListings(query, category) {
 
 function debounce(func, delay) {
   let timeoutId;
+
   return function (...args) {
     clearTimeout(timeoutId);
     timeoutId = setTimeout(() => func.apply(this, args), delay);
@@ -408,12 +410,15 @@ if (input) {
 
 document.querySelectorAll(".filter-pill").forEach((btn) => {
   btn.addEventListener("click", () => {
+
     document.querySelectorAll(".filter-pill").forEach((pill) => {
       pill.classList.remove("active");
     });
 
     btn.classList.add("active");
+
     activeCategory = btn.dataset.category;
+
     searchListings(input ? input.value : "", activeCategory);
   });
 });

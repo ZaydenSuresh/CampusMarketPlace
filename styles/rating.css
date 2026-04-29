@@ -1,0 +1,123 @@
+.rating-page {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: var(--space-xl);
+    background: var(--bg-light);
+}
+
+.rating-card {
+    width: 100%;
+    max-width: 420px;
+    background: var(--clr-surface);
+    border-radius: var(--radius-lg);
+    padding: var(--space-xl);
+    box-shadow: var(--shadow-md);
+    text-align: center;
+}
+
+.rating-card h1 {
+    color: var(--clr-primary);
+    margin-bottom: var(--space-sm);
+}
+
+.rating-subtitle {
+    color: var(--clr-text-muted);
+    margin-bottom: var(--space-lg);
+}
+
+.rating-info {
+    background: var(--grey-light);
+    border-radius: var(--radius-md);
+    padding: var(--space-md);
+    margin-bottom: var(--space-lg);
+    text-align: left;
+}
+
+.rating-info p {
+    font-size: 0.9rem;
+    color: var(--text-dark);
+    margin-bottom: var(--space-xs);
+}
+
+.rating-info p:last-child {
+    margin-bottom: 0;
+}
+
+.stars {
+    display: flex;
+    justify-content: center;
+    gap: var(--space-sm);
+    margin-bottom: var(--space-lg);
+}
+
+.stars button {
+    border: none;
+    background: none;
+    font-size: 2rem;
+    color: var(--clr-text-light);
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.stars button.active {
+    color: var(--wits-gold);
+}
+
+.stars button:hover {
+    transform: scale(1.1);
+}
+
+textarea {
+    width: 100%;
+    min-height: 110px;
+    padding: var(--space-md);
+    border: 1px solid var(--clr-border);
+    border-radius: var(--radius-md);
+    resize: none;
+    margin-bottom: var(--space-md);
+    font-family: var(--font-base);
+    outline: none;
+}
+
+textarea:focus {
+    border-color: var(--clr-primary);
+    box-shadow: 0 0 0 3px rgba(0, 59, 126, 0.1);
+}
+
+.submit-rating-btn {
+    width: 100%;
+    display: block;
+    margin: 0 auto;
+    background-color: var(--wits-navy);
+    color: var(--white);
+    border: none;
+    border-radius: var(--radius-pill);
+    padding: 14px;
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.submit-rating-btn:hover:not(:disabled) {
+    background-color: var(--wits-navy-dark);
+}
+
+.submit-rating-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.error-message {
+    color: var(--clr-danger);
+    margin-top: var(--space-sm);
+    font-size: 0.9rem;
+}
+
+.success-message {
+    color: var(--clr-success);
+    margin-top: var(--space-sm);
+    font-size: 0.9rem;
+}
