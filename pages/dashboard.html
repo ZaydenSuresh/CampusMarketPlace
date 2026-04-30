@@ -1,337 +1,394 @@
 <!doctype html>
 <html lang="en">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Dashboard | Campus Marketplace</title>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Dashboard | Campus Marketplace</title>
 
-<link rel="stylesheet" href="/styles/global.css" />
+        <link rel="stylesheet" href="/styles/global.css" />
 
-<style>
-body {
-    display: flex;
-    min-height: 100vh;
-    background-color: var(--bg-light);
-}
+        <style>
+            body {
+                display: flex;
+                min-height: 100vh;
+                background-color: var(--bg-light);
+            }
 
-.sidebar {
-    width: 280px;
-    background: var(--clr-bg-gradient);
-    color: var(--white);
-    display: flex;
-    flex-direction: column;
-    padding: var(--space-xl);
-    position: fixed;
-    height: 100vh;
-    box-shadow: var(--shadow-lg);
-}
+            .sidebar {
+                width: 280px;
+                background: var(--clr-bg-gradient);
+                color: var(--white);
+                display: flex;
+                flex-direction: column;
+                padding: var(--space-xl);
+                position: fixed;
+                height: 100vh;
+                box-shadow: var(--shadow-lg);
+            }
 
-.sidebar-logo {
-    font-size: 1.5rem;
-    font-weight: 800;
-    margin-bottom: var(--space-2xl);
-    color: var(--white);
-}
+            .sidebar-logo {
+                font-size: 1.5rem;
+                font-weight: 800;
+                margin-bottom: var(--space-2xl);
+                color: var(--white);
+            }
 
-.sidebar-logo .highlight {
-    color: var(--wits-gold);
-}
+            .sidebar-logo .highlight {
+                color: var(--wits-gold);
+            }
 
-.nav-list {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-sm);
-}
+            .nav-list {
+                display: flex;
+                flex-direction: column;
+                gap: var(--space-sm);
+            }
 
-.nav-item {
-    display: flex;
-    align-items: center;
-    padding: var(--space-md);
-    border-radius: var(--radius-md);
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    transition: all var(--transition-normal);
-    font-weight: 600;
-    font-size: 0.9rem;
-}
+            .nav-item {
+                display: flex;
+                align-items: center;
+                padding: var(--space-md);
+                border-radius: var(--radius-md);
+                background: rgba(255, 255, 255, 0.08);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                transition: all var(--transition-normal);
+                font-weight: 600;
+                font-size: 0.9rem;
+            }
 
-.nav-item:hover,
-.nav-item.active {
-    background: rgba(255, 255, 255, 0.2);
-    border-color: var(--wits-gold);
-    transform: translateX(5px);
-}
+            .nav-item:hover,
+            .nav-item.active {
+                background: rgba(255, 255, 255, 0.2);
+                border-color: var(--wits-gold);
+                transform: translateX(5px);
+            }
 
-.main-content {
-    margin-left: 280px;
-    flex: 1;
-    padding: var(--space-2xl);
-}
+            .main-content {
+                margin-left: 280px;
+                flex: 1;
+                padding: var(--space-2xl);
+            }
 
-.dashboard-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 16px;
-    margin-bottom: var(--space-2xl);
-    flex-wrap: wrap;
-}
+            .dashboard-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-start;
+                gap: 16px;
+                margin-bottom: var(--space-2xl);
+                flex-wrap: wrap;
+            }
 
-.header-actions {
-    display: flex;
-    gap: 12px;
-    flex-wrap: wrap;
-}
+            .header-actions {
+                display: flex;
+                gap: 12px;
+                flex-wrap: wrap;
+            }
 
-.stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: var(--space-lg);
-    margin-bottom: var(--space-2xl);
-}
+            .stats-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+                gap: var(--space-lg);
+                margin-bottom: var(--space-2xl);
+            }
 
-.stat-card {
-    background: var(--white);
-    padding: var(--space-xl);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-sm);
-    border: 1px solid var(--grey-border);
-    text-align: center;
-}
+            .stat-card {
+                background: var(--white);
+                padding: var(--space-xl);
+                border-radius: var(--radius-lg);
+                box-shadow: var(--shadow-sm);
+                border: 1px solid var(--grey-border);
+                text-align: center;
+            }
 
-.stat-card .value {
-    font-size: 2rem;
-    font-weight: 800;
-    color: var(--wits-navy);
-}
+            .stat-card .value {
+                font-size: 2rem;
+                font-weight: 800;
+                color: var(--wits-navy);
+            }
 
-.section-title {
-    color: var(--wits-navy-dark);
-    margin-bottom: var(--space-lg);
-    font-weight: 700;
-}
+            .section-title {
+                color: var(--wits-navy-dark);
+                margin-bottom: var(--space-lg);
+                font-weight: 700;
+            }
 
-.listings-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: var(--space-lg);
-}
+            .listings-container {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+                gap: var(--space-lg);
+            }
 
-.item-card {
-    background: var(--white);
-    border-radius: var(--radius-lg);
-    overflow: hidden;
-    border: 1px solid var(--grey-border);
-    transition: transform var(--transition-normal);
-}
+            .item-card {
+                background: var(--white);
+                border-radius: var(--radius-lg);
+                overflow: hidden;
+                border: 1px solid var(--grey-border);
+                transition: transform var(--transition-normal);
+            }
 
-.card-actions {
-    margin-top: 12px;
-    display: flex;
-    justify-content: flex-end;
-}
+            .card-actions {
+                margin-top: 12px;
+                display: flex;
+                justify-content: flex-end;
+            }
 
-.edit-btn {
-    background: var(--wits-navy);
-    color: var(--white);
-    border: none;
-    padding: 8px 16px;
-    border-radius: 999px;
-    font-size: 0.8rem;
-    font-weight: 700;
-    cursor: pointer;
-}
+            .edit-btn {
+                background: var(--wits-navy);
+                color: var(--white);
+                border: none;
+                padding: 8px 16px;
+                border-radius: 999px;
+                font-size: 0.8rem;
+                font-weight: 700;
+                cursor: pointer;
+            }
 
-.item-card:hover {
-    transform: translateY(-5px);
-    box-shadow: var(--shadow-md);
-}
+            .item-card:hover {
+                transform: translateY(-5px);
+                box-shadow: var(--shadow-md);
+            }
 
-.item-img {
-    height: 200px;
-    background: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
+            .item-img {
+                height: 200px;
+                background: white;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
 
-.item-img img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-}
+            .item-img img {
+                width: 100%;
+                height: 100%;
+                object-fit: contain;
+            }
 
-.item-details {
-    padding: var(--space-lg);
-}
+            .item-details {
+                padding: var(--space-lg);
+            }
 
-.item-price {
-    color: var(--wits-navy);
-    font-weight: 800;
-    font-size: 1.2rem;
-}
+            .item-price {
+                color: var(--wits-navy);
+                font-weight: 800;
+                font-size: 1.2rem;
+            }
 
-.action-btn {
-    background-color: var(--wits-navy);
-    color: var(--white);
-    border: none;
-    padding: 12px 24px;
-    border-radius: var(--radius-pill);
-    font-weight: 700;
-    cursor: pointer;
-}
+            .action-btn {
+                background-color: var(--wits-navy);
+                color: var(--white);
+                border: none;
+                padding: 12px 24px;
+                border-radius: var(--radius-pill);
+                font-weight: 700;
+                cursor: pointer;
+            }
 
-.action-btn:hover {
-    background-color: var(--wits-navy-dark);
-}
+            .action-btn:hover {
+                background-color: var(--wits-navy-dark);
+            }
 
-#searchInput {
-    width: 100%;
-    padding: 12px;
-    margin-bottom: 15px;
-    border-radius: 8px;
-    border: 1px solid var(--grey-border);
-}
+            #searchInput {
+                width: 100%;
+                padding: 12px;
+                margin-bottom: 15px;
+                border-radius: 8px;
+                border: 1px solid var(--grey-border);
+            }
 
-.category-filters {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-bottom: 20px;
-}
+            .category-filters {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+                margin-bottom: 20px;
+            }
 
-.filter-pill {
-    padding: 6px 14px;
-    border-radius: 20px;
-    border: 1px solid var(--grey-border);
-    background: var(--white);
-    cursor: pointer;
-    font-size: 0.85rem;
-}
+            .filter-pill {
+                padding: 6px 14px;
+                border-radius: 20px;
+                border: 1px solid var(--grey-border);
+                background: var(--white);
+                cursor: pointer;
+                font-size: 0.85rem;
+            }
 
-.filter-pill.active {
-    background: var(--wits-navy);
-    color: var(--white);
-    border-color: var(--wits-navy);
-}
-</style>
-</head>
+            .filter-pill.active {
+                background: var(--wits-navy);
+                color: var(--white);
+                border-color: var(--wits-navy);
+            }
 
-<body>
+            .sidebar-footer {
+                margin-top: auto;
+                padding-top: var(--space-lg);
+            }
 
-<aside class="sidebar">
-<div class="sidebar-logo">
-Campus<span class="highlight">Market</span>
-</div>
+            .logout-btn {
+                width: 100%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: var(--space-sm);
+                padding: var(--space-md);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                border-radius: var(--radius-md);
+                background: rgba(255, 255, 255, 0.08);
+                color: var(--white);
+                font-size: 0.9rem;
+                font-weight: 600;
+                transition: background-color var(--transition-fast);
+            }
 
-<nav class="nav-list">
-<a href="dashboard.html" class="nav-item active">🏠 Dashboard</a>
-<a href="trade-slots.html" class="nav-item">📅 Trade Slots</a>
-<a href="#" class="nav-item">📦 My Listings</a>
-<a href="messages.html" class="nav-item">💬 Messages</a>
-<a href="rate-user.html" class="nav-item">⭐ Ratings</a>
-</nav>
-</aside>
+            .logout-btn:hover {
+                background: rgba(255, 255, 255, 0.2);
+                border-color: var(--wits-gold);
+            }
+        </style>
+    </head>
 
-<main class="main-content">
+    <body>
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                Campus<span class="highlight">Market</span>
+            </div>
 
-<header class="dashboard-header">
+            <nav class="nav-list">
+                <a href="dashboard.html" class="nav-item active"
+                    >🏠 Dashboard</a
+                >
+                <a href="trade-slots.html" class="nav-item">📅 Trade Slots</a>
+                <a href="#" class="nav-item">📦 My Listings</a>
+                <a href="messages.html" class="nav-item">💬 Messages</a>
+                <a href="rate-user.html" class="nav-item">⭐ Ratings</a>
+            </nav>
 
-<section>
-<h1 id="welcome-name">Welcome back</h1>
-<p>Here's what's happening with your trades today.</p>
-</section>
+            <footer class="sidebar-footer">
+                <button type="button" id="logout-btn" class="logout-btn">
+                    Logout
+                </button>
+            </footer>
+        </aside>
 
-<section class="header-actions">
+        <main class="main-content">
+            <header class="dashboard-header">
+                <section>
+                    <h1 id="welcome-name">Welcome back</h1>
+                    <p>Here's what's happening with your trades today.</p>
+                </section>
 
-<button class="action-btn"
-onclick="window.location.href='/create-listing.html'">
-+ Create Listing
-</button>
+                <section class="header-actions">
+                    <button
+                        class="action-btn"
+                        onclick="window.location.href = '/create-listing.html'"
+                    >
+                        + Create Listing
+                    </button>
 
-<button class="action-btn"
-onclick="window.location.href='/history.html'">
-📜 Transaction History
-</button>
+                    <button
+                        class="action-btn"
+                        onclick="window.location.href = '/history.html'"
+                    >
+                        📜 Transaction History
+                    </button>
 
-<button class="action-btn"
-onclick="window.location.href='messages.html'">
-💬 Open Messages
-</button>
+                    <button
+                        class="action-btn"
+                        onclick="window.location.href = 'messages.html'"
+                    >
+                        💬 Open Messages
+                    </button>
+                </section>
+            </header>
 
-</section>
+            <section class="stats-grid">
+                <div class="stat-card">
+                    <h3>Active Listings</h3>
+                    <div class="value" id="activeListingsCount">00</div>
+                </div>
 
-</header>
+                <div class="stat-card">
+                    <h3>Items Sold</h3>
+                    <div class="value">12</div>
+                </div>
 
-<section class="stats-grid">
-<div class="stat-card">
-<h3>Active Listings</h3>
-<div class="value" id="activeListingsCount">00</div>
-</div>
+                <div class="stat-card">
+                    <h3>Pending Trades</h3>
+                    <div class="value">02</div>
+                </div>
+            </section>
 
-<div class="stat-card">
-<h3>Items Sold</h3>
-<div class="value">12</div>
-</div>
+            <h2 class="section-title">Recent Listings</h2>
 
-<div class="stat-card">
-<h3>Pending Trades</h3>
-<div class="value">02</div>
-</div>
-</section>
+            <input
+                id="searchInput"
+                type="text"
+                placeholder="Search listings..."
+            />
 
-<h2 class="section-title">Recent Listings</h2>
+            <div class="category-filters" id="categoryFilters">
+                <button class="filter-pill active" data-category="All">
+                    All
+                </button>
+                <button class="filter-pill" data-category="Textbooks">
+                    Textbooks
+                </button>
+                <button class="filter-pill" data-category="Electronics">
+                    Electronics
+                </button>
+                <button class="filter-pill" data-category="Furniture">
+                    Furniture
+                </button>
+                <button class="filter-pill" data-category="Clothing">
+                    Clothing
+                </button>
+                <button class="filter-pill" data-category="Appliances">
+                    Appliances
+                </button>
+                <button class="filter-pill" data-category="Stationary">
+                    Stationary
+                </button>
+                <button class="filter-pill" data-category="Tickets">
+                    Tickets
+                </button>
+                <button class="filter-pill" data-category="Miscellaneous">
+                    Miscellaneous
+                </button>
+            </div>
 
-<input id="searchInput" type="text" placeholder="Search listings..." />
+            <div class="listings-container" id="listings-container"></div>
+        </main>
 
-<div class="category-filters" id="categoryFilters">
-<button class="filter-pill active" data-category="All">All</button>
-<button class="filter-pill" data-category="Textbooks">Textbooks</button>
-<button class="filter-pill" data-category="Electronics">Electronics</button>
-<button class="filter-pill" data-category="Furniture">Furniture</button>
-<button class="filter-pill" data-category="Clothing">Clothing</button>
-<button class="filter-pill" data-category="Appliances">Appliances</button>
-<button class="filter-pill" data-category="Stationary">Stationary</button>
-<button class="filter-pill" data-category="Tickets">Tickets</button>
-<button class="filter-pill" data-category="Miscellaneous">Miscellaneous</button>
-</div>
+        <script type="module">
+            import { createListingCard } from "/components/card.js";
+            import { requireRole, logoutUser } from "/scripts/auth.js";
 
-<div class="listings-container" id="listings-container"></div>
+            async function initPage() {
+                const user = await requireRole(["Student"]);
+                if (!user) return;
 
-</main>
+                const welcomeName = document.getElementById("welcome-name");
+                if (welcomeName) {
+                    welcomeName.textContent = `Welcome back, ${user.name}`;
+                }
+            }
 
-<script type="module">
-import { createListingCard } from "/components/card.js";
-import { requireRole } from "/scripts/auth.js";
+            let listings = [];
+            let activeCategory = "All";
 
-async function initPage() {
-  const user = await requireRole(["Student"]);
-  if (!user) return;
+            const container = document.getElementById("listings-container");
+            const input = document.getElementById("searchInput");
+            const activeListingsCount = document.getElementById(
+                "activeListingsCount",
+            );
 
-  const welcomeName = document.getElementById("welcome-name");
-  if (welcomeName) {
-    welcomeName.textContent = `Welcome back, ${user.name}`;
-  }
-}
+            window.editListing = function (listingId) {
+                window.location.href = `/create-listing.html?id=${listingId}`;
+            };
 
-let listings = [];
-let activeCategory = "All";
+            function render(data) {
+                if (!container) return;
 
-const container = document.getElementById("listings-container");
-const input = document.getElementById("searchInput");
-const activeListingsCount = document.getElementById("activeListingsCount");
+                container.innerHTML = "";
 
-window.editListing = function (listingId) {
-  window.location.href = `/create-listing.html?id=${listingId}`;
-};
-
-function render(data) {
-  if (!container) return;
-
-  container.innerHTML = "";
-
-  if (!data || data.length === 0) {
-    container.innerHTML = `
+                if (!data || data.length === 0) {
+                    container.innerHTML = `
       <div class="item-card">
         <div class="item-details">
           <h3>No listings found</h3>
@@ -339,93 +396,105 @@ function render(data) {
         </div>
       </div>
     `;
-    return;
-  }
+                    return;
+                }
 
-  data.forEach((item) => {
-    const card = createListingCard(item);
-    container.appendChild(card);
-  });
-}
+                data.forEach((item) => {
+                    const card = createListingCard(item);
+                    container.appendChild(card);
+                });
+            }
 
-async function loadListings() {
-  try {
-    const response = await fetch("/listings/search");
-    const result = await response.json();
+            async function loadListings() {
+                try {
+                    const response = await fetch("/listings/search");
+                    const result = await response.json();
 
-    listings = result.listings || [];
+                    listings = result.listings || [];
 
-    if (activeListingsCount) {
-      activeListingsCount.textContent = String(listings.length).padStart(2, "0");
-    }
+                    if (activeListingsCount) {
+                        activeListingsCount.textContent = String(
+                            listings.length,
+                        ).padStart(2, "0");
+                    }
 
-    render(listings);
-  } catch (error) {
-    if (container) {
-      container.innerHTML = `<p>Error loading listings</p>`;
-    }
-  }
-}
+                    render(listings);
+                } catch (error) {
+                    if (container) {
+                        container.innerHTML = `<p>Error loading listings</p>`;
+                    }
+                }
+            }
 
-async function searchListings(query, category) {
-  try {
-    const params = new URLSearchParams();
+            async function searchListings(query, category) {
+                try {
+                    const params = new URLSearchParams();
 
-    if (query) params.set("q", query);
-    if (category && category !== "All") params.set("category", category);
+                    if (query) params.set("q", query);
+                    if (category && category !== "All")
+                        params.set("category", category);
 
-    const response = await fetch(`/listings/search?${params.toString()}`);
-    const result = await response.json();
+                    const response = await fetch(
+                        `/listings/search?${params.toString()}`,
+                    );
+                    const result = await response.json();
 
-    const filteredListings = result.listings || [];
+                    const filteredListings = result.listings || [];
 
-    if (activeListingsCount) {
-      activeListingsCount.textContent = String(filteredListings.length).padStart(2, "0");
-    }
+                    if (activeListingsCount) {
+                        activeListingsCount.textContent = String(
+                            filteredListings.length,
+                        ).padStart(2, "0");
+                    }
 
-    render(filteredListings);
-  } catch (error) {
-    if (container) {
-      container.innerHTML = `<p>Error loading listings</p>`;
-    }
-  }
-}
+                    render(filteredListings);
+                } catch (error) {
+                    if (container) {
+                        container.innerHTML = `<p>Error loading listings</p>`;
+                    }
+                }
+            }
 
-function debounce(func, delay) {
-  let timeoutId;
+            function debounce(func, delay) {
+                let timeoutId;
 
-  return function (...args) {
-    clearTimeout(timeoutId);
-    timeoutId = setTimeout(() => func.apply(this, args), delay);
-  };
-}
+                return function (...args) {
+                    clearTimeout(timeoutId);
+                    timeoutId = setTimeout(() => func.apply(this, args), delay);
+                };
+            }
 
-const debouncedSearch = debounce((e) => {
-  searchListings(e.target.value, activeCategory);
-}, 300);
+            const debouncedSearch = debounce((e) => {
+                searchListings(e.target.value, activeCategory);
+            }, 300);
 
-if (input) {
-  input.addEventListener("input", debouncedSearch);
-}
+            if (input) {
+                input.addEventListener("input", debouncedSearch);
+            }
 
-document.querySelectorAll(".filter-pill").forEach((btn) => {
-  btn.addEventListener("click", () => {
+            document.querySelectorAll(".filter-pill").forEach((btn) => {
+                btn.addEventListener("click", () => {
+                    document
+                        .querySelectorAll(".filter-pill")
+                        .forEach((pill) => {
+                            pill.classList.remove("active");
+                        });
 
-    document.querySelectorAll(".filter-pill").forEach((pill) => {
-      pill.classList.remove("active");
-    });
+                    btn.classList.add("active");
 
-    btn.classList.add("active");
+                    activeCategory = btn.dataset.category;
 
-    activeCategory = btn.dataset.category;
+                    searchListings(input ? input.value : "", activeCategory);
+                });
+            });
 
-    searchListings(input ? input.value : "", activeCategory);
-  });
-});
+            loadListings();
+            initPage();
 
-loadListings();
-initPage();
-</script>
-
-</body>
+            const logoutBtn = document.getElementById("logout-btn");
+            if (logoutBtn) {
+                logoutBtn.addEventListener("click", logoutUser);
+            }
+        </script>
+    </body>
 </html>
