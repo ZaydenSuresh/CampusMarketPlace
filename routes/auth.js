@@ -258,7 +258,6 @@ async function login(supabase, email, password) {
     }
 
     console.log("Login successful:", data.user);
-    console.log(data.user.name);
     return data.user;
   } catch (err) {
     console.error("Unexpected error during login:", err);

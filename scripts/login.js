@@ -240,6 +240,8 @@ if (loginForm) {
         window.location.href = "/dashboard.html";
       } else if (user.role === "Trade Facility Staff") {
         window.location.href = "/manage-slots.html";
+      } else if (user.role === "Admin") {
+        window.location.href = "/admin-dashboard.html";
       }
     } catch (err) {
       console.error("Login error:", err.message);
