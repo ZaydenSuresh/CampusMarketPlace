@@ -140,6 +140,31 @@ router.get("/categories", async (req, res) => {
   }
 });
 
+// GET /analytics/export
+// Returns raw completed transactions for CSV export
+router.get("/export", async (req, res) => {
+  const auth = await requireAdmin(req, res);
+  if (!auth) {
+    return res.status(403).json({ ok: false, message: "Admin access required" });
+  }
+
+  const { supabase } = auth;
+
+  try {
+    const { data, error } = await supabase
+      .from("transactions")
+      .select(`*, listings(title, price, category), buyer:profiles!buyer_id(name), seller:profiles!seller_id(name)`)
+      .eq("status", "completed")
+      .order("created_at", { ascending: false });
+
+    if (error) return res.status(500).json({ ok: false, error: error.message });
+
+    return res.json({ ok: true, transactions: data });
+  } catch (err) {
+    return res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
 // GET /analytics/summary
 // Returns total transactions, total value, and average value per day
 router.get("/summary", async (req, res) => {
