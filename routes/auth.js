@@ -103,6 +103,8 @@ router.get("/callback", async (req, res) => {
       return res.redirect(302, "/dashboard.html");
     } else if (existingProfile.role === "Trade Facility Staff") {
       return res.redirect(302, "/manage-slots.html");
+    } else if (existingProfile.role === "Admin") {
+      return res.redirect(302, "/admin-dashboard.html");
     }
   } catch (error) {
     console.error("[/auth/callback] OAuth callback error:", error);
