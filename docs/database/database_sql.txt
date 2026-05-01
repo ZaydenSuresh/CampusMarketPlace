@@ -1,19 +1,39 @@
 -- WARNING: This schema is for context only and is not meant to be run.
 -- Table order and constraints may not be valid for execution.
 
+CREATE TABLE public.conversations (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user1_id uuid NOT NULL,
+  user2_id uuid NOT NULL,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT conversations_pkey PRIMARY KEY (id),
+  CONSTRAINT conversations_user1_id_fkey FOREIGN KEY (user1_id) REFERENCES auth.users(id),
+  CONSTRAINT conversations_user2_id_fkey FOREIGN KEY (user2_id) REFERENCES auth.users(id)
+);
 CREATE TABLE public.listings (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   created_at timestamp with time zone NOT NULL DEFAULT now(),
-  user_id uuid DEFAULT gen_random_uuid(),
-  title text,
-  description text,
-  price numeric,
-  category USER-DEFINED,
-  image_url text,
-  condition USER-DEFINED,
-  sale_type USER-DEFINED,
+  user_id uuid NOT NULL,
+  title text NOT NULL,
+  description text NOT NULL,
+  price numeric NOT NULL,
+  category USER-DEFINED NOT NULL,
+  image_url text NOT NULL,
+  condition USER-DEFINED NOT NULL DEFAULT 'New'::condition,
+  sale_type USER-DEFINED NOT NULL DEFAULT 'Either'::sale_type,
+  status text DEFAULT 'available'::text CHECK (status = ANY (ARRAY['available'::text, 'reserved'::text, 'unavailable'::text])),
   CONSTRAINT listings_pkey PRIMARY KEY (id),
   CONSTRAINT Listings_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.profiles(id)
+);
+CREATE TABLE public.messages (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  conversation_id uuid NOT NULL,
+  sender_id uuid NOT NULL,
+  content text NOT NULL,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT messages_pkey PRIMARY KEY (id),
+  CONSTRAINT messages_conversation_id_fkey FOREIGN KEY (conversation_id) REFERENCES public.conversations(id),
+  CONSTRAINT messages_sender_id_fkey FOREIGN KEY (sender_id) REFERENCES auth.users(id)
 );
 CREATE TABLE public.profiles (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
@@ -25,6 +45,19 @@ CREATE TABLE public.profiles (
   created_at timestamp without time zone DEFAULT now(),
   CONSTRAINT profiles_pkey PRIMARY KEY (id)
 );
+CREATE TABLE public.ratings (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  rater_id uuid NOT NULL,
+  rated_id uuid NOT NULL,
+  transaction_id uuid NOT NULL,
+  rating integer NOT NULL CHECK (rating >= 1 AND rating <= 5),
+  review text,
+  created_at timestamp without time zone DEFAULT now(),
+  CONSTRAINT ratings_pkey PRIMARY KEY (id),
+  CONSTRAINT fk_rater FOREIGN KEY (rater_id) REFERENCES public.profiles(id),
+  CONSTRAINT fk_rated FOREIGN KEY (rated_id) REFERENCES public.profiles(id),
+  CONSTRAINT fk_transaction FOREIGN KEY (transaction_id) REFERENCES public.transactions(id)
+);
 CREATE TABLE public.slot_bookings (
   id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
   booking_date date NOT NULL,
@@ -32,13 +65,24 @@ CREATE TABLE public.slot_bookings (
   created_at timestamp with time zone DEFAULT now(),
   CONSTRAINT slot_bookings_pkey PRIMARY KEY (id)
 );
-CREATE TABLE public.slots (
+CREATE TABLE public.trade_slots (
+  id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
+  date date NOT NULL,
+  time time without time zone NOT NULL,
+  capacity integer NOT NULL,
+  booked_count integer DEFAULT 0,
+  CONSTRAINT trade_slots_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.transactions (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
-  start_time timestamp with time zone,
-  end_time timestamp with time zone,
-  is_available boolean NOT NULL DEFAULT true,
-  booked_by uuid DEFAULT gen_random_uuid(),
-  booked_at timestamp with time zone,
-  CONSTRAINT slots_pkey PRIMARY KEY (id),
-  CONSTRAINT slots_booked_by_fkey FOREIGN KEY (booked_by) REFERENCES public.profiles(id)
+  created_at timestamp without time zone NOT NULL DEFAULT now(),
+  buyer_id uuid NOT NULL DEFAULT gen_random_uuid(),
+  seller_id uuid DEFAULT gen_random_uuid(),
+  listing_id uuid DEFAULT gen_random_uuid(),
+  type text,
+  status text,
+  slot_id uuid DEFAULT gen_random_uuid(),
+  dropoff_confirmed boolean,
+  collection_confirmed boolean,
+  CONSTRAINT transactions_pkey PRIMARY KEY (id)
 );
