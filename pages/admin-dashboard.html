@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Analytics | Campus Marketplace</title>
+
+    <link rel="stylesheet" href="/styles/global.css" />
+    <link rel="stylesheet" href="/styles/analytics.css" />
+</head>
+
+<body>
+    <aside class="sidebar">
+        <div class="sidebar-logo">
+            Campus<span class="highlight">Market</span> Admin
+        </div>
+
+        <nav class="nav-list">
+            <a href="admin-dashboard.html" class="nav-item active">Analytics</a>
+            <a href="transactions.html" class="nav-item">Transactions</a>
+            <a href="manage-slots.html" class="nav-item">Manage Slots</a>
+        </nav>
+
+        <footer class="sidebar-footer">
+            <button type="button" id="logout-btn" class="logout-btn">
+                Logout
+            </button>
+        </footer>
+    </aside>
+
+    <main class="main-content">
+        <header class="dashboard-header">
+            <section>
+                <h1 id="welcome-name">Admin Dashboard</h1>
+                <p>View completed transactions and identify popular categories</p>
+            </section>
+
+            <button class="export-btn" id="export-btn">Export CSV</button>
+        </header>
+
+        <!-- Stats Cards -->
+        <section class="stats-grid">
+            <div class="stat-card">
+                <h3>Total Transactions</h3>
+                <div class="value" id="total-transactions">0</div>
+            </div>
+
+            <div class="stat-card">
+                <h3>Total Value (R)</h3>
+                <div class="value" id="total-value">0</div>
+            </div>
+
+            <div class="stat-card">
+                <h3>Avg Value/Day</h3>
+                <div class="value" id="avg-per-day">0</div>
+            </div>
+        </section>
+
+        <!-- Trends Chart (Line Chart with Time Filter) -->
+        <section class="chart-section">
+            <div class="section-header">
+                <h2 class="section-title">Transaction Trends</h2>
+                <div class="period-filters">
+                    <button class="period-btn" data-period="day">Day</button>
+                    <button class="period-btn active" data-period="week">Week</button>
+                    <button class="period-btn" data-period="month">Month</button>
+                </div>
+            </div>
+            <div class="chart-container">
+                <canvas id="trendsChart"></canvas>
+            </div>
+        </section>
+
+        <!-- Categories Chart (Bar Chart - Overall Only) -->
+        <section class="chart-section">
+            <div class="section-header">
+                <h2 class="section-title">Popular Categories</h2>
+            </div>
+            <div class="categories-grid">
+                <div class="chart-container categories">
+                    <canvas id="categoryChart"></canvas>
+                </div>
+                <div>
+                    <h3 style="margin-bottom: 16px;">Top Categories</h3>
+                    <ul id="category-list"></ul>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script type="module" src="/scripts/analytics.js"></script>
+</body>
+</html>
