@@ -1,3 +1,5 @@
+require('dotenv').config({ path: require('path').resolve(__dirname, '../.env') });
+
 const supabase = require('../database');
 
 // Validate Supabase client is initialized
