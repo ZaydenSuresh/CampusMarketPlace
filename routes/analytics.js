@@ -105,6 +105,7 @@ router.get("/transactions", async (req, res) => {
 
 // GET /analytics/categories
 // Returns transaction counts and total value grouped by listing category
+// Includes all valid categories (even with 0 transactions)
 router.get("/categories", async (req, res) => {
   const auth = await requireAdmin(req, res);
   if (!auth) {
@@ -132,7 +133,19 @@ router.get("/categories", async (req, res) => {
       categories[cat].total_value += tx.listings?.price || 0;
     });
 
-    // Sort by count descending (most popular first)
+    // Include all valid categories with 0 counts if not present
+    const validCategories = [
+      "Textbooks", "Electronics", "Furniture", "Clothing",
+      "Appliances", "Stationary", "Tickets", "Miscellaneous"
+    ];
+
+    validCategories.forEach((cat) => {
+      if (!categories[cat]) {
+        categories[cat] = { category: cat, count: 0, total_value: 0 };
+      }
+    });
+
+    // Sort by count descending (most popular first), 0-count categories last
     const result = Object.values(categories).sort((a, b) => b.count - a.count);
     return res.json({ ok: true, categories: result });
   } catch (err) {

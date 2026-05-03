@@ -3,6 +3,7 @@ import { requireRole, logoutUser } from "/scripts/auth.js";
 // Chart instances (kept in scope to destroy before re-rendering)
 let trendsChart = null;
 let categoryChart = null;
+let pieChart = null;
 let currentPeriod = "week";
 
 /**
@@ -63,7 +64,7 @@ async function loadTrends(period) {
 
 /**
  * Render the line chart for transaction trends
- * 
+ *
  * @param {string[]} labels - X-axis labels (dates/weeks/months)
  * @param {number[]} data - Y-axis values (transaction counts)
  * @param {string} period - Used for chart label
@@ -87,13 +88,48 @@ function renderTrendsChart(labels, data, period) {
         backgroundColor: "rgba(0, 59, 126, 0.1)",
         tension: 0.3, // Smooth curve
         fill: true,
+        pointRadius: 5,
+        pointHoverRadius: 7,
+        pointBackgroundColor: "#003b7e",
+        pointBorderColor: "#ffffff",
+        pointBorderWidth: 2,
       }],
     },
     options: {
       responsive: true,
       maintainAspectRatio: false,
       scales: {
-        y: { beginAtZero: true, ticks: { stepSize: 1 } },
+        y: {
+          beginAtZero: true,
+          ticks: { stepSize: 1 },
+          title: {
+            display: true,
+            text: "Completed Transactions",
+            font: { size: 12, weight: "bold" },
+          },
+          grid: {
+            color: "rgba(0, 0, 0, 0.05)",
+          },
+        },
+        x: {
+          title: {
+            display: true,
+            text: "Time Period",
+            font: { size: 12, weight: "bold" },
+          },
+          grid: {
+            color: "rgba(0, 0, 0, 0.05)",
+          },
+        },
+      },
+      plugins: {
+        tooltip: {
+          callbacks: {
+            label: function(context) {
+              return ` ${context.dataset.label}: ${context.parsed.y}`;
+            },
+          },
+        },
       },
     },
   });
@@ -101,24 +137,21 @@ function renderTrendsChart(labels, data, period) {
 
 /**
  * Load popular categories from /analytics/categories
- * Renders a horizontal bar chart + populates the category list
+ * Renders a horizontal bar chart + pie chart for value distribution
  */
 async function loadCategories() {
-  const categoryList = document.getElementById("category-list");
   try {
     const response = await fetch("/analytics/categories");
     const result = await response.json();
 
     if (result.ok) {
       renderCategoryChart(result.categories);
-      renderCategoryList(result.categories);
+      renderPieChart(result.categories);
     } else {
       console.error("Categories API error:", result.message);
-      categoryList.innerHTML = '<li style="color: #dc2626;">Failed to load categories. Please try again.</li>';
     }
   } catch (error) {
     console.error("Error loading categories:", error);
-    categoryList.innerHTML = '<li style="color: #dc2626;">Network error. Could not load categories.</li>';
   }
 }
 
@@ -137,7 +170,7 @@ function renderCategoryChart(categories) {
     categoryChart.destroy();
   }
 
-  // Horizontal bar chart (indexAxis: "y")
+   // Horizontal bar chart (indexAxis: "y")
   categoryChart = new Chart(ctx, {
     type: "bar",
     data: {
@@ -155,25 +188,102 @@ function renderCategoryChart(categories) {
       maintainAspectRatio: false,
       indexAxis: "y", // Horizontal bars
       scales: {
-        x: { beginAtZero: true, ticks: { stepSize: 1 } },
+        x: {
+          beginAtZero: true,
+          ticks: { stepSize: 1 },
+          title: {
+            display: true,
+            text: "Number of Transactions",
+            font: { size: 12, weight: "bold" }
+          },
+          grid: {
+            color: "rgba(0, 0, 0, 0.05)"
+          }
+        },
+        y: {
+          title: {
+            display: true,
+            text: "Category",
+            font: { size: 12, weight: "bold" }
+          },
+          grid: {
+            color: "rgba(0, 0, 0, 0.05)"
+          }
+        }
       },
     },
   });
 }
 
 /**
- * Render the category list (ordered by popularity)
- * 
+ * Render pie chart showing top 5 categories by total value + "Other" group
+ *
  * @param {Object[]} categories - Array of { category, count, total_value }
  */
-function renderCategoryList(categories) {
-  const list = document.getElementById("category-list");
-  list.innerHTML = categories.map(c => `
-    <li>
-      <span>${c.category}</span>
-      <strong>${c.count} (R${c.total_value.toFixed(2)})</strong>
-    </li>
-  `).join("");
+function renderPieChart(categories) {
+  const ctx = document.getElementById("pieChart").getContext("2d");
+
+  // Destroy previous chart instance
+  if (pieChart) {
+    pieChart.destroy();
+  }
+
+  // Sort by total_value descending, take top 5, group rest as "Other"
+  const sorted = [...categories].sort((a, b) => b.total_value - a.total_value);
+  const top5 = sorted.slice(0, 5);
+  const rest = sorted.slice(5);
+
+  const labels = top5.map(c => c.category);
+  const values = top5.map(c => c.total_value);
+
+  // Add "Other" category if there are more than 5
+  if (rest.length > 0) {
+    const otherValue = rest.reduce((sum, c) => sum + c.total_value, 0);
+    labels.push("Other");
+    values.push(otherValue);
+  }
+
+  // Color palette for pie slices
+  const colors = [
+    "#003b7e", "#c9a84c", "#4ade80", "#f87171", "#60a5fa", "#a78bfa"
+  ];
+
+  pieChart = new Chart(ctx, {
+    type: "pie",
+    data: {
+      labels: labels,
+      datasets: [{
+        data: values,
+        backgroundColor: colors.slice(0, labels.length),
+        borderColor: "#ffffff",
+        borderWidth: 2,
+      }],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: "right",
+          labels: {
+            padding: 12,
+            usePointStyle: true,
+            pointStyle: "circle",
+            font: { size: 11 },
+          },
+        },
+        tooltip: {
+          callbacks: {
+            label: function(context) {
+              const total = context.dataset.data.reduce((a, b) => a + b,0);
+              const percentage = ((context.parsed / total) * 100).toFixed(1);
+              return ` R${context.parsed.toFixed(2)} (${percentage}%)`;
+            },
+          },
+        },
+      },
+    },
+  });
 }
 
 /**

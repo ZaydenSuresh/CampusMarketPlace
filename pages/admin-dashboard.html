@@ -69,21 +69,28 @@
             </div>
         </section>
 
-        <!-- Categories Chart (Bar Chart - Overall Only) -->
-        <section class="chart-section">
-            <div class="section-header">
-                <h2 class="section-title">Popular Categories</h2>
-            </div>
-            <div class="categories-grid">
+        <!-- Categories Row: Bar Chart + Pie Chart Side by Side -->
+        <div class="categories-row">
+            <!-- Popular Categories (Horizontal Bar Chart) -->
+            <section class="chart-section">
+                <div class="section-header">
+                    <h2 class="section-title">Popular Categories</h2>
+                </div>
                 <div class="chart-container categories">
                     <canvas id="categoryChart"></canvas>
                 </div>
-                <div>
-                    <h3 style="margin-bottom: 16px;">Top Categories</h3>
-                    <ul id="category-list"></ul>
+            </section>
+
+            <!-- Category Distribution (Pie Chart) -->
+            <section class="chart-section">
+                <div class="section-header">
+                    <h2 class="section-title">Category Distribution</h2>
                 </div>
-            </div>
-        </section>
+                <div class="chart-container pie">
+                    <canvas id="pieChart"></canvas>
+                </div>
+            </section>
+        </div>
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
