@@ -2,6 +2,7 @@ import { requireRole, logoutUser } from "/scripts/auth.js";
 
 // Chart instances (kept in scope to destroy before re-rendering)
 let trendsChart = null;
+let categoryChart = null;
 let currentPeriod = "week";
 
 /**
@@ -103,6 +104,7 @@ function renderTrendsChart(labels, data, period) {
  * Renders a horizontal bar chart + populates the category list
  */
 async function loadCategories() {
+  const categoryList = document.getElementById("category-list");
   try {
     const response = await fetch("/analytics/categories");
     const result = await response.json();
@@ -110,9 +112,13 @@ async function loadCategories() {
     if (result.ok) {
       renderCategoryChart(result.categories);
       renderCategoryList(result.categories);
+    } else {
+      console.error("Categories API error:", result.message);
+      categoryList.innerHTML = '<li style="color: #dc2626;">Failed to load categories. Please try again.</li>';
     }
   } catch (error) {
     console.error("Error loading categories:", error);
+    categoryList.innerHTML = '<li style="color: #dc2626;">Network error. Could not load categories.</li>';
   }
 }
 
@@ -127,12 +133,12 @@ function renderCategoryChart(categories) {
   const counts = categories.map(c => c.count);
 
   // Destroy previous chart instance
-  if (window.categoryChart) {
-    window.categoryChart.destroy();
+  if (categoryChart) {
+    categoryChart.destroy();
   }
 
   // Horizontal bar chart (indexAxis: "y")
-  window.categoryChart = new Chart(ctx, {
+  categoryChart = new Chart(ctx, {
     type: "bar",
     data: {
       labels: labels,
