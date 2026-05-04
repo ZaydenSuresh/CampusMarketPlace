@@ -5,519 +5,208 @@ const typeFilter = document.getElementById("type-filter");
 const tabButtons = document.querySelectorAll(".tab-btn");
 
 let activeStatusFilter = "all";
+let transactions = [];
 
-let mockTransactions = [
-    {
-        id: "TXN-2026-001",
-        type: "sale",
-        status: "waiting_dropoff",
-        listingTitle: "iPhone 13 Pro - 128GB",
-        category: "Electronics",
-        buyer: "Michael Smith",
-        seller: "Lisa Brown",
-        slotDate: "23 Apr 2026",
-        slotTime: "09:00 - 11:00",
-        dropoffConfirmed: false,
-        collectionConfirmed: false
-    },
-    {
-        id: "TXN-2026-002",
-        type: "sale",
-        status: "waiting_pickup",
-        listingTitle: "Engineering Mathematics Textbook",
-        category: "Books",
-        buyer: "Khumo Dube",
-        seller: "Anele Moyo",
-        slotDate: "23 Apr 2026",
-        slotTime: "11:00 - 13:00",
-        dropoffConfirmed: true,
-        collectionConfirmed: false
-    },
-    {
-        id: "TXN-2026-003",
-        type: "trade",
-        status: "in_progress",
-        listingTitle: "Wits Hoodie for Calculator Trade",
-        category: "Fashion",
-        buyer: "Naledi Molefe",
-        seller: "Sizwe Nkosi",
-        slotDate: "24 Apr 2026",
-        slotTime: "13:00 - 15:00",
-        dropoffConfirmed: false,
-        collectionConfirmed: false
-    },
-    {
-        id: "TXN-2026-004",
-        type: "sale",
-        status: "completed",
-        listingTitle: "Scientific Calculator",
-        category: "Study Tools",
-        buyer: "Lerato Maseko",
-        seller: "Kamo Mthembu",
-        slotDate: "22 Apr 2026",
-        slotTime: "14:00 - 16:00",
-        dropoffConfirmed: true,
-        collectionConfirmed: true
-    },
-    {
-        id: "TXN-2026-005",
-        type: "trade",
-        status: "completed",
-        listingTitle: "Laptop Bag for Lab Coat Trade",
-        category: "Trade",
-        buyer: "Thando Khumalo",
-        seller: "Neo Mokoena",
-        slotDate: "21 Apr 2026",
-        slotTime: "10:00 - 11:00",
-        dropoffConfirmed: true,
-        collectionConfirmed: true
+/* ---------- FETCH ---------- */
+
+async function fetchTransactions() {
+    try {
+        const res = await fetch("/transactions");
+        const data = await res.json();
+
+        transactions = data.map(t => ({
+            id: t.id,
+            type: t.type === "either" ? "trade" : t.type,
+            status: mapStatus(t),
+
+            listingTitle: "Listing #" + t.listing_id.slice(0, 6),
+            buyer: t.buyer_id.slice(0, 6),
+            seller: t.seller_id.slice(0, 6),
+
+            slotDate: formatDate(t.created_at),
+
+            dropoffConfirmed: t.dropoff_confirmed,
+            collectionConfirmed: t.collection_confirmed
+        }));
+
+        renderTransactions();
+    } catch (err) {
+        console.error(err);
     }
-];
-
-function showMessage(message, type) {
-    feedbackMessage.textContent = message;
-    feedbackMessage.className = `feedback-message ${type}`;
 }
 
-function clearMessage() {
-    feedbackMessage.textContent = "";
-    feedbackMessage.className = "feedback-message";
+/* ---------- STATUS ---------- */
+
+function mapStatus(t) {
+    if (t.status === "completed") return "completed";
+
+    if (t.status === "in_progress" && !t.dropoff_confirmed)
+        return "waiting_dropoff";
+
+    if (t.dropoff_confirmed && !t.collection_confirmed)
+        return "waiting_pickup";
+
+    return "pending";
 }
 
-function getStatusLabel(status) {
+function formatDate(date) {
+    return new Date(date).toLocaleDateString();
+}
+
+/* ---------- PROGRESS (USES YOUR CSS) ---------- */
+
+function getStepIndex(status) {
     switch (status) {
-        case "pending":
-            return "Pending";
-        case "in_progress":
-            return "In Progress";
-        case "waiting_dropoff":
-            return "Waiting Drop-Off";
-        case "waiting_pickup":
-            return "Waiting Pick-Up";
-        case "completed":
-            return "Completed";
-        case "cancelled":
-            return "Cancelled";
-        default:
-            return status;
+        case "pending": return 1;
+        case "waiting_dropoff": return 2;
+        case "waiting_pickup": return 3;
+        case "completed": return 4;
+        default: return 1;
     }
 }
 
-function getStatusClass(status) {
-    switch (status) {
-        case "waiting_dropoff":
-            return "badge badge-dropoff";
-        case "waiting_pickup":
-            return "badge badge-pickup";
-        case "in_progress":
-            return "badge badge-progress";
-        case "completed":
-            return "badge badge-completed";
-        case "cancelled":
-            return "badge badge-cancelled";
-        default:
-            return "badge badge-pending";
+function renderProgress(step) {
+    const labels = ["Pending", "Drop-Off", "Pick-Up", "Completed"];
+
+    return `
+        <div class="progress-row">
+            ${labels.map((label, i) => {
+                const s = i + 1;
+
+                return `
+                    <div class="progress-step ${s <= step ? "active" : ""}">
+                        <div class="step-circle">${s}</div>
+                        <span class="step-label">${label}</span>
+                    </div>
+                    ${s < 4 ? `<div class="progress-line"></div>` : ""}
+                `;
+            }).join("")}
+        </div>
+    `;
+}
+
+/* ---------- ACTION BUTTON ---------- */
+
+function renderActionButton(t) {
+    if (t.status === "waiting_dropoff") {
+        return `<button onclick="updateTransaction('${t.id}','dropoff')" class="action-btn primary-btn">Confirm Drop-Off</button>`;
+    }
+
+    if (t.status === "waiting_pickup") {
+        return `<button onclick="updateTransaction('${t.id}','complete')" class="action-btn secondary-btn">Mark Completed</button>`;
+    }
+
+    return "";
+}
+
+/* ---------- UPDATE ---------- */
+
+async function updateTransaction(id, action) {
+    try {
+        await fetch(`/transactions/${id}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ action })
+        });
+
+        fetchTransactions();
+    } catch (err) {
+        console.error(err);
     }
 }
 
-function getTypeClass(type) {
-    return type === "sale"
-        ? "type-badge type-sale"
-        : "type-badge type-trade";
-}
-
-function updateQuickStats(transactions) {
-    document.getElementById("stat-total").textContent = transactions.length;
-
-    document.getElementById("stat-progress").textContent =
-        transactions.filter(t => t.status === "in_progress").length;
-
-    document.getElementById("stat-dropoff").textContent =
-        transactions.filter(t => t.status === "waiting_dropoff").length;
-
-    document.getElementById("stat-pickup").textContent =
-        transactions.filter(t => t.status === "waiting_pickup").length;
-
-    document.getElementById("stat-completed").textContent =
-        transactions.filter(t => t.status === "completed").length;
-}
+/* ---------- FILTER ---------- */
 
 function getFilteredTransactions() {
-    const searchValue = searchInput.value.trim().toLowerCase();
+    const searchValue = searchInput.value.toLowerCase();
     const selectedType = typeFilter.value;
 
-    return mockTransactions.filter(transaction => {
+    return transactions.filter(t => {
         const matchesStatus =
             activeStatusFilter === "all" ||
-            transaction.status === activeStatusFilter;
+            t.status === activeStatusFilter;
 
         const matchesType =
             selectedType === "all" ||
-            transaction.type === selectedType;
+            t.type === selectedType;
 
         const searchText = [
-            transaction.id,
-            transaction.listingTitle,
-            transaction.category,
-            transaction.buyer,
-            transaction.seller
+            t.id,
+            t.listingTitle,
+            t.buyer,
+            t.seller
         ].join(" ").toLowerCase();
 
-        const matchesSearch = searchText.includes(searchValue);
-
-        return matchesStatus && matchesType && matchesSearch;
+        return matchesStatus && matchesType && searchText.includes(searchValue);
     });
 }
 
-/* ---------- PROGRESS STEPS ---------- */
-
-function renderProgressSteps(transaction) {
-    if (transaction.type === "trade") {
-        const step1 =
-            transaction.status !== "pending"
-                ? "progress-step active"
-                : "progress-step";
-
-        const step2 =
-            transaction.status === "in_progress" ||
-            transaction.status === "completed"
-                ? "progress-step active"
-                : "progress-step";
-
-        const step3 =
-            transaction.status === "completed"
-                ? "progress-step active"
-                : "progress-step";
-
-        return `
-            <section class="progress-row trade-progress">
-                <section class="${step1}">
-                    <span class="step-circle">1</span>
-                    <span class="step-label">Pending</span>
-                </section>
-
-                <section class="progress-line"></section>
-
-                <section class="${step2}">
-                    <span class="step-circle">2</span>
-                    <span class="step-label">Drop-Off / Pick-Up</span>
-                </section>
-
-                <section class="progress-line"></section>
-
-                <section class="${step3}">
-                    <span class="step-circle">3</span>
-                    <span class="step-label">Completed</span>
-                </section>
-            </section>
-        `;
-    }
-
-    const step1 =
-        transaction.status !== "pending"
-            ? "progress-step active"
-            : "progress-step";
-
-    const step2 =
-        transaction.dropoffConfirmed || transaction.status === "completed"
-            ? "progress-step active"
-            : "progress-step";
-
-    const step3 =
-        transaction.collectionConfirmed || transaction.status === "completed"
-            ? "progress-step active"
-            : "progress-step";
-
-    const step4 =
-        transaction.status === "completed"
-            ? "progress-step active"
-            : "progress-step";
-
-    return `
-        <section class="progress-row sale-progress">
-            <section class="${step1}">
-                <span class="step-circle">1</span>
-                <span class="step-label">Pending</span>
-            </section>
-
-            <section class="progress-line"></section>
-
-            <section class="${step2}">
-                <span class="step-circle">2</span>
-                <span class="step-label">Drop-Off</span>
-            </section>
-
-            <section class="progress-line"></section>
-
-            <section class="${step3}">
-                <span class="step-circle">3</span>
-                <span class="step-label">Pick-Up</span>
-            </section>
-
-            <section class="progress-line"></section>
-
-            <section class="${step4}">
-                <span class="step-circle">4</span>
-                <span class="step-label">Completed</span>
-            </section>
-        </section>
-    `;
-}
-
-/* ---------- ACTION BUTTONS ---------- */
-
-function renderSaleActions(transaction) {
-    const dropoffDisabled =
-        transaction.dropoffConfirmed ||
-        transaction.status === "completed";
-
-    const collectionDisabled =
-        !transaction.dropoffConfirmed ||
-        transaction.collectionConfirmed ||
-        transaction.status === "completed";
-
-    return `
-        <section class="actions-row">
-            <button
-                class="action-btn primary-btn"
-                type="button"
-                data-action="dropoff"
-                data-id="${transaction.id}"
-                ${dropoffDisabled ? "disabled" : ""}
-            >
-                ${transaction.dropoffConfirmed ? "Drop-Off Confirmed" : "Confirm Drop-Off"}
-            </button>
-
-            <button
-                class="action-btn secondary-btn"
-                type="button"
-                data-action="collection"
-                data-id="${transaction.id}"
-                ${collectionDisabled ? "disabled" : ""}
-            >
-                ${transaction.collectionConfirmed ? "Collection Confirmed" : "Confirm Collection"}
-            </button>
-        </section>
-    `;
-}
-
-function renderTradeActions(transaction) {
-    const disabled = transaction.status === "completed";
-
-    return `
-        <section class="actions-row">
-            <button
-                class="action-btn primary-btn"
-                type="button"
-                data-action="trade-complete"
-                data-id="${transaction.id}"
-                ${disabled ? "disabled" : ""}
-            >
-                ${disabled ? "Trade Exchange Completed" : "Complete Trade Exchange"}
-            </button>
-        </section>
-    `;
-}
-
-/* ---------- MAIN RENDER ---------- */
+/* ---------- RENDER ---------- */
 
 function renderTransactions() {
-    clearMessage();
+    const filtered = getFilteredTransactions();
 
-    const filteredTransactions = getFilteredTransactions();
-
-    updateQuickStats(mockTransactions);
-
-    if (!filteredTransactions.length) {
-        transactionsContainer.innerHTML = `
-            <article class="transaction-card">
-                <p>No transactions found.</p>
-            </article>
-        `;
+    if (!filtered.length) {
+        transactionsContainer.innerHTML = `<p>No transactions found.</p>`;
         return;
     }
 
-    transactionsContainer.innerHTML = filteredTransactions.map(transaction => {
+    transactionsContainer.innerHTML = filtered.map(t => {
+        const step = getStepIndex(t.status);
+
         return `
-            <article class="transaction-card">
-                <header class="transaction-card-header">
-                    <section class="transaction-title-group">
-                        <h3>${transaction.id}</h3>
+        <article class="transaction-card">
 
-                        <span class="${getStatusClass(transaction.status)}">
-                            ${getStatusLabel(transaction.status)}
-                        </span>
-                    </section>
+            <div class="transaction-card-header">
+                <div class="transaction-title-group">
+                    <h3>${t.id.slice(0, 10)}</h3>
+                    <span class="type-badge">${t.type}</span>
+                </div>
+                <span class="badge badge-${t.status.replace("_", "")}">
+                    ${t.status.replace("_", " ")}
+                </span>
+            </div>
 
-                    <span class="${getTypeClass(transaction.type)}">
-                        ${transaction.type === "sale" ? "Sale" : "Trade"}
-                    </span>
-                </header>
+            <div class="transaction-details-grid">
+                <div class="detail-block">
+                    <span class="detail-label">Listing</span>
+                    <strong>${t.listingTitle}</strong>
+                </div>
 
-                <section class="transaction-details-grid">
-                    <section class="detail-block">
-                        <span class="detail-label">Listing</span>
-                        <strong>${transaction.listingTitle}</strong>
-                        <span class="detail-subtext">${transaction.category}</span>
-                    </section>
+                <div class="detail-block">
+                    <span class="detail-label">Date</span>
+                    <strong>${t.slotDate}</strong>
+                </div>
 
-                    <section class="detail-block">
-                        <span class="detail-label">Trade Slot</span>
-                        <strong>${transaction.slotDate}</strong>
-                        <span class="detail-subtext">${transaction.slotTime}</span>
-                    </section>
+                <div class="detail-block">
+                    <span class="detail-label">Buyer</span>
+                    <strong>${t.buyer}</strong>
+                </div>
 
-                    <section class="detail-block">
-                        <span class="detail-label">Buyer</span>
-                        <strong>${transaction.buyer}</strong>
-                    </section>
+                <div class="detail-block">
+                    <span class="detail-label">Seller</span>
+                    <strong>${t.seller}</strong>
+                </div>
+            </div>
 
-                    <section class="detail-block">
-                        <span class="detail-label">Seller</span>
-                        <strong>${transaction.seller}</strong>
-                    </section>
-                </section>
+            ${renderProgress(step)}
 
-                ${renderProgressSteps(transaction)}
+            <div class="actions-row">
+                ${renderActionButton(t)}
+            </div>
 
-                ${
-                    transaction.type === "sale"
-                        ? renderSaleActions(transaction)
-                        : renderTradeActions(transaction)
-                }
-            </article>
+        </article>
         `;
     }).join("");
-
-    attachActionHandlers();
 }
 
-/* ---------- BUTTON EVENTS ---------- */
+/* ---------- EVENTS ---------- */
 
-function attachActionHandlers() {
-    document.querySelectorAll('[data-action="dropoff"]').forEach(button => {
-        button.onclick = () => confirmDropoff(button.dataset.id);
-    });
-
-    document.querySelectorAll('[data-action="collection"]').forEach(button => {
-        button.onclick = () => confirmCollection(button.dataset.id);
-    });
-
-    document.querySelectorAll('[data-action="trade-complete"]').forEach(button => {
-        button.onclick = () => completeTrade(button.dataset.id);
-    });
-}
-
-/* ---------- UAT 4-7 LOGIC ---------- */
-
-function confirmDropoff(id) {
-    const transaction = mockTransactions.find(t => t.id === id);
-
-    if (!transaction) {
-        showMessage("Transaction not found.", "error");
-        return;
-    }
-
-    if (transaction.status === "completed") {
-        showMessage("This transaction is already completed.", "error");
-        return;
-    }
-
-    if (transaction.type !== "sale") {
-        showMessage("Drop-off confirmation is only for sale transactions.", "error");
-        return;
-    }
-
-    if (transaction.dropoffConfirmed) {
-        showMessage("Drop-off already confirmed. You cannot confirm it twice.", "error");
-        return;
-    }
-
-    transaction.dropoffConfirmed = true;
-    transaction.status = "waiting_pickup";
-
-    showMessage(`${id} drop-off confirmed. Collection can now be confirmed.`, "success");
-
-    renderTransactions();
-}
-
-function confirmCollection(id) {
-    const transaction = mockTransactions.find(t => t.id === id);
-
-    if (!transaction) {
-        showMessage("Transaction not found.", "error");
-        return;
-    }
-
-    if (transaction.status === "completed") {
-        showMessage("This transaction is already completed.", "error");
-        return;
-    }
-
-    if (transaction.type !== "sale") {
-        showMessage("Collection confirmation is only for sale transactions.", "error");
-        return;
-    }
-
-    if (!transaction.dropoffConfirmed) {
-        showMessage("Cannot confirm collection before drop-off.", "error");
-        return;
-    }
-
-    if (transaction.collectionConfirmed) {
-        showMessage("Collection already confirmed.", "error");
-        return;
-    }
-
-    transaction.collectionConfirmed = true;
-    transaction.status = "completed";
-
-    showMessage(`${id} collection confirmed. Sale transaction completed.`, "success");
-
-    renderTransactions();
-}
-
-function completeTrade(id) {
-    const transaction = mockTransactions.find(t => t.id === id);
-
-    if (!transaction) {
-        showMessage("Transaction not found.", "error");
-        return;
-    }
-
-    if (transaction.status === "completed") {
-        showMessage("This trade transaction is already completed.", "error");
-        return;
-    }
-
-    if (transaction.type !== "trade") {
-        showMessage("Complete Trade Exchange is only for trade transactions.", "error");
-        return;
-    }
-
-    if (!transaction.slotDate || !transaction.slotTime) {
-        showMessage("Cannot complete trade without a booked facility slot.", "error");
-        return;
-    }
-
-    transaction.dropoffConfirmed = true;
-    transaction.collectionConfirmed = true;
-    transaction.status = "completed";
-
-    showMessage(`${id} trade exchange completed in one facility session.`, "success");
-
-    renderTransactions();
-}
-
-/* ---------- FILTER EVENTS ---------- */
-
-tabButtons.forEach(button => {
-    button.addEventListener("click", () => {
-        tabButtons.forEach(tab => tab.classList.remove("active"));
-
-        button.classList.add("active");
-        activeStatusFilter = button.dataset.filter;
-
+tabButtons.forEach(btn => {
+    btn.addEventListener("click", () => {
+        tabButtons.forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        activeStatusFilter = btn.dataset.filter;
         renderTransactions();
     });
 });
@@ -525,6 +214,4 @@ tabButtons.forEach(button => {
 searchInput.addEventListener("input", renderTransactions);
 typeFilter.addEventListener("change", renderTransactions);
 
-/* ---------- START ---------- */
-
-document.addEventListener("DOMContentLoaded", renderTransactions);
+document.addEventListener("DOMContentLoaded", fetchTransactions);

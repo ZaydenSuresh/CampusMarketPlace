@@ -23,6 +23,7 @@ const slotsRouter = require("./routes/slots");
 const MessageAuth = require("./routes/messages");
 const historyRouter = require("./routes/history");
 const analyticsRouter = require("./routes/analytics");
+const transactionsRouter = require("./routes/transactions");
 
 app.use(cors());
 app.use("/lib", express.static("lib"));
@@ -38,6 +39,7 @@ app.use("/slots", slotsRouter);
 app.use("/messages", MessageAuth);
 app.use("/history", historyRouter);
 app.use("/analytics", analyticsRouter);
+app.use("/transactions", transactionsRouter);
 
 // show login page on server startup
 app.get("/", (req, res) => {
