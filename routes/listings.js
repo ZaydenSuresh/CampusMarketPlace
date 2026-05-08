@@ -233,11 +233,23 @@ router.get("/search", async (req, res) => {
   const supabase = createSupabaseClient(req, res);
 
   try {
-    const { q, category, condition, minPrice, maxPrice } = req.query;
+    const {
+      q,
+      category,
+      condition,
+      minPrice,
+      maxPrice,
+      status,
+      reserved_by,
+      user_id,
+    } = req.query;
 
     let query = supabase
       .from("listings")
-      .select("*")
+      .select(`
+        *,
+        profiles:user_id (name)
+      `)
       .order("created_at", { ascending: false });
 
     if (category && category !== "All") {
@@ -246,6 +258,18 @@ router.get("/search", async (req, res) => {
 
     if (condition && condition !== "All") {
       query = query.eq("condition", condition);
+    }
+
+    if (status && status !== "All") {
+      query = query.eq("status", status);
+    }
+
+    if (reserved_by && reserved_by !== "All") {
+      query = query.eq("reserved_by", reserved_by);
+    }
+
+    if (user_id && user_id !== "All") {
+      query = query.eq("user_id", user_id);
     }
 
     if (minPrice && minPrice !== "") {
@@ -268,6 +292,7 @@ router.get("/search", async (req, res) => {
 
     return res.json({ ok: true, listings: data });
   } catch (err) {
+    console.error("Search listings error:", err);
     return res.status(500).json({ error: err.message });
   }
 });
@@ -437,16 +462,16 @@ router.post("/:id/reserve", async (req, res) => {
       return res.status(400).json({ error: "Cannot reserve your own listing" });
     }
 
-    const { data: existingTransaction, error: txError } = await supabase
+    const { data: existingTransactions, error: txError } = await supabase
       .from("transactions")
       .select("*")
       .eq("listing_id", listingId)
-      .not("status", "in", '("completed","cancelled")')
-      .maybeSingle();
+      .neq("status", "completed")
+      .neq("status", "cancelled");
 
     if (txError) throw new Error(txError.message);
 
-    if (existingTransaction) {
+    if (existingTransactions && existingTransactions.length > 0) {
       return res.status(400).json({
         error: "Listing already has an active transaction",
       });
@@ -470,10 +495,13 @@ router.post("/:id/reserve", async (req, res) => {
 
     if (insertError) throw new Error(insertError.message);
 
-    const { error: updateError } = await supabase
-      .from("listings")
-      .update({ status: "reserved" })
-      .eq("id", listingId);
+const { error: updateError } = await supabase
+  .from("listings")
+  .update({
+    status: "reserved",
+    reserved_by: buyerId
+  })
+  .eq("id", listingId);
 
     if (updateError) throw new Error(updateError.message);
 
