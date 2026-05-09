@@ -24,6 +24,8 @@ const MessageAuth = require("./routes/messages");
 const historyRouter = require("./routes/history");
 const analyticsRouter = require("./routes/analytics");
 const transactionsRouter = require("./routes/transactions");
+const listingsRouter = require("./routes/listings");
+const ratingsRouter = require("./routes/ratings");
 
 app.use(cors());
 app.use("/lib", express.static("lib"));
@@ -39,7 +41,9 @@ app.use("/slots", slotsRouter);
 app.use("/messages", MessageAuth);
 app.use("/history", historyRouter);
 app.use("/analytics", analyticsRouter);
+app.use("/listings", listingsRouter);
 app.use("/transactions", transactionsRouter);
+app.use("/ratings", ratingsRouter);
 
 // show login page on server startup
 app.get("/", (req, res) => {
@@ -91,9 +95,6 @@ app.get("/db-check", async (req, res) => {
     });
   }
 });
-
-const listingsRouter = require("./routes/listings");
-app.use("/listings", listingsRouter);
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
