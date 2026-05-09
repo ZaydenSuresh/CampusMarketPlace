@@ -246,10 +246,12 @@ router.get("/search", async (req, res) => {
 
     let query = supabase
       .from("listings")
-      .select(`
+      .select(
+        `
         *,
         profiles:user_id (name)
-      `)
+      `,
+      )
       .order("created_at", { ascending: false });
 
     if (category && category !== "All") {
@@ -410,6 +412,36 @@ router.delete("/:id", async (req, res) => {
   const supabase = createSupabaseClient(req, res);
 
   try {
+    // "getCurrentUser": Retrieves the authenticated user's details from the session. This is vital for security.
+    const user = await getCurrentUser(req, res);
+
+    // Fetch the listing to check ownership and status
+    const { data: listing, error: fetchError } = await supabase
+      .from("listings")
+      .select("user_id, status")
+      .eq("id", id)
+      .single();
+
+    // This is a safety check that ensures the server doesn't crash by confirming the item actually exists in the database before trying to delete it.
+    if (fetchError || !listing) {
+      return res.status(404).json({ error: "Listing not found" });
+    }
+
+    // Security check: Only the owner can delete
+    if (listing.user_id !== user.id) {
+      return res
+        .status(403)
+        .json({ error: "Unauthorized: You don't own this listing" });
+    }
+
+    // Safety check: Prevent deleting if an active transaction exists
+    if (listing.status !== "available" && listing.status !== null) {
+      return res.status(400).json({
+        error: "Cannot delete item: It is currently reserved or sold.",
+      });
+    }
+
+    // Perform the deletion
     const { error } = await supabase
       .from("listings")
       .delete()
@@ -421,6 +453,7 @@ router.delete("/:id", async (req, res) => {
 
     return res.json({ ok: true, message: "Listing deleted" });
   } catch (err) {
+    console.error("Delete error:", err);
     return res.status(500).json({ error: err.message });
   }
 });
@@ -495,13 +528,13 @@ router.post("/:id/reserve", async (req, res) => {
 
     if (insertError) throw new Error(insertError.message);
 
-const { error: updateError } = await supabase
-  .from("listings")
-  .update({
-    status: "reserved",
-    reserved_by: buyerId
-  })
-  .eq("id", listingId);
+    const { error: updateError } = await supabase
+      .from("listings")
+      .update({
+        status: "reserved",
+        reserved_by: buyerId,
+      })
+      .eq("id", listingId);
 
     if (updateError) throw new Error(updateError.message);
 
@@ -517,4 +550,3 @@ const { error: updateError } = await supabase
 });
 
 module.exports = router;
- 
