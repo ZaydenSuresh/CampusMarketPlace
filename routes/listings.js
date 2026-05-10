@@ -187,6 +187,49 @@ router.post("/", async (req, res) => {
   }
 });
 
+// Collects all unique seller IDs from the listings,
+// batch-fetches their ratings from Supabase, then attaches
+// average rating and review count to each listing object.
+async function enrichWithRatings(supabase, listings) {
+  if (!listings || listings.length === 0) return listings;
+
+  // Collect unique seller IDs (non-null) from the listings
+  const sellerIds = [...new Set(listings.map(l => l.user_id).filter(Boolean))];
+
+  // Batch query ratings where rated_id matches any seller
+  const { data: ratings, error: ratingsError } = await supabase
+    .from("ratings")
+    .select("rated_id, rating")
+    .in("rated_id", sellerIds);
+
+  if (ratingsError) {
+    console.error("Failed to fetch ratings:", ratingsError.message);
+    return listings;
+  }
+
+  // Aggregate ratings per seller: sum of all ratings + count
+  const ratingMap = {};
+  if (ratings) {
+    for (const r of ratings) {
+      if (!ratingMap[r.rated_id]) {
+        ratingMap[r.rated_id] = { sum: 0, count: 0 };
+      }
+      ratingMap[r.rated_id].sum += r.rating;
+      ratingMap[r.rated_id].count += 1;
+    }
+  }
+
+  // Attach computed stats to each listing (or null/0 if none exist)
+  return listings.map(l => {
+    const stats = ratingMap[l.user_id];
+    return {
+      ...l,
+      seller_average_rating: stats ? Math.round((stats.sum / stats.count) * 100) / 100 : null,
+      seller_review_count: stats ? stats.count : 0,
+    };
+  });
+}
+
 // GET latest listings
 router.get("/", async (req, res) => {
   const supabase = createSupabaseClient(req, res);
@@ -202,7 +245,9 @@ router.get("/", async (req, res) => {
       throw new Error(error.message);
     }
 
-    return res.json({ ok: true, listings: data });
+    const listings = await enrichWithRatings(supabase, data);
+
+    return res.json({ ok: true, listings });
   } catch (err) {
     return res.status(500).json({ error: err.message });
   }
@@ -222,7 +267,9 @@ router.get("/all", async (req, res) => {
       throw new Error(error.message);
     }
 
-    return res.json({ ok: true, listings: data });
+    const listings = await enrichWithRatings(supabase, data);
+
+    return res.json({ ok: true, listings });
   } catch (err) {
     return res.status(500).json({ error: err.message });
   }
@@ -292,7 +339,9 @@ router.get("/search", async (req, res) => {
       throw new Error(error.message);
     }
 
-    return res.json({ ok: true, listings: data });
+    const listings = await enrichWithRatings(supabase, data);
+
+    return res.json({ ok: true, listings });
   } catch (err) {
     console.error("Search listings error:", err);
     return res.status(500).json({ error: err.message });
