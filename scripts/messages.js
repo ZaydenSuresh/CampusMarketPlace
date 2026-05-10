@@ -300,12 +300,12 @@ async function handleSendMessage() {
 
 
 
-async function initMessagesPage() {//set up page when load
+async function initMessagesPage() {
   conversations = await fetchConversations();
 
   renderConversationList(conversations);
 
-  if (!conversations.length) {//if no convs,  show page when no conv
+  if (!conversations.length) {
     emptyState.classList.remove('hidden');
     chatView.classList.add('hidden');
     activeConversationId = null;
@@ -313,7 +313,15 @@ async function initMessagesPage() {//set up page when load
     return;
   }
 
-  activeConversationId = conversations[0].id;//open first conv automatically
+  const params = new URLSearchParams(window.location.search);
+  const targetConvId = params.get('conversationId');
+
+  if (targetConvId && getConversationById(targetConvId)) {
+    activeConversationId = targetConvId;
+  } else {
+    activeConversationId = conversations[0].id;
+  }
+
   openConversation(activeConversationId);
 }
 
