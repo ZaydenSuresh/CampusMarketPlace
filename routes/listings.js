@@ -295,9 +295,10 @@ router.get("/search", async (req, res) => {
       user_id,
     } = req.query;
 
-    if (user_id === "me") {
+    let resolvedUserId = user_id;
+    if (resolvedUserId === "me") {
       const user = await getCurrentUser(req, res);
-      user_id = user.id; // Swap the word "me" for your real ID (e.g., 550e8400...)
+      resolvedUserId = user?.id;
     }
 
     let query = supabase
@@ -326,8 +327,8 @@ router.get("/search", async (req, res) => {
       query = query.eq("reserved_by", reserved_by);
     }
 
-    if (user_id && user_id !== "All") {
-      query = query.eq("user_id", user_id);
+    if (resolvedUserId && resolvedUserId !== "All") {
+      query = query.eq("user_id", resolvedUserId);
     }
 
     if (minPrice && minPrice !== "") {
