@@ -67,7 +67,7 @@ function populateItems() {
   }
 
   itemSelect.innerHTML =
-    '<option value="">--- Select a reserved item ---</option>' +
+    '<option value="">Select a reserved item</option>' +
     pendingTransactions
       .map((t) => {
         const listing = getListing(t);
@@ -142,24 +142,32 @@ timeGrid.addEventListener("click", (e) => {
   const card = e.target.closest(".time-card");
   if (!card) return;
 
-  // Deselect previous
   document.querySelectorAll(".time-card.selected").forEach((c) => c.classList.remove("selected"));
 
-  // Select this one
   card.classList.add("selected");
   selectedSlotId = card.dataset.id;
 
-  // Build summary
+  updateSummary();
+});
+
+// Update summary line based on selected item + time card
+function updateSummary() {
+  const selectedCard = document.querySelector(".time-card.selected");
+  if (!selectedCard) {
+    summaryLine.style.display = "none";
+    return;
+  }
+
   const itemName = preselectedId
     ? selectedItemTitle
     : itemSelect.options[itemSelect.selectedIndex]?.text || "your item";
 
-  const date = card.dataset.date;
-  const time = card.dataset.time;
+  const date = selectedCard.dataset.date;
+  const time = selectedCard.dataset.time;
 
   summaryLine.innerHTML = `You are booking a slot for <strong>${escapeHtml(itemName)}</strong> on <strong>${date}</strong> at <strong>${time}</strong>.`;
   summaryLine.style.display = "block";
-});
+}
 
 // Item dropdown changed — show preview card with item details
 itemSelect.addEventListener("change", () => {
@@ -174,6 +182,8 @@ itemSelect.addEventListener("change", () => {
     selectedItemTitle = "";
     itemPreview.style.display = "none";
   }
+
+  updateSummary();
 });
 
 // Form submit
