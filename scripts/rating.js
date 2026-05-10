@@ -5,24 +5,32 @@ const reviewText = document.getElementById("reviewText");
 const submitBtn = document.getElementById("submitRatingBtn");
 const message = document.getElementById("ratingMessage");
 
-const transactionIdText = document.getElementById("transactionIdText");
-const sellerIdText = document.getElementById("sellerIdText");
+const pageHeading = document.getElementById("pageHeading");
+const itemTitleText = document.getElementById("itemTitleText");
+const ratedNameText = document.getElementById("ratedNameText");
 
 const params = new URLSearchParams(window.location.search);
 
 const transactionId = params.get("transactionId");
-const sellerId = params.get("sellerId");
+const ratedId = params.get("ratedId");
+const ratedName = params.get("ratedName");
+const itemTitle = params.get("itemTitle");
+const ratedRole = params.get("ratedRole");
 
-if (transactionId) {
-    transactionIdText.textContent = transactionId;
+if (ratedRole) {
+    pageHeading.textContent = "Rate " + (ratedRole === "buyer" ? "Buyer" : "Seller");
 }
 
-if (sellerId) {
-    sellerIdText.textContent = sellerId;
+if (itemTitle) {
+    itemTitleText.textContent = decodeURIComponent(itemTitle);
 }
 
-if (!transactionId || !sellerId) {
-    message.textContent = "Missing transaction or seller details.";
+if (ratedName) {
+    ratedNameText.textContent = decodeURIComponent(ratedName);
+}
+
+if (!transactionId || !ratedId) {
+    message.textContent = "Missing transaction or rating details.";
     message.className = "error-message";
     submitBtn.disabled = true;
 }
@@ -44,7 +52,7 @@ stars.forEach((star) => {
     });
 });
 
-submitBtn.addEventListener("click", () => {
+submitBtn.addEventListener("click", async () => {
     const review = reviewText.value.trim();
 
     if (selectedRating === 0) {
@@ -53,19 +61,42 @@ submitBtn.addEventListener("click", () => {
         return;
     }
 
-
-    const ratingData = {
-        transactionId: transactionId,
-        sellerId: sellerId,
-        rating: selectedRating,
-        review: review
-    };
-
-    console.log("Rating ready to send:", ratingData);
-
-    message.textContent = "Rating submitted successfully.";
-    message.className = "success-message";
-
     submitBtn.disabled = true;
-    submitBtn.textContent = "Submitted";
+    submitBtn.textContent = "Submitting...";
+
+    try {
+        const res = await fetch("/ratings", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                rated_id: ratedId,
+                transaction_id: transactionId,
+                rating: selectedRating,
+                review: review || null
+            })
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+            message.textContent = data.error || "Failed to submit rating.";
+            message.className = "error-message";
+            submitBtn.disabled = false;
+            submitBtn.textContent = "Submit Rating";
+            return;
+        }
+
+        message.textContent = "Rating submitted successfully!";
+        message.className = "success-message";
+        submitBtn.textContent = "Submitted";
+
+        setTimeout(() => {
+            window.location.href = "/student-transactions.html";
+        }, 1500);
+    } catch (err) {
+        message.textContent = "Something went wrong. Please try again.";
+        message.className = "error-message";
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Submit Rating";
+    }
 });
