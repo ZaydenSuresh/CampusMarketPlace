@@ -19,9 +19,11 @@ async function fetchTransactions() {
             type: t.type === "either" ? "trade" : t.type,
             status: mapStatus(t),
 
-            listingTitle: "Listing #" + t.listing_id.slice(0, 6),
-            buyer: t.buyer_id.slice(0, 6),
-            seller: t.seller_id.slice(0, 6),
+            listingTitle: t.listings?.title || "Unknown Listing",
+
+            buyer: t.buyer?.name || "Unknown Buyer",
+
+            seller: t.seller?.name || "Unknown Seller",
 
             slotDate: formatDate(t.created_at),
 
@@ -53,7 +55,7 @@ function formatDate(date) {
     return new Date(date).toLocaleDateString();
 }
 
-/* ---------- PROGRESS (USES YOUR CSS) ---------- */
+/* ---------- PROGRESS ---------- */
 
 function getStepIndex(status) {
     switch (status) {
@@ -65,8 +67,12 @@ function getStepIndex(status) {
     }
 }
 
-function renderProgress(step) {
-    const labels = ["Pending", "Drop-Off", "Pick-Up", "Completed"];
+function renderProgress(step, type) {
+
+    const labels =
+        type === "trade"
+            ? ["Pending", "Exchange", "Completed"]
+            : ["Pending", "Drop-Off", "Pick-Up", "Completed"];
 
     return `
         <div class="progress-row">
@@ -78,7 +84,7 @@ function renderProgress(step) {
                         <div class="step-circle">${s}</div>
                         <span class="step-label">${label}</span>
                     </div>
-                    ${s < 4 ? `<div class="progress-line"></div>` : ""}
+                    ${s < labels.length ? `<div class="progress-line"></div>` : ""}
                 `;
             }).join("")}
         </div>
@@ -88,12 +94,43 @@ function renderProgress(step) {
 /* ---------- ACTION BUTTON ---------- */
 
 function renderActionButton(t) {
+
+    if (t.type === "trade") {
+
+        if (t.status === "waiting_dropoff") {
+            return `
+                <button
+                    onclick="updateTransaction('${t.id}','complete')"
+                    class="action-btn primary-btn"
+                >
+                    Confirm Exchange
+                </button>
+            `;
+        }
+
+        return "";
+    }
+
     if (t.status === "waiting_dropoff") {
-        return `<button onclick="updateTransaction('${t.id}','dropoff')" class="action-btn primary-btn">Confirm Drop-Off</button>`;
+        return `
+            <button
+                onclick="updateTransaction('${t.id}','dropoff')"
+                class="action-btn primary-btn"
+            >
+                Confirm Drop-Off
+            </button>
+        `;
     }
 
     if (t.status === "waiting_pickup") {
-        return `<button onclick="updateTransaction('${t.id}','complete')" class="action-btn secondary-btn">Mark Completed</button>`;
+        return `
+            <button
+                onclick="updateTransaction('${t.id}','complete')"
+                class="action-btn secondary-btn"
+            >
+                Mark Completed
+            </button>
+        `;
     }
 
     return "";
@@ -103,13 +140,17 @@ function renderActionButton(t) {
 
 async function updateTransaction(id, action) {
     try {
+
         await fetch(`/transactions/${id}`, {
             method: "PUT",
-            headers: { "Content-Type": "application/json" },
+            headers: {
+                "Content-Type": "application/json"
+            },
             body: JSON.stringify({ action })
         });
 
         fetchTransactions();
+
     } catch (err) {
         console.error(err);
     }
@@ -118,10 +159,12 @@ async function updateTransaction(id, action) {
 /* ---------- FILTER ---------- */
 
 function getFilteredTransactions() {
+
     const searchValue = searchInput.value.toLowerCase();
     const selectedType = typeFilter.value;
 
     return transactions.filter(t => {
+
         const matchesStatus =
             activeStatusFilter === "all" ||
             t.status === activeStatusFilter;
@@ -137,37 +180,52 @@ function getFilteredTransactions() {
             t.seller
         ].join(" ").toLowerCase();
 
-        return matchesStatus && matchesType && searchText.includes(searchValue);
+        return (
+            matchesStatus &&
+            matchesType &&
+            searchText.includes(searchValue)
+        );
     });
 }
 
 /* ---------- RENDER ---------- */
 
 function renderTransactions() {
+
     const filtered = getFilteredTransactions();
 
     if (!filtered.length) {
-        transactionsContainer.innerHTML = `<p>No transactions found.</p>`;
+        transactionsContainer.innerHTML = `
+            <p>No transactions found.</p>
+        `;
         return;
     }
 
     transactionsContainer.innerHTML = filtered.map(t => {
+
         const step = getStepIndex(t.status);
 
         return `
         <article class="transaction-card">
 
             <div class="transaction-card-header">
+
                 <div class="transaction-title-group">
                     <h3>${t.id.slice(0, 10)}</h3>
-                    <span class="type-badge">${t.type}</span>
+
+                    <span class="type-badge">
+                        ${t.type}
+                    </span>
                 </div>
+
                 <span class="badge badge-${t.status.replace("_", "")}">
                     ${t.status.replace("_", " ")}
                 </span>
+
             </div>
 
             <div class="transaction-details-grid">
+
                 <div class="detail-block">
                     <span class="detail-label">Listing</span>
                     <strong>${t.listingTitle}</strong>
@@ -187,9 +245,10 @@ function renderTransactions() {
                     <span class="detail-label">Seller</span>
                     <strong>${t.seller}</strong>
                 </div>
+
             </div>
 
-            ${renderProgress(step)}
+            ${renderProgress(step, t.type)}
 
             <div class="actions-row">
                 ${renderActionButton(t)}
@@ -197,21 +256,30 @@ function renderTransactions() {
 
         </article>
         `;
+
     }).join("");
 }
 
 /* ---------- EVENTS ---------- */
 
 tabButtons.forEach(btn => {
+
     btn.addEventListener("click", () => {
+
         tabButtons.forEach(b => b.classList.remove("active"));
+
         btn.classList.add("active");
+
         activeStatusFilter = btn.dataset.filter;
+
         renderTransactions();
     });
 });
 
 searchInput.addEventListener("input", renderTransactions);
+
 typeFilter.addEventListener("change", renderTransactions);
 
 document.addEventListener("DOMContentLoaded", fetchTransactions);
+
+window.updateTransaction = updateTransaction;
