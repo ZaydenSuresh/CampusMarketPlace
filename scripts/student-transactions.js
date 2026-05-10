@@ -1,6 +1,7 @@
 import { requireRole, logoutUser, getCurrentUser } from "/scripts/auth.js";
 
 let currentUserId = null;
+let currentUserName = null;
 let transactions = [];
 let activeStatus = "all";
 let activeType = "all";
@@ -12,6 +13,7 @@ async function initPage() {
   const user = await requireRole(["Student"]);
   if (!user) return;
   currentUserId = user.id;
+  currentUserName = user.name;
 
   await fetchTransactions();
 
@@ -120,6 +122,7 @@ function buildCard(t) {
   const isPending = t.status === "pending";
   const canCancel = t.status !== "completed" && t.status !== "cancelled";
   const isCompleted = t.status === "completed";
+  const canMessage = isPending || t.status === "in_progress";
   // Check if this user has already submitted a rating for this transaction
   const alreadyRated = isCompleted && ratedTransactionIds.has(t.id);
 
@@ -154,6 +157,7 @@ function buildCard(t) {
           </div>
           <div class="card-actions">
             ${isPending ? `<button class="btn-sm btn-book" data-book="${t.id}">Book Slot</button>` : ""}
+            ${canMessage ? `<button class="btn-sm btn-message" data-msg-seller="${t.seller?.name}" data-msg-seller-id="${t.seller_id}" data-msg-item="${escapeHtml(title)}">Message ${t.seller?.name}</button>` : ""}
             ${canCancel ? `<button class="btn-sm btn-cancel" data-id="${t.id}">Cancel</button>` : ""}
             ${isCompleted && alreadyRated ? `<button class="btn-sm btn-rate" disabled>Rated</button>` : ""}
             ${isCompleted && !alreadyRated ? `<button class="btn-sm btn-rate" onclick="window.location.href='/rating.html?transactionId=${t.id}&ratedId=${counterpartyId}&ratedName=${encodeUrl(counterpartyName)}&itemTitle=${encodeUrl(title)}&ratedRole=${ratedRole}'">Rate</button>` : ""}
@@ -195,6 +199,58 @@ container.addEventListener("click", async (e) => {
   if (bookBtn) {
     const id = bookBtn.dataset.book;
     window.location.href = `/create-transaction.html?transactionId=${id}`;
+    return;
+  }
+
+  const msgBtn = e.target.closest("[data-msg-seller]");
+  if (msgBtn) {
+    const sellerName = msgBtn.dataset.msgSeller;
+    const sellerId = msgBtn.dataset.msgSellerId;
+    const itemTitle = msgBtn.dataset.msgItem;
+
+    msgBtn.classList.add("loading");
+    msgBtn.textContent = "";
+
+    try {
+      const findRes = await fetch("/messages/conversation/find-or-create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          sender_id: currentUserId,
+          receiver_id: sellerId,
+          sender_name: currentUserName,
+          receiver_name: sellerName
+        })
+      });
+
+      if (!findRes.ok) {
+        msgBtn.classList.remove("loading");
+        msgBtn.textContent = `Message ${sellerName}`;
+        alert("Failed to open conversation");
+        return;
+      }
+
+      const { conversationId } = await findRes.json();
+
+      await fetch("/messages/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          sender_id: currentUserId,
+          receiver_id: sellerId,
+          sender_name: currentUserName,
+          receiver_name: sellerName,
+          content: `📍 Transaction: ${itemTitle}`
+        })
+      });
+
+      window.location.href = `/messages.html?conversationId=${conversationId}`;
+    } catch (err) {
+      msgBtn.classList.remove("loading");
+      msgBtn.textContent = `Message ${sellerName}`;
+      alert("Something went wrong. Please try again.");
+    }
+    return;
   }
 });
 
