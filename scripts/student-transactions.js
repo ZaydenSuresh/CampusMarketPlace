@@ -4,6 +4,7 @@ let currentUserId = null;
 let transactions = [];
 let activeStatus = "all";
 let activeType = "all";
+let ratedTransactionIds = new Set();
 
 const container = document.getElementById("transactions-container");
 
@@ -43,11 +44,23 @@ async function fetchTransactions() {
     const res = await fetch(`/transactions?user_id=${currentUserId}`);
     if (!res.ok) throw new Error("Failed to fetch");
     transactions = await res.json();
+    await fetchUserRatings();
   } catch (err) {
     console.error(err);
     transactions = [];
   }
   renderTransactions();
+}
+
+async function fetchUserRatings() {
+  try {
+    const res = await fetch(`/ratings?rater_id=${currentUserId}`);
+    if (!res.ok) return;
+    const data = await res.json();
+    ratedTransactionIds = new Set(data.ratings.map(r => r.transaction_id));
+  } catch (err) {
+    console.error(err);
+  }
 }
 
 function getListing(t) {
@@ -91,6 +104,10 @@ function renderTransactions() {
   container.innerHTML = filtered.map((t) => buildCard(t)).join("");
 }
 
+function encodeUrl(str) {
+  return encodeURIComponent(str || "");
+}
+
 function buildCard(t) {
   const listing = getListing(t);
   const imgUrl = listing?.image_url || "/images/placeholder.png";
@@ -99,6 +116,11 @@ function buildCard(t) {
   const isPending = t.status === "pending";
   const canCancel = t.status !== "completed" && t.status !== "cancelled";
   const isCompleted = t.status === "completed";
+  const alreadyRated = isCompleted && ratedTransactionIds.has(t.id);
+
+  const counterpartyId = t.buyer_id === currentUserId ? t.seller_id : t.buyer_id;
+  const counterpartyName = t.buyer_id === currentUserId ? (t.seller?.name || "Unknown") : (t.buyer?.name || "Unknown");
+  const ratedRole = t.buyer_id === currentUserId ? "seller" : "buyer";
 
   // Slot info row — styled like buyer/seller meta
   const slot = t.slot_info;
@@ -126,7 +148,8 @@ function buildCard(t) {
           <div class="card-actions">
             ${isPending ? `<button class="btn-sm btn-book" data-book="${t.id}">Book Slot</button>` : ""}
             ${canCancel ? `<button class="btn-sm btn-cancel" data-id="${t.id}">Cancel</button>` : ""}
-            ${isCompleted ? `<button class="btn-sm btn-rate" onclick="window.location.href='/rating.html?transactionId=${t.id}&sellerId=${t.seller_id}'">Rate</button>` : ""}
+            ${isCompleted && alreadyRated ? `<button class="btn-sm btn-rate" disabled>Rated</button>` : ""}
+            ${isCompleted && !alreadyRated ? `<button class="btn-sm btn-rate" onclick="window.location.href='/rating.html?transactionId=${t.id}&ratedId=${counterpartyId}&ratedName=${encodeUrl(counterpartyName)}&itemTitle=${encodeUrl(title)}&ratedRole=${ratedRole}'">Rate</button>` : ""}
           </div>
         </div>
       </div>
