@@ -27,7 +27,8 @@ router.get("/", async (req, res) => {
         *,
         listings (*),
         buyer:profiles!buyer_id (name),
-        seller:profiles!seller_id (name)
+        seller:profiles!seller_id (name),
+        slot_info:trade_slots!slot_id (date, time)
       `
       )
       .order("created_at", { ascending: false });
