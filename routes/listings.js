@@ -194,7 +194,9 @@ async function enrichWithRatings(supabase, listings) {
   if (!listings || listings.length === 0) return listings;
 
   // Collect unique seller IDs (non-null) from the listings
-  const sellerIds = [...new Set(listings.map(l => l.user_id).filter(Boolean))];
+  const sellerIds = [
+    ...new Set(listings.map((l) => l.user_id).filter(Boolean)),
+  ];
 
   // Batch query ratings where rated_id matches any seller
   const { data: ratings, error: ratingsError } = await supabase
@@ -220,11 +222,13 @@ async function enrichWithRatings(supabase, listings) {
   }
 
   // Attach computed stats to each listing (or null/0 if none exist)
-  return listings.map(l => {
+  return listings.map((l) => {
     const stats = ratingMap[l.user_id];
     return {
       ...l,
-      seller_average_rating: stats ? Math.round((stats.sum / stats.count) * 100) / 100 : null,
+      seller_average_rating: stats
+        ? Math.round((stats.sum / stats.count) * 100) / 100
+        : null,
       seller_review_count: stats ? stats.count : 0,
     };
   });
@@ -290,6 +294,11 @@ router.get("/search", async (req, res) => {
       reserved_by,
       user_id,
     } = req.query;
+
+    if (user_id === "me") {
+      const user = await getCurrentUser(req, res);
+      user_id = user.id; // Swap the word "me" for your real ID (e.g., 550e8400...)
+    }
 
     let query = supabase
       .from("listings")
@@ -461,6 +470,7 @@ router.delete("/:id", async (req, res) => {
   const supabase = createSupabaseClient(req, res);
 
   try {
+    const { id } = req.params;
     // "getCurrentUser": Retrieves the authenticated user's details from the session. This is vital for security.
     const user = await getCurrentUser(req, res);
 
@@ -491,10 +501,7 @@ router.delete("/:id", async (req, res) => {
     }
 
     // Perform the deletion
-    const { error } = await supabase
-      .from("listings")
-      .delete()
-      .eq("id", req.params.id);
+    const { error } = await supabase.from("listings").delete().eq("id", id);
 
     if (error) {
       throw new Error(error.message);
