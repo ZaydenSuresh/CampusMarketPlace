@@ -52,6 +52,9 @@ async function fetchTransactions() {
   renderTransactions();
 }
 
+// Fetch all ratings the current user has submitted, then build a Set
+// of transaction IDs they've already rated. Used to disable the Rate
+// button on already-reviewed transactions.
 async function fetchUserRatings() {
   try {
     const res = await fetch(`/ratings?rater_id=${currentUserId}`);
@@ -104,6 +107,7 @@ function renderTransactions() {
   container.innerHTML = filtered.map((t) => buildCard(t)).join("");
 }
 
+// Safely encode a string for use in a URL query parameter
 function encodeUrl(str) {
   return encodeURIComponent(str || "");
 }
@@ -116,8 +120,11 @@ function buildCard(t) {
   const isPending = t.status === "pending";
   const canCancel = t.status !== "completed" && t.status !== "cancelled";
   const isCompleted = t.status === "completed";
+  // Check if this user has already submitted a rating for this transaction
   const alreadyRated = isCompleted && ratedTransactionIds.has(t.id);
 
+  // Determine the other person in this transaction (the one to rate).
+  // If current user is buyer → counterparty is seller; if seller → counterparty is buyer.
   const counterpartyId = t.buyer_id === currentUserId ? t.seller_id : t.buyer_id;
   const counterpartyName = t.buyer_id === currentUserId ? (t.seller?.name || "Unknown") : (t.buyer?.name || "Unknown");
   const ratedRole = t.buyer_id === currentUserId ? "seller" : "buyer";

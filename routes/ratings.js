@@ -13,6 +13,8 @@ async function getCurrentUser(req, res) {
   return user;
 }
 
+// POST /ratings — Submit a rating for a completed transaction.
+// Security: rater_id is always taken from the session, NEVER from the request body.
 router.post("/", async (req, res) => {
   try {
     const supabase = createSupabaseClient(req, res);
@@ -24,14 +26,17 @@ router.post("/", async (req, res) => {
 
     const { rated_id, transaction_id, rating, review } = req.body;
 
+    // Validate required fields
     if (!rated_id || !transaction_id || !rating) {
       return res.status(400).json({ error: "rated_id, transaction_id, and rating are required" });
     }
 
+    // Rating must be a whole number between 1 and 5
     if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
       return res.status(400).json({ error: "Rating must be an integer between 1 and 5" });
     }
 
+    // Verify the transaction exists
     const { data: transaction, error: txError } = await supabase
       .from("transactions")
       .select("id, buyer_id, seller_id, status")
@@ -42,19 +47,23 @@ router.post("/", async (req, res) => {
       return res.status(404).json({ error: "Transaction not found" });
     }
 
+    // Only completed transactions can be rated
     if (transaction.status !== "completed") {
       return res.status(400).json({ error: "Can only rate completed transactions" });
     }
 
+    // Only the buyer or seller of the transaction can submit a rating
     const rater_id = user.id;
     if (rater_id !== transaction.buyer_id && rater_id !== transaction.seller_id) {
       return res.status(403).json({ error: "You are not part of this transaction" });
     }
 
+    // Prevent rating yourself
     if (rater_id === rated_id) {
       return res.status(400).json({ error: "Cannot rate yourself" });
     }
 
+    // Prevent duplicate ratings — one rating per person per transaction
     const { data: existing, error: dupError } = await supabase
       .from("ratings")
       .select("id")
@@ -70,6 +79,7 @@ router.post("/", async (req, res) => {
       return res.status(409).json({ error: "You have already rated this transaction" });
     }
 
+    // Insert the rating into the database
     const { data: ratingRow, error: insertError } = await supabase
       .from("ratings")
       .insert([
@@ -94,6 +104,8 @@ router.post("/", async (req, res) => {
   }
 });
 
+// GET /ratings?user_id=x  — ratings this user received (includes average + total)
+// GET /ratings?rater_id=x — ratings this user gave (just the list)
 router.get("/", async (req, res) => {
   try {
     const supabase = createSupabaseClient(req, res);
@@ -103,6 +115,7 @@ router.get("/", async (req, res) => {
       return res.status(400).json({ error: "user_id or rater_id query parameter is required" });
     }
 
+    // Choose the filter column based on which parameter was provided
     const filterField = rater_id ? "rater_id" : "rated_id";
     const filterValue = rater_id || user_id;
 
@@ -116,10 +129,12 @@ router.get("/", async (req, res) => {
       return res.status(500).json({ error: ratingsError.message });
     }
 
+    // If querying by rater_id, we only need the list — no average needed
     if (rater_id) {
       return res.json({ ratings });
     }
 
+    // For ?user_id, also compute the average rating and total count
     const { data: agg, error: aggError } = await supabase
       .from("ratings")
       .select("rating")
