@@ -22,16 +22,17 @@ export function createListingCard(listing) {
         </div>
 
         <div class="item-details">
-            <span style="
-                padding: 2px 8px;
-                border-radius: 4px;
-                font-size: 0.7rem;
-                font-weight: bold;
-                background: rgba(0, 200, 0, 0.1);
-                color: green;
-            ">
-                ${listing.category || "UNCATEGORIZED"}
-            </span>
+           <section class="listing-tags">
+
+    <strong class="listing-tag category-tag">
+        ${listing.category || "UNCATEGORIZED"}
+    </strong>
+
+    <strong class="listing-tag condition-tag">
+        ${listing.condition || "N/A"}
+    </strong>
+
+</section>
 
             <h3 style="margin-top: 10px;">
                 ${escapeHtml(listing.title)}
@@ -43,10 +44,6 @@ export function createListingCard(listing) {
 
             <p class="text-small text-muted">
                 ${escapeHtml(listing.description || "")}
-            </p>
-
-            <p class="text-small">
-                Condition: ${listing.condition || "N/A"}
             </p>
             <p class="seller-rating">
                 ★ ${listing.seller_average_rating || "No ratings yet"}
