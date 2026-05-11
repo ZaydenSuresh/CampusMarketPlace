@@ -3,24 +3,28 @@
  * @param {Object} listing - listing data from database
  * @returns {HTMLElement} card element
  */
+
+// Function to create a listing card can be used in other files 
 export function createListingCard(listing) {
     const currentUserId = localStorage.getItem("user_id");
 
     const card = document.createElement("div");
-    card.className = "item-card";
+    card.className = "item-card"; //Uses CSS styles for consistency
 
     const imageUrl =
-        listing.image_url && listing.image_url.trim() !== ""
+        listing.image_url && listing.image_url.trim() !== "" //Placeholder image if no image provided
             ? listing.image_url
             : "https://via.placeholder.com/150";
 
+    // Build card HTML with listing details
     card.innerHTML = `
         <div class="item-img">
+        <!-- Image inserted here -->
             <img src="${imageUrl}" 
                  alt="listing image" 
                  style="width:100%; height:180px; object-fit:contain; background:white;" />
         </div>
-
+        <!-- Details of listing -->
         <div class="item-details">
             <span style="
                 padding: 2px 8px;
@@ -34,7 +38,7 @@ export function createListingCard(listing) {
             </span>
 
             <h3 style="margin-top: 10px;">
-                ${escapeHtml(listing.title)}
+                ${escapeHtml(listing.title)} <!-- Prevents being run as HTML, javascript, etc -->
             </h3>
 
             <p class="item-price">
@@ -47,7 +51,8 @@ export function createListingCard(listing) {
 
             <p class="text-small">
                 Condition: ${listing.condition || "N/A"}
-            </p>
+            </p> 
+            <!-- Shows average rating and review count if available -->
             <p class="seller-rating">
                 ★ ${listing.seller_average_rating || "No ratings yet"}
                  ${listing.seller_review_count ? `(${listing.seller_review_count} reviews)` : ""}
@@ -62,7 +67,7 @@ export function createListingCard(listing) {
         </div>
     `;
 
-    const actions = card.querySelector(".card-actions");
+    const actions = card.querySelector(".card-actions"); //Check if current user owns the listing
 
     const isOwner =
         currentUserId &&

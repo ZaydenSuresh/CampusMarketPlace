@@ -59,3 +59,44 @@ UAT 10 — Delete listing
 Given a listing exists
 When I delete it
 Then it should be removed successfully
+
+UAT 11 — Reserve available listing sets reserved_by
+
+Given I am authenticated as a buyer
+And an available listing exists that I do not own
+When I reserve the listing
+Then the listing status should be updated to reserved
+And the listing reserved_by field should store my user ID
+And the response should confirm the reservation
+
+UAT 12 — Prevent duplicate reservation
+
+Given I am authenticated as a buyer
+And the listing has already been reserved by another user
+When I try to reserve the same listing
+Then the request should be rejected
+And the listing reserved_by field should not be changed
+And no new reservation should be created
+
+UAT 13 — Search listings by status
+
+Given listings exist with different statuses
+When I request /listings/search?status=available
+Then only listings with status available should be returned
+And reserved or unavailable listings should not be included
+
+UAT 14 — Search listings by reserved buyer
+
+Given I am authenticated as a buyer
+And I have reserved one or more listings
+When I request /listings/search?status=reserved&reserved_by=myUserId
+Then only listings reserved by me should be returned
+And listings reserved by other users should not be included
+
+UAT 15 — Search listings returns seller name and ratings
+
+Given listings exist with seller profile and rating information
+When I request listings from the search endpoint
+Then each listing should include the seller’s name
+And each listing should include the seller’s rating data
+And the frontend should be able to display the seller name and rating on the listing card
