@@ -197,9 +197,9 @@ router.post("/login", async (req, res) => {
 // logout endpoint call clears supabase session
 router.post("/logout", async (req, res) => {
   const supabase = createSupabaseClient(req, res);
-  const { error } = await logout(supabase);
+  const result = await logout(supabase);
 
-  if (error)
+  if (result)
     return res.status(400).json({ ok: false, message: "Logout failed" });
 
   return res.status(200).json({ ok: true, message: "Logout successful" });
