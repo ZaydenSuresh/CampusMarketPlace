@@ -1,62 +1,105 @@
 <!doctype html>
+<!-- HTML5 document -->
+
 <html lang="en">
 <head>
+
+<!-- supports emojis/special characters -->
 <meta charset="UTF-8" />
+
+<!-- responsive design for phones/laptops -->
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+<!-- browser tab title -->
 <title>Transactions | Campus Marketplace</title>
 
+<!-- global styles used across whole app -->
 <link rel="stylesheet" href="/styles/global.css" />
+
+<!-- transactions page specific styling -->
 <link rel="stylesheet" href="/styles/transactions.css" />
+
 </head>
 
 <body>
 
+<!-- module allows import syntax -->
 <script type="module">
+
+/* import role protection function */
 import { requireRole } from "/scripts/auth.js";
 
+/* checks if current user is staff */
 async function checkAccess() {
+
+    /* only Trade Facility Staff can access page */
     const user = await requireRole(["Trade Facility Staff"]);
+
+    /* stop page if not authorized */
     if (!user) return;
 }
+
+/* run access check immediately */
 checkAccess();
+
 </script>
 
+<!-- sidebar navigation -->
 <aside class="sidebar">
+
+    <!-- branding section -->
     <header class="brand">
         <h1>Wits Marketplace</h1>
         <p>Staff Portal</p>
     </header>
 
+    <!-- navigation links -->
     <nav class="sidebar-nav">
 
+        <!-- link to slot management page -->
         <a href="/manage-slots.html" class="nav-link">
             📅 Manage Slots
         </a>
 
+        <!-- current active page -->
         <a href="/transactions.html" class="nav-link active">
             💳 Transactions
         </a>
 
     </nav>
 
+    <!-- logout section -->
     <footer class="sidebar-footer">
-        <a href="/login.html" class="logout-btn">↩ Logout</a>
+        <a href="/login.html" class="logout-btn">
+            ↩ Logout
+        </a>
     </footer>
+
 </aside>
 
+<!-- main content area -->
 <main class="main-content">
 
+    <!-- page heading -->
     <header class="page-header">
+
+        <!-- page title -->
         <h2>Transaction Management</h2>
+
+        <!-- page description -->
         <p>Monitor and manage marketplace transactions</p>
+
     </header>
 
+    <!-- status filter buttons -->
     <section class="status-tabs">
 
+        <!-- default active filter -->
         <button class="tab-btn active" data-filter="all">
             All Transactions
         </button>
 
+        <!-- JS reads data-filter value -->
         <button class="tab-btn" data-filter="pending">
             Pending
         </button>
@@ -79,10 +122,13 @@ checkAccess();
 
     </section>
 
+    <!-- holds filters + transaction cards -->
     <section class="transactions-panel">
 
+        <!-- top toolbar -->
         <section class="toolbar">
 
+            <!-- search transactions -->
             <input
                 type="text"
                 id="search-input"
@@ -90,29 +136,46 @@ checkAccess();
                 placeholder="Search by buyer, seller, or listing"
             />
 
+            <!-- filter by sale/trade -->
             <select id="type-filter" class="toolbar-select">
+
+                <!-- show all -->
                 <option value="all">All Categories</option>
+
+                <!-- sale transactions only -->
                 <option value="sale">Sale</option>
+
+                <!-- trade transactions only -->
                 <option value="trade">Trade</option>
+
             </select>
 
         </section>
 
-        <section id="feedback-message" class="feedback-message"></section>
+        <!-- dynamic success/error messages -->
+        <section
+            id="feedback-message"
+            class="feedback-message">
+        </section>
 
+        <!-- JS inserts transaction cards here -->
         <section
             id="transactions-container"
             class="transactions-container"
         >
+
+            <!-- temporary loading state -->
             <article class="empty-state-card">
                 <p>Loading transactions...</p>
             </article>
+
         </section>
 
     </section>
 
 </main>
 
+<!-- connects page to JS logic -->
 <script src="/scripts/transactions.js"></script>
 
 </body>
