@@ -26,6 +26,7 @@ const analyticsRouter = require("./routes/analytics");
 const transactionsRouter = require("./routes/transactions");
 const listingsRouter = require("./routes/listings");
 const ratingsRouter = require("./routes/ratings");
+const helmet = require("helmet");
 
 app.use(cors());
 app.use("/lib", express.static("lib"));
@@ -44,6 +45,7 @@ app.use("/analytics", analyticsRouter);
 app.use("/listings", listingsRouter);
 app.use("/transactions", transactionsRouter);
 app.use("/ratings", ratingsRouter);
+app.use(helmet());
 
 // show login page on server startup
 app.get("/", (req, res) => {
