@@ -240,6 +240,250 @@
                 background: rgba(255, 255, 255, 0.2);
                 border-color: var(--wits-gold);
             }
+            /* ===============================
+   NEW LISTINGS UI
+   Wits inspired marketplace cards
+   =============================== */
+
+.section-title {
+    color: var(--wits-navy-dark);
+    margin-bottom: 14px;
+    font-weight: 900;
+    font-size: 1.45rem;
+}
+
+/* Search bar */
+#searchInput {
+    width: 100%;
+    max-width: 520px;
+    padding: 14px 18px;
+    margin-bottom: 16px;
+    border-radius: 999px;
+    border: 1px solid var(--grey-border);
+    background: var(--white);
+    color: var(--wits-navy-dark);
+    outline: none;
+    box-shadow: var(--shadow-sm);
+}
+
+#searchInput:focus {
+    border-color: var(--wits-gold);
+    box-shadow: 0 0 0 4px rgba(201, 168, 76, 0.18);
+}
+
+/* FIXED: stops category buttons becoming vertical */
+.category-filters {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 28px;
+}
+
+.filter-pill {
+    display: inline-flex !important;
+    width: auto;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 17px;
+    border-radius: 999px;
+    border: 1px solid rgba(0, 59, 126, 0.15);
+    background: var(--white);
+    color: var(--wits-navy);
+    font-size: 0.82rem;
+    font-weight: 800;
+    cursor: pointer;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.2s ease;
+}
+
+.filter-pill:hover {
+    transform: translateY(-2px);
+    border-color: var(--wits-gold);
+    color: var(--wits-navy-dark);
+}
+
+.filter-pill.active {
+    background: linear-gradient(135deg, var(--wits-navy), var(--wits-navy-dark));
+    color: var(--white);
+    border-color: var(--wits-navy);
+}
+
+/* Card grid */
+.listings-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(285px, 1fr));
+    gap: 26px;
+}
+
+    /* New card look */
+    .item-card {
+        background: var(--white);
+        border-radius: 26px;
+        border: 1px solid rgba(0, 59, 126, 0.12);
+        overflow: hidden;
+        box-shadow: 0 12px 32px rgba(0, 59, 126, 0.09);
+        transition: all 0.25s ease;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+    }
+
+    .item-card::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        border-radius: 26px;
+        pointer-events: none;
+        border: 2px solid transparent;
+    }
+
+    .item-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 22px 42px rgba(0, 59, 126, 0.18);
+    }
+
+    .item-card:hover::before {
+        border-color: var(--wits-gold);
+    }
+
+    /* Image area */
+    .item-img {
+        height: 215px;
+        margin: 0;
+        padding: 18px;
+        background:
+            radial-gradient(circle at top left, rgba(201, 168, 76, 0.22), transparent 35%),
+            linear-gradient(135deg, #ffffff, #eef2f7);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .item-img img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+    }
+
+    /* Card body */
+    .item-details {
+        padding: 18px 20px 20px;
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+    }
+
+    .listing-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 7px;
+        margin-bottom: 10px;
+    }
+
+    .listing-tag {
+        padding: 4px 10px;
+        border-radius: 999px;
+        font-size: 0.68rem;
+        font-weight: 900;
+    }
+
+    .category-tag {
+        background: rgba(16, 185, 129, 0.13);
+        color: #047857;
+    }
+
+    .condition-tag {
+        background: rgba(0, 59, 126, 0.11);
+        color: var(--wits-navy);
+    }
+
+    .item-details h3 {
+        color: var(--wits-navy-dark);
+        font-size: 1.08rem;
+        line-height: 1.35;
+        margin-bottom: 7px;
+    }
+
+    .item-price {
+        color: var(--wits-navy);
+        font-size: 1.35rem;
+        font-weight: 950;
+        margin-bottom: 8px;
+    }
+
+    .text-small {
+        color: var(--grey-text);
+        font-size: 0.82rem;
+        line-height: 1.45;
+    }
+
+    .seller-line {
+        color: var(--wits-navy-dark);
+        font-size: 0.84rem;
+        font-weight: 800;
+        margin-top: 10px;
+    }
+
+    .seller-rating {
+        color: var(--grey-text);
+        font-size: 0.82rem;
+        margin-top: 5px;
+    }
+
+    .status-line {
+        color: var(--grey-text);
+        font-size: 0.78rem;
+        margin-top: 4px;
+    }
+
+    /* Buttons */
+    .card-actions {
+        margin-top: auto;
+        padding-top: 16px;
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .edit-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: auto;
+        background: var(--wits-navy);
+        color: var(--white);
+        border: none;
+        padding: 10px 17px;
+        border-radius: 999px;
+        font-size: 0.78rem;
+        font-weight: 900;
+        cursor: pointer;
+        box-shadow: 0 8px 18px rgba(0, 59, 126, 0.22);
+        transition: all 0.2s ease;
+    }
+
+    .edit-btn:hover {
+        background: var(--wits-navy-dark);
+        transform: translateY(-2px);
+    }
+
+    @media (max-width: 700px) {
+        .listings-container {
+            grid-template-columns: 1fr;
+        }
+
+        .category-filters {
+            gap: 8px;
+        }
+
+        .filter-pill {
+            padding: 7px 13px;
+            font-size: 0.78rem;
+        }
+    }
         </style>
     </head>
 
