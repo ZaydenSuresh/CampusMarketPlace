@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Create Transaction | CampusMarket</title>
+  <link rel="stylesheet" href="/styles/global.css" />
+  <link rel="stylesheet" href="/styles/create-transaction.css" />
+</head>
+<body>
+  <div class="container">
+    <h1 id="pageTitle">New Transaction</h1>
+    <p class="page-description" id="pageDescription">Select a reserved item and book a trade slot.</p>
+
+    <form id="transactionForm">
+      <div class="form-group" id="item-field">
+        <label for="itemSelect">Reserved Item</label>
+        <select id="itemSelect">
+          <option value="">Loading items...</option>
+        </select>
+      </div>
+
+      <div id="selected-item-preview" class="selected-item" style="display: none">
+        <img id="previewImg" src="" alt="" />
+        <div class="info">
+          <h3 id="previewTitle"></h3>
+          <span id="previewDetail"></span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="dateInput">Select Date</label>
+        <input type="date" id="dateInput" class="date-input" />
+      </div>
+
+      <div class="form-group">
+        <label>Available Times</label>
+        <div id="timeGrid" class="time-grid">
+          <span class="empty-text">Pick a date to see available times.</span>
+        </div>
+      </div>
+
+      <div id="summaryLine" class="summary-line"></div>
+
+      <button type="submit" class="submit-btn" id="submitBtn">Book Slot & Create Transaction</button>
+    </form>
+
+    <div id="formMessage" class="message"></div>
+  </div>
+
+  <script type="module" src="/scripts/create-transaction.js"></script>
+</body>
+</html>

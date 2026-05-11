@@ -58,6 +58,10 @@ function formatDayLabel(dateValue) {
   });
 }
 
+function isContextMessage(text) {
+  return String(text || '').startsWith('📍 Transaction:');
+}
+
 
 let currentUser = null;
 let currentUserId = null;
@@ -204,6 +208,18 @@ function renderHeader(conversation) {//update chat header when conv open
 }
 
 function buildMessageItem(message, conversation) {//create single msg elem(bubb+avatar+time)
+  if (isContextMessage(message.text)) {
+    const item = document.createElement('li');
+    item.className = 'msg-context';
+
+    const bubble = document.createElement('section');
+    bubble.className = 'msg-context-bubble';
+    bubble.textContent = message.text;
+
+    item.appendChild(bubble);
+    return item;
+  }
+
   const isMine = message.from === 'me';
 
   const item = document.createElement('li');
@@ -300,12 +316,12 @@ async function handleSendMessage() {
 
 
 
-async function initMessagesPage() {//set up page when load
+async function initMessagesPage() {
   conversations = await fetchConversations();
 
   renderConversationList(conversations);
 
-  if (!conversations.length) {//if no convs,  show page when no conv
+  if (!conversations.length) {
     emptyState.classList.remove('hidden');
     chatView.classList.add('hidden');
     activeConversationId = null;
@@ -313,7 +329,15 @@ async function initMessagesPage() {//set up page when load
     return;
   }
 
-  activeConversationId = conversations[0].id;//open first conv automatically
+  const params = new URLSearchParams(window.location.search);
+  const targetConvId = params.get('conversationId');
+
+  if (targetConvId && getConversationById(targetConvId)) {
+    activeConversationId = targetConvId;
+  } else {
+    activeConversationId = conversations[0].id;
+  }
+
   openConversation(activeConversationId);
 }
 

@@ -347,3 +347,285 @@ describe("Listings UAT tests", () => {
     expect(res.body.listings.length).toBe(1);
   });
 });
+//UATs for newly added buy now/reserve features
+test("UAT 11 — Reserve available listing sets reserved_by", async () => {
+  const buyerId = "buyer-123";
+
+  const existingListing = {
+    id: "listing-1",
+    title: "Laptop",
+    user_id: "seller-123",
+    status: "available",
+    sale_type: "Trade",
+  };
+
+  const updatedListing = {
+    ...existingListing,
+    status: "reserved",
+    reserved_by: buyerId,
+  };
+
+  const listingsSelectBuilder = {
+    select: jest.fn().mockReturnThis(),
+    eq: jest.fn().mockReturnThis(),
+    single: jest.fn().mockResolvedValue({
+      data: existingListing,
+      error: null,
+    }),
+  };
+
+  const listingsUpdateBuilder = {
+    update: jest.fn().mockReturnThis(),
+    eq: jest.fn().mockReturnThis(),
+    select: jest.fn().mockReturnThis(),
+    single: jest.fn().mockResolvedValue({
+      data: updatedListing,
+      error: null,
+    }),
+  };
+
+  const transactionsInsertBuilder = {
+    insert: jest.fn().mockReturnThis(),
+    select: jest.fn().mockReturnThis(),
+    single: jest.fn().mockResolvedValue({
+      data: {
+        id: "transaction-1",
+        listing_id: "listing-1",
+        buyer_id: buyerId,
+        type: "trade",
+        status: "pending",
+      },
+      error: null,
+    }),
+  };
+
+  const supabase = {
+    auth: {
+      getUser: jest.fn().mockResolvedValue({
+        data: {
+          user: {
+            id: buyerId,
+            email: "buyer@example.com",
+          },
+        },
+        error: null,
+      }),
+    },
+    from: jest.fn((table) => {
+      if (table === "listings") {
+        if (listingsSelectBuilder.single.mock.calls.length === 0) {
+          return listingsSelectBuilder;
+        }
+        return listingsUpdateBuilder;
+      }
+
+      if (table === "transactions") {
+        return transactionsInsertBuilder;
+      }
+
+      return {};
+    }),
+  };
+
+  createSupabaseClient.mockReturnValue(supabase);
+
+  const res = await request(app)
+    .post("/listings/listing-1/reserve")
+    .send({
+      transaction_type: "trade",
+    });
+
+  expect(res.statusCode).toBe(200);
+  expect(res.body.ok).toBe(true);
+
+  expect(listingsUpdateBuilder.update).toHaveBeenCalledWith(
+    expect.objectContaining({
+      status: "reserved",
+      reserved_by: buyerId,
+    })
+  );
+});
+
+test("UAT 12 — Prevent duplicate reservation", async () => {
+  const buyerId = "buyer-123";
+
+  const existingListing = {
+    id: "listing-1",
+    title: "Laptop",
+    user_id: "seller-123",
+    status: "reserved",
+    reserved_by: "other-buyer-456",
+    sale_type: "Trade",
+  };
+
+  const listingsSelectBuilder = {
+    select: jest.fn().mockReturnThis(),
+    eq: jest.fn().mockReturnThis(),
+    single: jest.fn().mockResolvedValue({
+      data: existingListing,
+      error: null,
+    }),
+  };
+
+  const listingsUpdateBuilder = {
+    update: jest.fn().mockReturnThis(),
+    eq: jest.fn().mockReturnThis(),
+    select: jest.fn().mockReturnThis(),
+    single: jest.fn(),
+  };
+
+  const supabase = {
+    auth: {
+      getUser: jest.fn().mockResolvedValue({
+        data: {
+          user: {
+            id: buyerId,
+            email: "buyer@example.com",
+          },
+        },
+        error: null,
+      }),
+    },
+    from: jest.fn((table) => {
+      if (table === "listings") {
+        if (listingsSelectBuilder.single.mock.calls.length === 0) {
+          return listingsSelectBuilder;
+        }
+        return listingsUpdateBuilder;
+      }
+
+      return {};
+    }),
+  };
+
+  createSupabaseClient.mockReturnValue(supabase);
+
+  const res = await request(app)
+    .post("/listings/listing-1/reserve")
+    .send({
+      transaction_type: "trade",
+    });
+
+  expect(res.statusCode).toBe(400);
+  expect(res.body.ok).toBe(false);
+
+  expect(listingsUpdateBuilder.update).not.toHaveBeenCalled();
+});
+
+test("UAT 13 — Search listings by status", async () => {
+  const listings = [
+    {
+      id: "listing-1",
+      title: "Calculator",
+      status: "available",
+      user_id: "seller-123",
+    },
+  ];
+
+  const { supabase, queryBuilder } = makeSupabaseMock({
+    listingsData: listings,
+  });
+
+  queryBuilder.select.mockReturnValue(queryBuilder);
+  queryBuilder.order.mockReturnValue(queryBuilder);
+  queryBuilder.eq.mockReturnValue(queryBuilder);
+  queryBuilder.gte.mockReturnValue(queryBuilder);
+  queryBuilder.lte.mockReturnValue(queryBuilder);
+  queryBuilder.or.mockResolvedValue({
+    data: listings,
+    error: null,
+  });
+
+  createSupabaseClient.mockReturnValue(supabase);
+
+  const res = await request(app).get("/listings/search?status=available");
+
+  expect(res.statusCode).toBe(200);
+  expect(res.body.ok).toBe(true);
+  expect(res.body.listings.length).toBe(1);
+
+  expect(queryBuilder.eq).toHaveBeenCalledWith("status", "available");
+});
+
+test("UAT 14 — Search listings by reserved buyer", async () => {
+  const buyerId = "buyer-123";
+
+  const listings = [
+    {
+      id: "listing-1",
+      title: "Textbook",
+      status: "reserved",
+      reserved_by: buyerId,
+      user_id: "seller-123",
+    },
+  ];
+
+  const { supabase, queryBuilder } = makeSupabaseMock({
+    listingsData: listings,
+  });
+
+  queryBuilder.select.mockReturnValue(queryBuilder);
+  queryBuilder.order.mockReturnValue(queryBuilder);
+  queryBuilder.eq.mockReturnValue(queryBuilder);
+  queryBuilder.gte.mockReturnValue(queryBuilder);
+  queryBuilder.lte.mockReturnValue(queryBuilder);
+  queryBuilder.or.mockResolvedValue({
+    data: listings,
+    error: null,
+  });
+
+  createSupabaseClient.mockReturnValue(supabase);
+
+  const res = await request(app).get(
+    `/listings/search?status=reserved&reserved_by=${buyerId}`
+  );
+
+  expect(res.statusCode).toBe(200);
+  expect(res.body.ok).toBe(true);
+  expect(res.body.listings.length).toBe(1);
+
+  expect(queryBuilder.eq).toHaveBeenCalledWith("status", "reserved");
+  expect(queryBuilder.eq).toHaveBeenCalledWith("reserved_by", buyerId);
+});
+
+test("UAT 15 — Search listings returns seller name and ratings", async () => {
+  const listings = [
+    {
+      id: "listing-1",
+      title: "Laptop",
+      status: "available",
+      user_id: "seller-123",
+      profiles: {
+        name: "Test Seller",
+      },
+      ratings: [
+        { rating: 5 },
+        { rating: 4 },
+      ],
+    },
+  ];
+
+  const { supabase, queryBuilder } = makeSupabaseMock({
+    listingsData: listings,
+  });
+
+  queryBuilder.select.mockReturnValue(queryBuilder);
+  queryBuilder.order.mockReturnValue(queryBuilder);
+  queryBuilder.eq.mockReturnValue(queryBuilder);
+  queryBuilder.gte.mockReturnValue(queryBuilder);
+  queryBuilder.lte.mockReturnValue(queryBuilder);
+  queryBuilder.or.mockResolvedValue({
+    data: listings,
+    error: null,
+  });
+
+  createSupabaseClient.mockReturnValue(supabase);
+
+  const res = await request(app).get("/listings/search?status=available");
+
+  expect(res.statusCode).toBe(200);
+  expect(res.body.ok).toBe(true);
+
+  expect(res.body.listings[0].profiles.name).toBe("Test Seller");
+  expect(res.body.listings[0].ratings.length).toBe(2);
+});

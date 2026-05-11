@@ -187,6 +187,53 @@ router.post("/", async (req, res) => {
   }
 });
 
+// Collects all unique seller IDs from the listings,
+// batch-fetches their ratings from Supabase, then attaches
+// average rating and review count to each listing object.
+async function enrichWithRatings(supabase, listings) {
+  if (!listings || listings.length === 0) return listings;
+
+  // Collect unique seller IDs (non-null) from the listings
+  const sellerIds = [
+    ...new Set(listings.map((l) => l.user_id).filter(Boolean)),
+  ];
+
+  // Batch query ratings where rated_id matches any seller
+  const { data: ratings, error: ratingsError } = await supabase
+    .from("ratings")
+    .select("rated_id, rating")
+    .in("rated_id", sellerIds);
+
+  if (ratingsError) {
+    console.error("Failed to fetch ratings:", ratingsError.message);
+    return listings;
+  }
+
+  // Aggregate ratings per seller: sum of all ratings + count
+  const ratingMap = {};
+  if (ratings) {
+    for (const r of ratings) {
+      if (!ratingMap[r.rated_id]) {
+        ratingMap[r.rated_id] = { sum: 0, count: 0 };
+      }
+      ratingMap[r.rated_id].sum += r.rating;
+      ratingMap[r.rated_id].count += 1;
+    }
+  }
+
+  // Attach computed stats to each listing (or null/0 if none exist)
+  return listings.map((l) => {
+    const stats = ratingMap[l.user_id];
+    return {
+      ...l,
+      seller_average_rating: stats
+        ? Math.round((stats.sum / stats.count) * 100) / 100
+        : null,
+      seller_review_count: stats ? stats.count : 0,
+    };
+  });
+}
+
 // GET latest listings
 router.get("/", async (req, res) => {
   const supabase = createSupabaseClient(req, res);
@@ -202,7 +249,9 @@ router.get("/", async (req, res) => {
       throw new Error(error.message);
     }
 
-    return res.json({ ok: true, listings: data });
+    const listings = await enrichWithRatings(supabase, data);
+
+    return res.json({ ok: true, listings });
   } catch (err) {
     return res.status(500).json({ error: err.message });
   }
@@ -222,7 +271,9 @@ router.get("/all", async (req, res) => {
       throw new Error(error.message);
     }
 
-    return res.json({ ok: true, listings: data });
+    const listings = await enrichWithRatings(supabase, data);
+
+    return res.json({ ok: true, listings });
   } catch (err) {
     return res.status(500).json({ error: err.message });
   }
@@ -244,12 +295,20 @@ router.get("/search", async (req, res) => {
       user_id,
     } = req.query;
 
+    let resolvedUserId = user_id;
+    if (resolvedUserId === "me") {
+      const user = await getCurrentUser(req, res);
+      resolvedUserId = user?.id;
+    }
+
     let query = supabase
       .from("listings")
-      .select(`
+      .select(
+        `
         *,
         profiles:user_id (name)
-      `)
+      `,
+      )
       .order("created_at", { ascending: false });
 
     if (category && category !== "All") {
@@ -268,8 +327,8 @@ router.get("/search", async (req, res) => {
       query = query.eq("reserved_by", reserved_by);
     }
 
-    if (user_id && user_id !== "All") {
-      query = query.eq("user_id", user_id);
+    if (resolvedUserId && resolvedUserId !== "All") {
+      query = query.eq("user_id", resolvedUserId);
     }
 
     if (minPrice && minPrice !== "") {
@@ -290,7 +349,9 @@ router.get("/search", async (req, res) => {
       throw new Error(error.message);
     }
 
-    return res.json({ ok: true, listings: data });
+    const listings = await enrichWithRatings(supabase, data);
+
+    return res.json({ ok: true, listings });
   } catch (err) {
     console.error("Search listings error:", err);
     return res.status(500).json({ error: err.message });
@@ -413,10 +474,38 @@ router.delete("/:id", async (req, res) => {
   const supabase = createSupabaseClient(req, res);
 
   try {
-    const { error } = await supabase
+    const { id } = req.params;
+    // "getCurrentUser": Retrieves the authenticated user's details from the session. This is vital for security.
+    const user = await getCurrentUser(req, res);
+
+    // Fetch the listing to check ownership and status
+    const { data: listing, error: fetchError } = await supabase
       .from("listings")
-      .delete()
-      .eq("id", req.params.id);
+      .select("user_id, status")
+      .eq("id", id)
+      .single();
+
+    // This is a safety check that ensures the server doesn't crash by confirming the item actually exists in the database before trying to delete it.
+    if (fetchError || !listing) {
+      return res.status(404).json({ error: "Listing not found" });
+    }
+
+    // Security check: Only the owner can delete
+    if (listing.user_id !== user.id) {
+      return res
+        .status(403)
+        .json({ error: "Unauthorized: You don't own this listing" });
+    }
+
+    // Safety check: Prevent deleting if an active transaction exists
+    if (listing.status !== "available" && listing.status !== null) {
+      return res.status(400).json({
+        error: "Cannot delete item: It is currently reserved or sold.",
+      });
+    }
+
+    // Perform the deletion
+    const { error } = await supabase.from("listings").delete().eq("id", id);
 
     if (error) {
       throw new Error(error.message);
@@ -424,6 +513,7 @@ router.delete("/:id", async (req, res) => {
 
     return res.json({ ok: true, message: "Listing deleted" });
   } catch (err) {
+    console.error("Delete error:", err);
     return res.status(500).json({ error: err.message });
   }
 });
@@ -498,13 +588,13 @@ router.post("/:id/reserve", async (req, res) => {
 
     if (insertError) throw new Error(insertError.message);
 
-const { error: updateError } = await supabase
-  .from("listings")
-  .update({
-    status: "reserved",
-    reserved_by: buyerId
-  })
-  .eq("id", listingId);
+    const { error: updateError } = await supabase
+      .from("listings")
+      .update({
+        status: "reserved",
+        reserved_by: buyerId,
+      })
+      .eq("id", listingId);
 
     if (updateError) throw new Error(updateError.message);
 
@@ -520,4 +610,3 @@ const { error: updateError } = await supabase
 });
 
 module.exports = router;
- 

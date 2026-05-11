@@ -1,1 +1,187 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>My Listings | Campus Marketplace</title>
 
+        <link rel="stylesheet" href="/styles/global.css" />
+
+        <style>
+            body {
+                display: flex;
+                min-height: 100vh;
+                background-color: var(--bg-light);
+            }
+
+            .sidebar {
+                width: 280px;
+                background: var(--clr-bg-gradient);
+                color: var(--white);
+                display: flex;
+                flex-direction: column;
+                padding: var(--space-xl);
+                position: fixed;
+                height: 100vh;
+                box-shadow: var(--shadow-lg);
+            }
+
+            .sidebar-logo {
+                font-size: 1.5rem;
+                font-weight: 800;
+                margin-bottom: var(--space-2xl);
+                color: var(--white);
+            }
+
+            .sidebar-logo .highlight {
+                color: var(--wits-gold);
+            }
+
+            .nav-list {
+                display: flex;
+                flex-direction: column;
+                gap: var(--space-sm);
+            }
+
+            .nav-item {
+                display: flex;
+                align-items: center;
+                padding: var(--space-md);
+                border-radius: var(--radius-md);
+                background: rgba(255, 255, 255, 0.08);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                transition: all var
+                font-weight: 600;
+                font-size: 0.9rem;
+                text-decoration: none;
+                color: white;
+            }
+
+            .nav-item:hover,
+            .nav-item.active {
+                background: rgba(255, 255, 255, 0.2);
+                border-color: var(--wits-gold);
+                transform: translateX(5px);
+            }
+
+            /* --- MAIN CONTENT STYLES --- */
+            .main-content {
+                margin-left: 280px;
+                flex: 1;
+                padding: var(--space-2xl);
+            }
+
+            .dashboard-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-start;
+                gap: 16px;
+                margin-bottom: var(--space-2xl);
+            }
+
+            .listings-container {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+                gap: var(--space-lg);
+            }
+            .toast {
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 15px 25px;
+                background: #333;
+                color: white;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                z-index: 9999;
+                transition: opacity 0.3s;
+            }
+            .toast-error { background: #d32f2f; }
+            .toast-success { background: #2e7d32; }
+
+            .sidebar-footer {
+                margin-top: auto;
+                padding-top: var(--space-lg);
+            }
+
+            .logout-btn {
+                width: 100%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: var(--space-sm);
+                padding: var(--space-md);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                border-radius: var(--radius-md);
+                background: rgba(255, 255, 255, 0.08);
+                color: var(--white);
+                font-size: 0.9rem;
+                font-weight: 600;
+                cursor: pointer;
+            }
+        </style>
+    </head>
+
+    <body>
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                Campus<span class="highlight">Market</span>
+            </div>
+
+            <nav class="nav-list">
+                <a href="/dashboard.html" class="nav-item">🏠 Dashboard</a>
+                <a href="/trade-slots.html" class="nav-item">📅 Trade Slots</a>
+                <a href="/my-listings.html" class="nav-item active"
+                    >📦 My Listings</a
+                >
+                <a href="/student-transactions.html" class="nav-item"
+                    >📋 My Transactions</a
+                >
+                <a href="/messages.html" class="nav-item">💬 Messages</a>
+            </nav>
+
+            <footer class="sidebar-footer">
+                <button type="button" id="logout-btn" class="logout-btn">
+                    Logout
+                </button>
+            </footer>
+        </aside>
+
+        <main class="main-content">
+            <header class="dashboard-header">
+                <section>
+                    <h1>My Listings</h1>
+                    <p>
+                        Manage and track the items you have posted for sale or
+                        trade.
+                    </p>
+                </section>
+            </header>
+
+            <section class="filter-bar" style="margin-bottom: 20px">
+                <label for="status-filter" style="font-weight: 600"
+                    >Filter by Status:
+                </label>
+                <select
+                    id="status-filter"
+                    style="
+                        padding: 8px;
+                        border-radius: 5px;
+                        border: 1px solid #ccc;
+                    "
+                >
+                    <option value="All">All Listings</option>
+                    <option value="available">Available</option>
+                    <option value="reserved">Reserved</option>
+                    <option value="sold">Sold</option>
+                </select>
+            </section>
+
+            <div class="listings-container" id="my-listings-container">
+                <p>Loading your listings...</p>
+            </div>
+        </main>
+
+        <script type="module" src="/scripts/my-listings.js"></script>
+    </body>
+</html>

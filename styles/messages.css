@@ -431,6 +431,26 @@ body {/*styles page bg and def text color*/
     opacity: 0.55;
     cursor: not-allowed;
 }
+
+.msg-context {
+    align-self: center;
+    max-width: 90%;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin: 8px 0;
+}
+
+.msg-context .msg-context-bubble {
+    background: var(--grey-light);
+    color: var(--grey-text);
+    font-size: 0.78rem;
+    padding: 6px 16px;
+    border-radius: 8px;
+    border: 1px solid var(--grey-border);
+    text-align: center;
+    line-height: 1.4;
+}
 @media (max-width: 700px) {/*smaller screens*/
     .sidebar {
         width: 100%;

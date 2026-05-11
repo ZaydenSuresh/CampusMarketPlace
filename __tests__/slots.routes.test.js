@@ -18,38 +18,68 @@ describe('Slots routes', () => {
   });
 
   // ================= GET =================
-  test('GET /slots returns 400 if date is missing', async () => {
+  test('GET /slots returns upcoming slots from database', async () => {
+    const mockData = [
+      { id: 1, date: '2026-04-21', time: '09:00', capacity: 3, booked_count: 1 }
+    ];
+
+    const mockChain = {
+      select: jest.fn().mockReturnThis(),
+      gte: jest.fn().mockReturnThis(),
+      order: jest.fn(),
+    };
+    mockChain.order = jest.fn()
+      .mockReturnValueOnce(mockChain)
+      .mockReturnValueOnce(Promise.resolve({ data: mockData, error: null }));
+
+    db.from.mockReturnValue(mockChain);
+
     const res = await request(app).get('/slots');
-    expect(res.status).toBe(400);
-    expect(res.body.error).toBe('Date required');
+
+    expect(res.status).toBe(200);
+    expect(Array.isArray(res.body)).toBe(true);
+    expect(res.body.length).toBe(1);
+    expect(res.body[0].id).toBe(1);
+    expect(res.body[0].date).toBe('2026-04-21');
+    expect(res.body[0].time).toBe('9:00 AM');
+    expect(res.body[0].capacity).toBe(3);
+    expect(res.body[0].bookedCount).toBe(1);
   });
 
-  test('GET /slots returns [] on weekend', async () => {
-    const res = await request(app).get('/slots?date=2026-04-18'); // Saturday
+  test('GET /slots returns empty array when no slots exist', async () => {
+    const mockChain = {
+      select: jest.fn().mockReturnThis(),
+      gte: jest.fn().mockReturnThis(),
+      order: jest.fn(),
+    };
+    mockChain.order = jest.fn()
+      .mockReturnValueOnce(mockChain)
+      .mockReturnValueOnce(Promise.resolve({ data: [], error: null }));
+
+    db.from.mockReturnValue(mockChain);
+
+    const res = await request(app).get('/slots');
+
     expect(res.status).toBe(200);
     expect(res.body).toEqual([]);
   });
 
-  test('GET /slots does not return full slots', async () => {
-    db.from.mockReturnValue({
-      select: () => ({
-        eq: () => ({
-          order: () =>
-            Promise.resolve({
-              data: [
-                { id: 1, date: '2026-04-21', time: '09:00', capacity: 2, booked_count: 2 },
-                { id: 2, date: '2026-04-21', time: '10:00', capacity: 2, booked_count: 1 }
-              ],
-              error: null
-            })
-        })
-      })
-    });
+  test('GET /slots returns 500 on database error', async () => {
+    const mockChain = {
+      select: jest.fn().mockReturnThis(),
+      gte: jest.fn().mockReturnThis(),
+      order: jest.fn(),
+    };
+    mockChain.order = jest.fn()
+      .mockReturnValueOnce(mockChain)
+      .mockReturnValueOnce(Promise.resolve({ data: null, error: { message: 'DB error' } }));
 
-    const res = await request(app).get('/slots?date=2026-04-21');
+    db.from.mockReturnValue(mockChain);
 
-    expect(res.status).toBe(200);
-    expect(res.body.length).toBe(1);
+    const res = await request(app).get('/slots');
+
+    expect(res.status).toBe(500);
+    expect(res.body.error).toBe('Failed to load slots');
   });
 
   // ================= CREATE =================
@@ -59,7 +89,54 @@ describe('Slots routes', () => {
     });
 
     expect(res.status).toBe(400);
-    expect(res.body.error).toBe('Date, time and capacity are required');
+    expect(res.body.error).toBe('Date, time and capacity required');
+  });
+
+  test('POST /slots returns 400 on weekend', async () => {
+    const res = await request(app).post('/slots').send({
+      date: '2026-04-18',
+      time: '09:00',
+      capacity: 3,
+    });
+    expect(res.status).toBe(400);
+    expect(res.body.error).toBe('Slots may only be created on weekdays');
+  });
+
+  test('POST /slots returns 400 on invalid business time', async () => {
+    const res = await request(app).post('/slots').send({
+      date: '2026-04-21',
+      time: '18:00',
+      capacity: 3,
+    });
+    expect(res.status).toBe(400);
+    expect(res.body.error).toBe('Slots must be between 08:00 and 17:00');
+  });
+
+  test('POST /slots returns 400 on zero capacity', async () => {
+    const res = await request(app).post('/slots').send({
+      date: '2026-04-21',
+      time: '09:00',
+      capacity: 0,
+    });
+    expect(res.status).toBe(400);
+    expect(res.body.error).toBe('Capacity must be at least 1');
+  });
+
+  test('POST /slots returns 500 on insert error', async () => {
+    db.from.mockReturnValue({
+      insert: () => ({
+        select: () => Promise.resolve({ data: null, error: { message: 'Insert failed' } }),
+      }),
+    });
+
+    const res = await request(app).post('/slots').send({
+      date: '2026-04-21',
+      time: '09:00',
+      capacity: 3,
+    });
+
+    expect(res.status).toBe(500);
+    expect(res.body.error).toBe('Insert failed');
   });
 
   test('POST /slots creates a slot', async () => {
@@ -97,6 +174,99 @@ describe('Slots routes', () => {
     expect(res.body.message).toBe('Slot deleted successfully');
   });
 
+  test('DELETE /slots/:id returns 500 on delete error', async () => {
+    db.from.mockReturnValue({
+      delete: jest.fn().mockReturnThis(),
+      eq: jest.fn().mockResolvedValue({ error: { message: 'Delete failed' } }),
+    });
+
+    const res = await request(app).delete('/slots/5');
+
+    expect(res.status).toBe(500);
+    expect(res.body.error).toBe('Failed to delete slot');
+  });
+
+  // ================= PUT validation =================
+  test('PUT /slots/:id returns 400 on missing fields', async () => {
+    const res = await request(app).put('/slots/1').send({ date: '2026-04-21' });
+    expect(res.status).toBe(400);
+    expect(res.body.error).toBe('All fields are required');
+  });
+
+  test('PUT /slots/:id returns 400 on weekend', async () => {
+    const res = await request(app).put('/slots/1').send({
+      date: '2026-04-18',
+      time: '09:00',
+      capacity: 5,
+    });
+    expect(res.status).toBe(400);
+    expect(res.body.error).toBe('Slots may only be on weekdays');
+  });
+
+  test('PUT /slots/:id returns 400 on invalid business time', async () => {
+    const res = await request(app).put('/slots/1').send({
+      date: '2026-04-21',
+      time: '18:00',
+      capacity: 5,
+    });
+    expect(res.status).toBe(400);
+    expect(res.body.error).toBe('Slots must be between 08:00 and 17:00');
+  });
+
+  test('PUT /slots/:id returns 404 when slot not found', async () => {
+    db.from.mockReturnValue({
+      select: jest.fn().mockReturnThis(),
+      eq: jest.fn().mockResolvedValue({ data: [], error: null }),
+    });
+
+    const res = await request(app).put('/slots/999').send({
+      date: '2026-04-21',
+      time: '09:00',
+      capacity: 5,
+    });
+
+    expect(res.status).toBe(404);
+    expect(res.body.error).toBe('Slot not found');
+  });
+
+  test('PUT /slots/:id returns 400 when capacity below booked count', async () => {
+    db.from.mockReturnValue({
+      select: jest.fn().mockReturnThis(),
+      eq: jest.fn().mockResolvedValue({ data: [{ capacity: 10, booked_count: 8 }], error: null }),
+    });
+
+    const res = await request(app).put('/slots/1').send({
+      date: '2026-04-21',
+      time: '09:00',
+      capacity: 3,
+    });
+
+    expect(res.status).toBe(400);
+    expect(res.body.error).toBe('Capacity cannot be below booked count');
+  });
+
+  test('PUT /slots/:id returns 500 on update error', async () => {
+    db.from
+      .mockReturnValueOnce({
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockResolvedValue({ data: [{ id: 1, capacity: 5, booked_count: 2 }], error: null }),
+      })
+      .mockReturnValueOnce({
+        update: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        select: jest.fn().mockResolvedValue({ data: null, error: { message: 'Update failed' } }),
+      });
+
+    const res = await request(app).put('/slots/1').send({
+      date: '2026-04-21',
+      time: '09:00',
+      capacity: 5,
+    });
+
+    expect(res.status).toBe(500);
+    expect(res.body.error).toBe('Update failed');
+  });
+
   // ================= BOOK =================
   test('POST /slots/book reduces capacity', async () => {
     db.from
@@ -127,6 +297,36 @@ describe('Slots routes', () => {
 
     expect(res.status).toBe(200);
     expect(res.body.message).toBe('Slot booked successfully');
+  });
+
+  test('POST /slots/book returns 404 when slot not found', async () => {
+    db.from.mockReturnValue({
+      select: jest.fn().mockReturnThis(),
+      eq: jest.fn().mockResolvedValue({ data: [], error: null }),
+    });
+
+    const res = await request(app).post('/slots/book').send({ id: 999 });
+
+    expect(res.status).toBe(404);
+    expect(res.body.error).toBe('Slot not found');
+  });
+
+  test('POST /slots/book returns 500 on update error', async () => {
+    db.from
+      .mockReturnValueOnce({
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockResolvedValue({ data: [{ id: 1, capacity: 3, booked_count: 1 }], error: null }),
+      })
+      .mockReturnValueOnce({
+        update: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        select: jest.fn().mockResolvedValue({ data: null, error: { message: 'Update failed' } }),
+      });
+
+    const res = await request(app).post('/slots/book').send({ id: 1 });
+
+    expect(res.status).toBe(500);
+    expect(res.body.error).toBe('Failed to book slot');
   });
 
   test('POST /slots/book fails if slot is full', async () => {

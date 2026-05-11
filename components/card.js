@@ -6,8 +6,7 @@
 export function createListingCard(listing) {
     const currentUserId = localStorage.getItem("user_id");
 
-    // CHANGED: article instead of div because each listing is its own item/card
-    const card = document.createElement("article");
+    const card = document.createElement("div");
     card.className = "item-card";
 
     const imageUrl =
@@ -15,25 +14,26 @@ export function createListingCard(listing) {
             ? listing.image_url
             : "https://via.placeholder.com/150";
 
-    // CHANGED: updated card UI, added condition tag, seller name, and better semantic HTML
     card.innerHTML = `
-        <figure class="item-img">
+        <div class="item-img">
             <img src="${imageUrl}" 
-                 alt="${escapeHtml(listing.title || "listing image")}" />
-        </figure>
+                 alt="listing image" 
+                 style="width:100%; height:180px; object-fit:contain; background:white;" />
+        </div>
 
-        <section class="item-details">
-            <p class="listing-tags">
-                <strong class="listing-tag category-tag">
-                    ${listing.category || "UNCATEGORIZED"}
-                </strong>
+        <div class="item-details">
+            <span style="
+                padding: 2px 8px;
+                border-radius: 4px;
+                font-size: 0.7rem;
+                font-weight: bold;
+                background: rgba(0, 200, 0, 0.1);
+                color: green;
+            ">
+                ${listing.category || "UNCATEGORIZED"}
+            </span>
 
-                <strong class="listing-tag condition-tag">
-                    ${listing.condition || "N/A"}
-                </strong>
-            </p>
-
-            <h3>
+            <h3 style="margin-top: 10px;">
                 ${escapeHtml(listing.title)}
             </h3>
 
@@ -41,25 +41,25 @@ export function createListingCard(listing) {
                 R ${Number(listing.price || 0).toFixed(2)}
             </p>
 
-            <p class="text-small">
+            <p class="text-small text-muted">
                 ${escapeHtml(listing.description || "")}
             </p>
 
-            <p class="seller-line">
-                Seller: ${escapeHtml(listing.profiles?.name || listing.seller_name || "Unknown seller")}
+            <p class="text-small">
+                Condition: ${listing.condition || "N/A"}
             </p>
-
             <p class="seller-rating">
                 ★ ${listing.seller_average_rating || "No ratings yet"}
-                ${listing.seller_review_count ? `(${listing.seller_review_count} reviews)` : ""}
+                 ${listing.seller_review_count ? `(${listing.seller_review_count} reviews)` : ""}
             </p>
+ 
 
-            <p class="status-line">
+            <p class="text-small">
                 Status: ${listing.status || "available"}
             </p>
 
-            <section class="card-actions"></section>
-        </section>
+            <div class="card-actions"></div>
+        </div>
     `;
 
     const actions = card.querySelector(".card-actions");
@@ -84,6 +84,7 @@ export function createListingCard(listing) {
 
     // BUY / RESERVE BUTTONS ONLY FOR NON-OWNERS AND AVAILABLE LISTINGS
     if (!isOwner && (listing.status === "available" || !listing.status)) {
+
         if (listing.sale_type === "Sale" || listing.sale_type === "Either") {
             const buyBtn = document.createElement("button");
             buyBtn.textContent = "Buy Now";
@@ -119,7 +120,7 @@ export function createListingCard(listing) {
 async function reserveListing(listing, transactionType, actionsContainer) {
     try {
         // loading state
-        actionsContainer.innerHTML = `<p style="color: gray;">Processing...</p>`;
+        actionsContainer.innerHTML = `<span style="color: gray;">Processing...</span>`;
 
         const response = await fetch(`/listings/${listing.id}/reserve`, {
             method: "POST",
@@ -133,32 +134,31 @@ async function reserveListing(listing, transactionType, actionsContainer) {
 
         const data = await response.json();
 
-        // error
+        // ❌ error (already reserved etc)
         if (!response.ok || !data.ok) {
             actionsContainer.innerHTML = `
-                <p style="color: red; font-weight: bold;">
+                <span style="color: red; font-weight: bold;">
                     Already selected
-                </p>
+                </span>
             `;
-
             alert(data.error || data.message || "You already selected this listing");
             return;
         }
 
-        // success
+        // ✅ success → replace buttons
         actionsContainer.innerHTML = `
-            <p style="color: green; font-weight: bold;">
+            <span style="color: green; font-weight: bold;">
                 ${transactionType === "sale" ? "Purchase Pending" : "Reserved"}
-            </p>
+            </span>
         `;
 
     } catch (err) {
         console.error("Reserve listing error:", err);
 
         actionsContainer.innerHTML = `
-            <p style="color: red;">
+            <span style="color: red;">
                 Something went wrong
-            </p>
+            </span>
         `;
 
         alert("Something went wrong while reserving this listing");

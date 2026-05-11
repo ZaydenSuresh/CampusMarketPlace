@@ -1,181 +1,576 @@
 const express = require("express");
 const router = express.Router();
-const supabase = require("../database");
+
+const { createSupabaseClient } = require("../lib/supabase");
+
+const sanitizeHtml = require("sanitize-html");
+const { body, param, validationResult } = require("express-validator");
 
 
 
+// ======================================================
+// SANITIZATION HELPERS
+// ======================================================
+function cleanInput(value) {
+  if (typeof value !== "string") return value;
+
+  return sanitizeHtml(value, {
+    allowedTags: [],
+    allowedAttributes: {}
+  }).trim();
+}
+
+function validateRequest(req, res) {
+  const errors = validationResult(req);
+
+  if (!errors.isEmpty()) {
+    res.status(400).json({
+      errors: errors.array()
+    });
+
+    return false;
+  }
+
+  return true;
+}
 
 
 
-router.post("/send", async (req, res) => {
-  try {
-    const { sender_name, receiver_name, content } = req.body;
+// ======================================================
+// FIND OR CREATE CONVERSATION
+// ======================================================
+async function findOrCreateConversation(
+  supabase,
+  senderId,
+  receiverId
+) {
 
-    if (!sender_name || !receiver_name || !content) {
-      return res.status(400).json({
-        error: "sender_name, receiver_name and content are required"
-      });
-    }
+  const { data: existingConv, error: existingError } = await supabase
+    .from("conversations")
+    .select("id")
+    .or(
+      `and(user1_id.eq.${senderId},user2_id.eq.${receiverId}),and(user1_id.eq.${receiverId},user2_id.eq.${senderId})`
+    )
+    .maybeSingle();
 
-    
-    const { data: sender, error: senderError } = await supabase
-      .from("profiles")
-      .select("id")
-      .eq("name", sender_name)
-      .maybeSingle();
+  if (existingError) {
+    throw existingError;
+  }
 
-    
-    const { data: receiver, error: receiverError } = await supabase
-      .from("profiles")
-      .select("id")
-      .eq("name", receiver_name)
-      .maybeSingle();
+  if (existingConv) {
+    return existingConv.id;
+  }
 
-    if (senderError || receiverError || !sender || !receiver) {
-      return res.status(404).json({
-        error: "Sender or receiver not found"
-      });
-    }
+  const { data: createdConv, error: createError } = await supabase
+    .from("conversations")
+    .insert([
+      {
+        user1_id: senderId,
+        user2_id: receiverId
+      }
+    ])
+    .select("id")
+    .single();
 
-    let conversationId = null;
+  if (createError || !createdConv) {
+    throw new Error(
+      createError?.message || "Conversation creation failed"
+    );
+  }
 
-    
-    const { data: existingConv, error: existingError } = await supabase
-      .from("conversations")
-      .select("id")
-      .or(
-        `and(user1_id.eq.${sender.id},user2_id.eq.${receiver.id}),and(user1_id.eq.${receiver.id},user2_id.eq.${sender.id})`
-      )
-      .maybeSingle();
+  return createdConv.id;
+}
 
-    if (existingError) {
-      return res.status(500).json({
-        error: existingError.message
-      });
-    }
 
-    
-    if (existingConv) {
-      conversationId = existingConv.id;
-    }
 
-    
-    if (!conversationId) {
-      const { data: createdConv, error: createError } = await supabase
-        .from("conversations")
-        .insert([
-          {
-            user1_id: sender.id,
-            user2_id: receiver.id
-          }
-        ])
-        .select("id")
-        .single();
+// ======================================================
+// SEND MESSAGE
+// ======================================================
+router.post(
+  "/send",
 
-      if (createError || !createdConv) {
-        return res.status(500).json({
-          error: "Conversation creation failed",
-          details: createError?.message
+  [
+    body("sender_name")
+      .optional()
+      .isString()
+      .isLength({ min: 1, max: 50 }),
+
+    body("receiver_name")
+      .optional()
+      .isString()
+      .isLength({ min: 1, max: 50 }),
+
+    body("sender_id")
+      .optional()
+      .isUUID(),
+
+    body("receiver_id")
+      .optional()
+      .isUUID(),
+
+    body("content")
+      .isString()
+      .isLength({ min: 1, max: 5000 })
+  ],
+
+  async (req, res) => {
+
+    try {
+
+      if (!validateRequest(req, res)) {
+        return;
+      }
+
+      const supabase = createSupabaseClient(req, res);
+
+      const {
+        data: { user: sessionUser },
+        error: sessionError
+      } = await supabase.auth.getUser();
+
+      if (sessionError || !sessionUser) {
+        return res.status(401).json({
+          error: "Not authenticated"
         });
       }
 
-      conversationId = createdConv.id;
-    }
 
-    
-    if (!conversationId) {
-      return res.status(500).json({
-        error: "conversationId was not generated"
-      });
-    }
+      // ======================================================
+      // SANITIZE INPUTS
+      // ======================================================
+      let {
+        sender_name,
+        receiver_name,
+        sender_id,
+        receiver_id,
+        content
+      } = req.body;
 
-    
-    const { data, error } = await supabase
-      .from("messages")
-      .insert([
-        {
-          conversation_id: conversationId,
-          sender_id: sender.id,
-          content: content
+      sender_name = cleanInput(sender_name);
+      receiver_name = cleanInput(receiver_name);
+      content = cleanInput(content);
+
+
+      // ======================================================
+      // REQUIRED CHECKS
+      // ======================================================
+      if (
+        !content ||
+        (!sender_id && !sender_name) ||
+        (!receiver_id && !receiver_name)
+      ) {
+        return res.status(400).json({
+          error:
+            "sender and receiver identifiers and content are required"
+        });
+      }
+
+
+      let senderId = sender_id || null;
+      let receiverId = receiver_id || null;
+
+
+      // ======================================================
+      // FIND SENDER
+      // ======================================================
+      if (!senderId) {
+
+        const { data: sender, error: senderError } = await supabase
+          .from("profiles")
+          .select("id")
+          .eq("name", sender_name)
+          .maybeSingle();
+
+        if (senderError || !sender) {
+          return res.status(404).json({
+            error: "Sender not found"
+          });
         }
-      ])
-      .select();
 
-    if (error) {
+        senderId = sender.id;
+      }
+
+
+      // ======================================================
+      // FIND RECEIVER
+      // ======================================================
+      if (!receiverId) {
+
+        const { data: receiver, error: receiverError } = await supabase
+          .from("profiles")
+          .select("id")
+          .eq("name", receiver_name)
+          .maybeSingle();
+
+        if (receiverError || !receiver) {
+          return res.status(404).json({
+            error: "Receiver not found"
+          });
+        }
+
+        receiverId = receiver.id;
+      }
+
+
+      // ======================================================
+      // EXTRA AUTH CHECK
+      // Prevent impersonation
+      // ======================================================
+      if (sessionUser.id !== senderId) {
+        return res.status(403).json({
+          error: "You cannot send messages as another user"
+        });
+      }
+
+
+      // ======================================================
+      // CREATE/FIND CONVERSATION
+      // ======================================================
+      let conversationId;
+
+      try {
+
+        conversationId = await findOrCreateConversation(
+          supabase,
+          senderId,
+          receiverId
+        );
+
+      } catch (err) {
+
+        return res.status(500).json({
+          error: err.message
+        });
+
+      }
+
+
+      // ======================================================
+      // INSERT MESSAGE
+      // ======================================================
+      const { data, error } = await supabase
+        .from("messages")
+        .insert([
+          {
+            conversation_id: conversationId,
+            sender_id: senderId,
+            content: content
+          }
+        ])
+        .select();
+
+      if (error) {
+        return res.status(500).json({
+          error: error.message
+        });
+      }
+
+      return res.status(201).json(data);
+
+    } catch (err) {
+
       return res.status(500).json({
-        error: error.message
+        error: err.message
       });
+
     }
-
-    return res.status(201).json(data);
-
-  } catch (err) {
-    return res.status(500).json({
-      error: err.message
-    });
   }
-});
+);
 
 
 
+// ======================================================
+// FIND OR CREATE CONVERSATION ROUTE
+// ======================================================
+router.post(
+  "/conversation/find-or-create",
+
+  [
+    body("sender_name")
+      .optional()
+      .isString()
+      .isLength({ min: 1, max: 50 }),
+
+    body("receiver_name")
+      .optional()
+      .isString()
+      .isLength({ min: 1, max: 50 }),
+
+    body("sender_id")
+      .optional()
+      .isUUID(),
+
+    body("receiver_id")
+      .optional()
+      .isUUID()
+  ],
+
+  async (req, res) => {
+
+    try {
+
+      if (!validateRequest(req, res)) {
+        return;
+      }
+
+      const supabase = createSupabaseClient(req, res);
+
+      const {
+        data: { user: sessionUser },
+        error: sessionError
+      } = await supabase.auth.getUser();
+
+      if (sessionError || !sessionUser) {
+        return res.status(401).json({
+          error: "Not authenticated"
+        });
+      }
 
 
-router.get("/conversation/:id", async (req, res) => {
-  try {
-    const { id } = req.params;
+      let {
+        sender_name,
+        receiver_name,
+        sender_id,
+        receiver_id
+      } = req.body;
 
-    const { data, error } = await supabase
-      .from("messages")
-      .select("*")
-      .eq("conversation_id", id)
-      .order("created_at", { ascending: true });
+      sender_name = cleanInput(sender_name);
+      receiver_name = cleanInput(receiver_name);
 
-    if (error) {
-      return res.status(500).json({ error: error.message });
+
+      if (
+        (!sender_id && !sender_name) ||
+        (!receiver_id && !receiver_name)
+      ) {
+        return res.status(400).json({
+          error: "sender and receiver identifiers are required"
+        });
+      }
+
+
+      let senderId = sender_id || null;
+      let receiverId = receiver_id || null;
+
+
+      // ======================================================
+      // FIND SENDER
+      // ======================================================
+      if (!senderId) {
+
+        const { data: sender, error: senderError } = await supabase
+          .from("profiles")
+          .select("id")
+          .eq("name", sender_name)
+          .maybeSingle();
+
+        if (senderError || !sender) {
+          return res.status(404).json({
+            error: "Sender not found"
+          });
+        }
+
+        senderId = sender.id;
+      }
+
+
+      // ======================================================
+      // FIND RECEIVER
+      // ======================================================
+      if (!receiverId) {
+
+        const { data: receiver, error: receiverError } = await supabase
+          .from("profiles")
+          .select("id")
+          .eq("name", receiver_name)
+          .maybeSingle();
+
+        if (receiverError || !receiver) {
+          return res.status(404).json({
+            error: "Receiver not found"
+          });
+        }
+
+        receiverId = receiver.id;
+      }
+
+
+      // ======================================================
+      // EXTRA AUTH CHECK
+      // ======================================================
+      if (sessionUser.id !== senderId) {
+        return res.status(403).json({
+          error: "Unauthorized"
+        });
+      }
+
+
+      const conversationId =
+        await findOrCreateConversation(
+          supabase,
+          senderId,
+          receiverId
+        );
+
+      return res.status(200).json({
+        conversationId
+      });
+
+    } catch (err) {
+
+      return res.status(500).json({
+        error: err.message
+      });
+
     }
-
-    res.json(data);
-
-  } catch (err) {
-    res.status(500).json({ error: err.message });
   }
-});
+);
 
 
 
+// ======================================================
+// GET CONVERSATION MESSAGES
+// ======================================================
+router.get(
+  "/conversation/:id",
 
-router.get("/conversations/:name", async (req, res) => {
-  try {
-    const { name } = req.params;
+  [
+    param("id").isUUID()
+  ],
 
-    
-    const { data: user } = await supabase
-      .from("profiles")
-      .select("id")
-      .eq("name", name)
-      .maybeSingle();
+  async (req, res) => {
 
-    if (!user) {
-      return res.status(404).json({ error: "User not found" });
+    try {
+
+      if (!validateRequest(req, res)) {
+        return;
+      }
+
+      const supabase = createSupabaseClient(req, res);
+
+      const {
+        data: { user: sessionUser },
+        error: sessionError
+      } = await supabase.auth.getUser();
+
+      if (sessionError || !sessionUser) {
+        return res.status(401).json({
+          error: "Not authenticated"
+        });
+      }
+
+      const { id } = req.params;
+
+
+      const { data, error } = await supabase
+        .from("messages")
+        .select("*")
+        .eq("conversation_id", id)
+        .order("created_at", {
+          ascending: true
+        });
+
+      if (error) {
+        return res.status(500).json({
+          error: error.message
+        });
+      }
+
+      return res.json(data);
+
+    } catch (err) {
+
+      return res.status(500).json({
+        error: err.message
+      });
+
     }
-
-    const { data, error } = await supabase
-      .from("conversations")
-      .select("*")
-      .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`);
-
-    if (error) {
-      return res.status(500).json({ error: error.message });
-    }
-
-    res.json(data);
-
-  } catch (err) {
-    res.status(500).json({ error: err.message });
   }
-});
+);
 
 
+
+// ======================================================
+// GET USER CONVERSATIONS
+// ======================================================
+router.get(
+  "/conversations/:name",
+
+  [
+    param("name")
+      .isString()
+      .isLength({ min: 1, max: 50 })
+  ],
+
+  async (req, res) => {
+
+    try {
+
+      if (!validateRequest(req, res)) {
+        return;
+      }
+
+      const supabase = createSupabaseClient(req, res);
+
+      const {
+        data: { user: sessionUser },
+        error: sessionError
+      } = await supabase.auth.getUser();
+
+      if (sessionError || !sessionUser) {
+        return res.status(401).json({
+          error: "Not authenticated"
+        });
+      }
+
+
+      let { name } = req.params;
+
+      name = cleanInput(name);
+
+
+      // ======================================================
+      // FIND USER
+      // ======================================================
+      const { data: user, error: userError } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("name", name)
+        .maybeSingle();
+
+      if (userError || !user) {
+        return res.status(404).json({
+          error: "User not found"
+        });
+      }
+
+
+      // ======================================================
+      // FETCH CONVERSATIONS
+      // ======================================================
+      const { data, error } = await supabase
+        .from("conversations")
+        .select("*")
+        .or(
+          `user1_id.eq.${user.id},user2_id.eq.${user.id}`
+        );
+
+      if (error) {
+        return res.status(500).json({
+          error: error.message
+        });
+      }
+
+      return res.json(data);
+
+    } catch (err) {
+
+      return res.status(500).json({
+        error: err.message
+      });
+
+    }
+  }
+);
 
 
 
