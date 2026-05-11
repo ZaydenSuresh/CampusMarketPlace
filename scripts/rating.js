@@ -1,10 +1,11 @@
+//store rating user clicks on
 let selectedRating = 0;
 
-const stars = document.querySelectorAll("#stars button");
+const stars = document.querySelectorAll("#stars button");//star btns from page
 const reviewText = document.getElementById("reviewText");
 const submitBtn = document.getElementById("submitRatingBtn");
-const message = document.getElementById("ratingMessage");
-
+const message = document.getElementById("ratingMessage");//error+success
+//text areas js updates
 const pageHeading = document.getElementById("pageHeading");
 const itemTitleText = document.getElementById("itemTitleText");
 const ratedNameText = document.getElementById("ratedNameText");
@@ -18,21 +19,21 @@ const ratedName = params.get("ratedName");
 const itemTitle = params.get("itemTitle");
 const ratedRole = params.get("ratedRole");
 
-// Show dynamic heading: "Rate Buyer" or "Rate Seller" based on who the user is rating
+// Show heading: "Rate Buyer" or "Rate Seller" based on who the user is rating
 if (ratedRole) {
-    pageHeading.textContent = "Rate " + (ratedRole === "buyer" ? "Buyer" : "Seller");
+    pageHeading.textContent = "Rate " + (ratedRole === "buyer" ? "Buyer" : "Seller");//short way of writing if/else
 }
 
-// Populate item info so the rater knows what transaction this is about
+//display item name on rating card
 if (itemTitle) {
-    itemTitleText.textContent = decodeURIComponent(itemTitle);
+    itemTitleText.textContent = decodeURIComponent(itemTitle);//conv url-senc text into normal readable txt
 }
-
+//name of person being rate
 if (ratedName) {
     ratedNameText.textContent = decodeURIComponent(ratedName);
 }
 
-// Block submission if required params are missing
+//cant submit if required params are missing
 if (!transactionId || !ratedId) {
     message.textContent = "Missing transaction or rating details.";
     message.className = "error-message";
@@ -42,16 +43,15 @@ if (!transactionId || !ratedId) {
 // Star selection: highlight all stars up to the clicked one
 stars.forEach((star) => {
     star.addEventListener("click", () => {
-        selectedRating = Number(star.dataset.value);
+        selectedRating = Number(star.dataset.value);//conv text into no.
 
-        stars.forEach((s) => {
-            if (Number(s.dataset.value) <= selectedRating) {
-                s.classList.add("active");
+        stars.forEach((s) => {//loop thru each star
+            if (Number(s.dataset.value) <= selectedRating) {//verify if star=supposed to be active
+                s.classList.add("active");//change color
             } else {
                 s.classList.remove("active");
             }
         });
-
         message.textContent = "";
         message.className = "";
     });

@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
+    <!--page=repsnsive diff screen sizez-->
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
     <title>Rate Seller | Wits Marketplace</title>
@@ -11,6 +12,7 @@
 </head>
 
 <body>
+    <!--main pg wrapper-->
     <main class="rating-page">
         <section class="rating-card">
             <h1 id="pageHeading">Rate</h1>
@@ -20,17 +22,20 @@
             </p>
 
             <section class="rating-info">
+                <!--item being rated-->
                 <p>
                     <strong>Item:</strong>
+                    <!--js insert item title here-->
                     <span id="itemTitleText">Not found</span>
                 </p>
-
+                <!--person being rated-->
                 <p>
                     <strong>Rating for:</strong>
+                    <!--seller name added by js-->
                     <span id="ratedNameText">Not found</span>
                 </p>
             </section>
-
+            <!--star rating btns and their vals-->
             <section class="stars" id="stars">
                 <button type="button" data-value="1">★</button>
                 <button type="button" data-value="2">★</button>
@@ -38,13 +43,13 @@
                 <button type="button" data-value="4">★</button>
                 <button type="button" data-value="5">★</button>
             </section>
-
+            <!--txtbox for written review-->
             <textarea id="reviewText" placeholder="Write your review..."></textarea>
 
             <button id="submitRatingBtn" class="submit-rating-btn">
                 Submit Rating
             </button>
-
+            <!--error/success msg inser by js-->
             <p id="ratingMessage"></p>
         </section>
     </main>

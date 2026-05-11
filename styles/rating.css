@@ -1,3 +1,4 @@
+/*center rating card on page*/
 .rating-page {
     min-height: 100vh;
     display: flex;
@@ -6,27 +7,27 @@
     padding: var(--space-xl);
     background: var(--bg-light);
 }
-
+/*main rating card*/
 .rating-card {
     width: 100%;
     max-width: 420px;
     background: var(--clr-surface);
     border-radius: var(--radius-lg);
-    padding: var(--space-xl);
+    padding: var(--space-xl);/*space inside card*/
     box-shadow: var(--shadow-md);
     text-align: center;
 }
-
+/*rating card heading*/
 .rating-card h1 {
     color: var(--clr-primary);
-    margin-bottom: var(--space-sm);
+    margin-bottom: var(--space-sm);/*space under heading*/
 }
-
+/*subtitle under heading*/
 .rating-subtitle {
     color: var(--clr-text-muted);
     margin-bottom: var(--space-lg);
 }
-
+/*box showing user info and trans info*/
 .rating-info {
     background: var(--grey-light);
     border-radius: var(--radius-md);
@@ -34,24 +35,24 @@
     margin-bottom: var(--space-lg);
     text-align: left;
 }
-
+/*text inside the info box*/
 .rating-info p {
     font-size: 0.9rem;
     color: var(--text-dark);
     margin-bottom: var(--space-xs);
 }
-
+/*remove extra spacing after paragraph, bsc its annoying:)*/
 .rating-info p:last-child {
     margin-bottom: 0;
 }
-
+/*rating stars layoout*/
 .stars {
     display: flex;
     justify-content: center;
     gap: var(--space-sm);
     margin-bottom: var(--space-lg);
 }
-
+/*btn effect of stars*/
 .stars button {
     border: none;
     background: none;
@@ -60,32 +61,32 @@
     cursor: pointer;
     transition: var(--transition);
 }
-
+/*when star activated=goldcolor*/
 .stars button.active {
     color: var(--wits-gold);
 }
-
+/*stars= expand when hover above em*/
 .stars button:hover {
     transform: scale(1.1);
 }
-
+/*comment box*/
 textarea {
     width: 100%;
     min-height: 110px;
     padding: var(--space-md);
     border: 1px solid var(--clr-border);
     border-radius: var(--radius-md);
-    resize: none;
+    resize: none;/*stop user to manually resize element*/
     margin-bottom: var(--space-md);
     font-family: var(--font-base);
     outline: none;
 }
-
+/*highlight box when slected*/
 textarea:focus {
     border-color: var(--clr-primary);
     box-shadow: 0 0 0 3px rgba(0, 59, 126, 0.1);
 }
-
+/*submit btn style*/
 .submit-rating-btn {
     width: 100%;
     display: block;
@@ -100,22 +101,22 @@ textarea:focus {
     cursor: pointer;
     transition: var(--transition);
 }
-
+/*color change when hover over*/
 .submit-rating-btn:hover:not(:disabled) {
     background-color: var(--wits-navy-dark);
 }
-
+/*disabled btn state when user cannot use btn yet*/
 .submit-rating-btn:disabled {
     opacity: 0.6;
     cursor: not-allowed;
 }
-
+/*error message styling*/
 .error-message {
     color: var(--clr-danger);
     margin-top: var(--space-sm);
     font-size: 0.9rem;
 }
-
+/*success msg style*/
 .success-message {
     color: var(--clr-success);
     margin-top: var(--space-sm);
