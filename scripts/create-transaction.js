@@ -61,7 +61,10 @@ function populateItems() {
       showItemPreview(tx);
       itemField.style.display = "none";
     } else {
-      showMessage("Selected item not found. It may have been booked already.", "error");
+      showMessage(
+        "Selected item not found. It may have been booked already.",
+        "error",
+      );
     }
     return;
   }
@@ -111,17 +114,19 @@ function onDateChange() {
 
   const selectedDate = dateInput.value;
   if (!selectedDate) {
-    timeGrid.innerHTML = '<span class="empty-text">Pick a date to see available times.</span>';
+    timeGrid.innerHTML =
+      '<span class="empty-text">Pick a date to see available times.</span>';
     return;
   }
 
   // Filter slots matching this date with capacity
   const available = allSlots.filter(
-    (s) => s.date === selectedDate && s.bookedCount < s.capacity
+    (s) => s.date === selectedDate && s.bookedCount < s.capacity,
   );
 
   if (!available.length) {
-    timeGrid.innerHTML = '<span class="empty-text">No slots available on this date.</span>';
+    timeGrid.innerHTML =
+      '<span class="empty-text">No slots available on this date.</span>';
     return;
   }
 
@@ -132,7 +137,7 @@ function onDateChange() {
           <div class="time">${s.time}</div>
           <div class="remaining">${s.capacity - s.bookedCount} remaining</div>
         </div>
-      `
+      `,
     )
     .join("");
 }
@@ -142,7 +147,9 @@ timeGrid.addEventListener("click", (e) => {
   const card = e.target.closest(".time-card");
   if (!card) return;
 
-  document.querySelectorAll(".time-card.selected").forEach((c) => c.classList.remove("selected"));
+  document
+    .querySelectorAll(".time-card.selected")
+    .forEach((c) => c.classList.remove("selected"));
 
   card.classList.add("selected");
   selectedSlotId = card.dataset.id;
@@ -191,12 +198,16 @@ form.addEventListener("submit", async (e) => {
   e.preventDefault();
   message.className = "message";
 
-  const listingId = preselectedId || selectedTransactionId;
+  const tx = preselectedId
+    ? pendingTransactions.find((t) => t.id === preselectedId)
+    : pendingTransactions.find((t) => t.id === selectedTransactionId);
 
-  if (!listingId) {
+  if (!tx) {
     showMessage("Please select a reserved item.", "error");
     return;
   }
+
+  const listingId = tx.listing_id;
 
   if (!selectedSlotId) {
     showMessage("Please select a trade slot.", "error");
