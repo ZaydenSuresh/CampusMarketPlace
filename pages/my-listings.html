@@ -84,6 +84,20 @@
                 grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
                 gap: var(--space-lg);
             }
+            .toast {
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 15px 25px;
+                background: #333;
+                color: white;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                z-index: 9999;
+                transition: opacity 0.3s;
+            }
+            .toast-error { background: #d32f2f; }
+            .toast-success { background: #2e7d32; }
 
             .sidebar-footer {
                 margin-top: auto;
@@ -143,6 +157,25 @@
                     </p>
                 </section>
             </header>
+
+            <section class="filter-bar" style="margin-bottom: 20px">
+                <label for="status-filter" style="font-weight: 600"
+                    >Filter by Status:
+                </label>
+                <select
+                    id="status-filter"
+                    style="
+                        padding: 8px;
+                        border-radius: 5px;
+                        border: 1px solid #ccc;
+                    "
+                >
+                    <option value="All">All Listings</option>
+                    <option value="available">Available</option>
+                    <option value="reserved">Reserved</option>
+                    <option value="sold">Sold</option>
+                </select>
+            </section>
 
             <div class="listings-container" id="my-listings-container">
                 <p>Loading your listings...</p>
