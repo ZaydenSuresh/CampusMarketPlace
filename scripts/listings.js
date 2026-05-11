@@ -11,7 +11,7 @@ let allListings = [];
 export async function loadListings() {
     try {
         // Fetch ALL listings (not limited to 6)
-        const res = await fetch("/listings/all");
+        const res = await fetch("/listings/search");
         const data = await res.json();
 
         // Ensure correct data format

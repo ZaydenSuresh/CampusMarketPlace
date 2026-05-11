@@ -404,7 +404,10 @@ router.put("/:id", async (req, res) => {
 
     const { data: existingListing, error: existingError } = await supabase
       .from("listings")
-      .select("*")
+      .select(`
+         *,
+        profiles:user_id (name)
+          `)
       .eq("id", req.params.id)
       .single();
 
