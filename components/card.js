@@ -45,14 +45,17 @@ export function createListingCard(listing) {
             <p class="text-small text-muted">
                 ${escapeHtml(listing.description || "")}
             </p>
+            <p class="seller-line">
+    Seller: ${escapeHtml(listing.profiles?.name || listing.seller_name || "Unknown seller")}
+</p>
             <p class="seller-rating">
                 ★ ${listing.seller_average_rating || "No ratings yet"}
                  ${listing.seller_review_count ? `(${listing.seller_review_count} reviews)` : ""}
             </p>
  
 
-            <p class="text-small">
-                Status: ${listing.status || "available"}
+            <p class="status-line">
+             ● ${listing.status || "available"}
             </p>
 
             <div class="card-actions"></div>
