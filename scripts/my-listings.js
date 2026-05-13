@@ -20,25 +20,25 @@ async function loadMyListings() {
     }
 
     listings.forEach((listing) => {
-      // Reuse the createListingCard function
       const card = createListingCard(listing);
-      const actions = card.querySelector(".card-actions");
 
-      // 1. REMOVE BUYER BUTTONS (Buy Now / Reserve)
+      // Clean up any default buttons (like Buy Now)
       const buyerButtons = card.querySelectorAll(".buy-btn, .reserve-btn");
       buyerButtons.forEach((btn) => btn.remove());
 
-      // 2. STYLE THE DELETE BUTTON
+      // Find or create the actions container
+      let actions = card.querySelector(".card-actions");
+      if (!actions) {
+        actions = document.createElement("div");
+        actions.className = "card-actions";
+        card.appendChild(actions);
+      }
+
+      // Create the new styled button
       const deleteBtn = document.createElement("button");
       deleteBtn.textContent = "Delete Listing";
-
-      // Use the global primary button class but override with red
-      deleteBtn.className = "primary-btn";
-      deleteBtn.style.backgroundColor = "#d32f2f"; // Professional Wits Red
-      deleteBtn.style.width = "100%";
-      deleteBtn.style.marginTop = "8px";
-
-      deleteBtn.addEventListener("click", () => deleteItem(listing.id));
+      deleteBtn.className = "delete-btn-styled";
+      deleteBtn.onclick = () => deleteItem(listing.id);
 
       actions.appendChild(deleteBtn);
       container.appendChild(card);
@@ -75,7 +75,12 @@ function showToast(message, type) {
   toast.className = `toast toast-${type}`;
   toast.textContent = message;
   document.body.appendChild(toast);
-  setTimeout(() => toast.remove(), 3000);
+
+  // Automatically remove after 3 second
+  setTimeout(() => {
+    toast.style.opacity = "0";
+    setTimeout(() => toast.remove(), 500);
+  }, 3000);
 }
 
 loadMyListings();

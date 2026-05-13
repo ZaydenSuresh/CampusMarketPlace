@@ -84,21 +84,56 @@
                 grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
                 gap: var(--space-lg);
             }
+
+            /* Card Action Container - Pushes button to bottom right */
+            .card-actions {
+                display: flex;
+                justify-content: flex-end; /* Align button to the right */
+                padding: 15px;
+                margin-top: auto; /* Push to the very bottom of the card */
+            }
+
+            /* Red Delete Button - Smaller "pill" style */
+            .delete-btn-styled {
+                background-color: #A51C30; /* Red accent */
+                color: white;
+                border: none;
+                padding: 6px 16px;
+                border-radius: 20px; /* Rounded pill shape */
+                font-weight: 600;
+                font-size: 0.8rem;
+                cursor: pointer;
+                transition: transform 0.2s, background-color 0.2s;
+            }
+
+            .delete-btn-styled:hover {
+                background-color: #821627;
+                transform: scale(1.05);
+            }
+
             .toast {
                 position: fixed;
-                top: 20px;
-                right: 20px;
-                padding: 15px 25px;
-                background: #333;
-                color: white;
-                border-radius: 8px;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%); /* Precise screen centering */
+                padding: 20px 40px;
+                border-radius: var(--radius-md);
                 z-index: 9999;
-                transition: opacity 0.3s;
+                font-weight: 700;
+                text-align: center;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+                background-color: #003B5C; /* Wits Navy */
+                color: #FFFFFF;
+                animation: toastPop 0.3s ease-out;
             }
-            .toast-error { background: #d32f2f; }
-            .toast-success { background: #2e7d32; }
 
+            .toast-error { border-bottom: 4px solid #A51C30; } /* Red for Error */
+            .toast-success { border-bottom: 4px solid #D4AF37; } /* Gold for Success */
+
+            @keyframes toastPop {
+                from { opacity: 0; transform: translate(-50%, -60%); }
+                to { opacity: 1; transform: translate(-50%, -50%); }
+            }
             .sidebar-footer {
                 margin-top: auto;
                 padding-top: var(--space-lg);
