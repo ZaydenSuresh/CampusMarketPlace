@@ -41,7 +41,23 @@ export async function loginUser({ email, password }) {
     body: JSON.stringify({ email, password }),
   });
 
-  return handleResponse(response);
+  const data = await handleResponse(response);
+
+  // Clears old account details first
+  localStorage.removeItem("user_id");
+  localStorage.removeItem("email");
+  localStorage.removeItem("name");
+  localStorage.removeItem("role");
+
+  // Saves new logged-in user details
+  if (data.user) {
+    localStorage.setItem("user_id", data.user.id);
+    localStorage.setItem("email", data.user.email);
+    localStorage.setItem("name", data.user.name);
+    localStorage.setItem("role", data.user.role);
+  }
+
+  return data;
 }
 
 export async function getCurrentUser() {
@@ -89,8 +105,15 @@ export async function logoutUser() {
     await fetch(`${API_BASE}/logout`, {
       method: "POST",
     });
-    window.location.href = "/login.html";
   } catch (err) {
     console.error("Logout request failed:", err);
+  } finally {
+    // ALWAYS clear browser-saved user details.
+    localStorage.removeItem("user_id");
+    localStorage.removeItem("email");
+    localStorage.removeItem("name");
+    localStorage.removeItem("role");
+
+    window.location.href = "/login.html";
   }
 }
