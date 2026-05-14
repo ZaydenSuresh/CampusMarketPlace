@@ -155,4 +155,158 @@ router.get("/", async (req, res) => {
   }
 });
 
+// ADDED BY KHANYISILE
+// Helper: check if the logged-in user is an Admin.
+// This checks the profiles table using the current user's id.
+async function requireAdmin(req, res, supabase) {
+  const user = await getCurrentUser(req, res);
+
+  if (!user) {
+    return { user: null, errorResponse: res.status(401).json({ error: "Not authenticated" }) };
+  }
+
+  const { data: profile, error } = await supabase
+    .from("profiles")
+    .select("id, role")
+    .eq("id", user.id)
+    .single();
+
+  if (error || !profile) {
+    return { user: null, errorResponse: res.status(403).json({ error: "Admin access required" }) };
+  }
+
+  if (profile.role !== "Admin") {
+    return { user: null, errorResponse: res.status(403).json({ error: "Admin access required" }) };
+  }
+
+  return { user, errorResponse: null };
+}
+
+// PUT /ratings/:id/flag — Any logged-in user can flag a review
+router.put("/:id/flag", async (req, res) => {
+  try {
+    const supabase = createSupabaseClient(req, res);
+    const user = await getCurrentUser(req, res);
+
+    if (!user) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
+
+    const { id } = req.params;
+
+    // Check that the rating exists first
+    const { data: existingRating, error: findError } = await supabase
+      .from("ratings")
+      .select("*")
+      .eq("id", id)
+      .single();
+
+    if (findError || !existingRating) {
+      return res.status(404).json({ error: "Rating not found" });
+    }
+
+    // Soft-flag the review for admin moderation
+    const { data: rating, error: updateError } = await supabase
+      .from("ratings")
+      .update({
+        flagged: true,
+        flagged_at: new Date().toISOString(),
+      })
+      .eq("id", id)
+      .select("*")
+      .single();
+
+    if (updateError) {
+      return res.status(500).json({ error: updateError.message });
+    }
+
+    return res.json({ ok: true, rating });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+// PUT /ratings/:id/mark-safe — Admin clears a false flag
+router.put("/:id/mark-safe", async (req, res) => {
+  try {
+    const supabase = createSupabaseClient(req, res);
+
+    const { errorResponse } = await requireAdmin(req, res, supabase);
+    if (errorResponse) return;
+
+    const { id } = req.params;
+
+    // Check that the rating exists first
+    const { data: existingRating, error: findError } = await supabase
+      .from("ratings")
+      .select("*")
+      .eq("id", id)
+      .single();
+
+    if (findError || !existingRating) {
+      return res.status(404).json({ error: "Rating not found" });
+    }
+
+    // Clear the flag
+    const { data: rating, error: updateError } = await supabase
+      .from("ratings")
+      .update({
+        flagged: false,
+        flagged_at: null,
+      })
+      .eq("id", id)
+      .select("*")
+      .single();
+
+    if (updateError) {
+      return res.status(500).json({ error: updateError.message });
+    }
+
+    return res.json({ ok: true, rating });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+// PUT /ratings/:id/remove — Admin soft-removes an abusive review
+router.put("/:id/remove", async (req, res) => {
+  try {
+    const supabase = createSupabaseClient(req, res);
+
+    const { errorResponse } = await requireAdmin(req, res, supabase);
+    if (errorResponse) return;
+
+    const { id } = req.params;
+
+    // Check that the rating exists first
+    const { data: existingRating, error: findError } = await supabase
+      .from("ratings")
+      .select("*")
+      .eq("id", id)
+      .single();
+
+    if (findError || !existingRating) {
+      return res.status(404).json({ error: "Rating not found" });
+    }
+
+    // Do not delete the review. Only hide it from public views.
+    const { data: rating, error: updateError } = await supabase
+      .from("ratings")
+      .update({
+        removed: true,
+        removed_at: new Date().toISOString(),
+      })
+      .eq("id", id)
+      .select("*")
+      .single();
+
+    if (updateError) {
+      return res.status(500).json({ error: updateError.message });
+    }
+
+    return res.json({ ok: true, rating });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+});
 module.exports = router;
