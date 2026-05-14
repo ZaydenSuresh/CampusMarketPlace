@@ -1,6 +1,9 @@
 const express = require("express");
 const { createSupabaseClient } = require("../lib/supabase");
 
+// ADDED BY KHANYISILE
+const { getSuggestionForCategory } = require("../services/price-suggestion");
+
 const router = express.Router();
 
 const BUCKET_NAME = "listing-images";
@@ -199,10 +202,13 @@ async function enrichWithRatings(supabase, listings) {
   ];
 
   // Batch query ratings where rated_id matches any seller
+  // ADDED BY KHANYISILE
+  // Removed reviews must not affect seller average ratings shown on listing cards.
   const { data: ratings, error: ratingsError } = await supabase
     .from("ratings")
     .select("rated_id, rating")
-    .in("rated_id", sellerIds);
+    .in("rated_id", sellerIds)
+    .or("removed.is.null,removed.eq.false");
 
   if (ratingsError) {
     console.error("Failed to fetch ratings:", ratingsError.message);
@@ -354,6 +360,33 @@ router.get("/search", async (req, res) => {
     return res.json({ ok: true, listings });
   } catch (err) {
     console.error("Search listings error:", err);
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+// ADDED BY KHANYISILE
+// GET /listings/price-suggestion/:category?condition=Good
+// Public endpoint used by create-listing page to suggest a fair price.
+router.get("/price-suggestion/:category", async (req, res) => {
+  const supabase = createSupabaseClient(req, res);
+
+  try {
+    const { category } = req.params;
+    const { condition = "Good" } = req.query;
+
+    if (!validCategories.includes(category)) {
+      return res.status(400).json({ error: "Invalid category" });
+    }
+
+    if (!validConditions.includes(condition)) {
+      return res.status(400).json({ error: "Invalid condition" });
+    }
+
+    const suggestion = await getSuggestionForCategory(supabase, category, condition);
+
+    return res.json({ ok: true, suggestion });
+  } catch (err) {
+    console.error("Price suggestion error:", err);
     return res.status(500).json({ error: err.message });
   }
 });
@@ -517,6 +550,7 @@ router.delete("/:id", async (req, res) => {
     return res.status(500).json({ error: err.message });
   }
 });
+
 // RESERVE / BUY listing
 router.post("/:id/reserve", async (req, res) => {
   const supabase = createSupabaseClient(req, res);

@@ -119,10 +119,19 @@ router.get("/", async (req, res) => {
     const filterField = rater_id ? "rater_id" : "rated_id";
     const filterValue = rater_id || user_id;
 
-    const { data: ratings, error: ratingsError } = await supabase
+    // ADDED BY KHANYISILE
+    // Public seller rating views must hide reviews that were soft-removed by Admin.
+    // But rater_id history is not filtered, because users should still see their own rating history.
+    let ratingsQuery = supabase
       .from("ratings")
       .select("*")
-      .eq(filterField, filterValue)
+      .eq(filterField, filterValue);
+
+    if (user_id && !rater_id) {
+      ratingsQuery = ratingsQuery.or("removed.is.null,removed.eq.false");
+    }
+
+    const { data: ratings, error: ratingsError } = await ratingsQuery
       .order("created_at", { ascending: false });
 
     if (ratingsError) {
@@ -135,10 +144,13 @@ router.get("/", async (req, res) => {
     }
 
     // For ?user_id, also compute the average rating and total count
+    // ADDED BY KHANYISILE
+    // Removed ratings must not affect public average rating.
     const { data: agg, error: aggError } = await supabase
       .from("ratings")
       .select("rating")
-      .eq("rated_id", user_id);
+      .eq("rated_id", user_id)
+      .or("removed.is.null,removed.eq.false");
 
     if (aggError) {
       return res.status(500).json({ error: aggError.message });
@@ -181,6 +193,82 @@ async function requireAdmin(req, res, supabase) {
 
   return { user, errorResponse: null };
 }
+
+// ADDED BY KHANYISILE
+// GET /ratings/moderation — Admin views all ratings with moderation status
+router.get("/moderation", async (req, res) => {
+  try {
+    const supabase = createSupabaseClient(req, res);
+
+    const { errorResponse } = await requireAdmin(req, res, supabase);
+    if (errorResponse) return;
+
+    const { data: ratings, error } = await supabase
+      .from("ratings")
+      .select(`
+        id,
+        rating,
+        review,
+        flagged,
+        flagged_at,
+        removed,
+        removed_at,
+        created_at,
+        rater:profiles!ratings_rater_id_fkey (
+          id,
+          name,
+          full_name,
+          email
+        ),
+        rated_user:profiles!ratings_rated_id_fkey (
+          id,
+          name,
+          full_name,
+          email
+        ),
+        transaction:transactions (
+          id,
+          listing:listings (
+            id,
+            title
+          )
+        )
+      `)
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      return res.status(500).json({ error: error.message });
+    }
+
+    const formattedRatings = (ratings || []).map((r) => ({
+      id: r.id,
+      rater_name:
+        r.rater?.name ||
+        r.rater?.full_name ||
+        r.rater?.email ||
+        "Unknown reviewer",
+      rated_user_name:
+        r.rated_user?.name ||
+        r.rated_user?.full_name ||
+        r.rated_user?.email ||
+        "Unknown user",
+      item_title:
+        r.transaction?.listing?.title ||
+        "Unknown item",
+      rating: r.rating,
+      review: r.review,
+      flagged: r.flagged === true,
+      flagged_at: r.flagged_at,
+      removed: r.removed === true,
+      removed_at: r.removed_at,
+      created_at: r.created_at,
+    }));
+
+    return res.json({ ok: true, ratings: formattedRatings });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+});
 
 // PUT /ratings/:id/flag — Any logged-in user can flag a review
 router.put("/:id/flag", async (req, res) => {
@@ -309,4 +397,5 @@ router.put("/:id/remove", async (req, res) => {
     return res.status(500).json({ error: err.message });
   }
 });
+
 module.exports = router;
