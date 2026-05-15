@@ -67,7 +67,7 @@ let currentUser = null;
 let currentUserId = null;
 
 async function loadSessionUser() {
-  const res = await fetch("http://localhost:3000/auth/me", {
+  const res = await fetch("/auth/me", {
     credentials: "include"
   });
 
@@ -100,14 +100,15 @@ function scrollMessagesToBottom() {//scroll chats to latest msg
 
 
 async function getUserName(id) {
-  const res = await fetch(`http://localhost:3000/profiles/${id}`);
+  const res = await fetch(`/profiles/${id}`);
   const data = await res.json();
   return data.name;
 }
 
 async function fetchConversations() {
   const res = await fetch(
-    `http://localhost:3000/messages/conversations/${encodeURIComponent(currentUser)}`
+    `/messages/conversations/${encodeURIComponent(currentUser)}`,
+    { credentials: "include" }
   );
 
   const data = await res.json();
@@ -120,7 +121,7 @@ async function fetchConversations() {
         : conv.user2_id;
 
     try {
-      const res = await fetch(`http://localhost:3000/auth/profiles/${otherUserId}`);
+      const res = await fetch(`/auth/profiles/${otherUserId}`);
       const profile = await res.json();
 
       console.log(profile);
@@ -144,9 +145,10 @@ async function postMessage(conversationId, text) {
   const conversation = getConversationById(conversationId);
   if (!conversation) return null;
 
-  const res = await fetch("http://localhost:3000/messages/send", {
+  const res = await fetch("/messages/send", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
+    credentials: "include",
     body: JSON.stringify({
       sender_name: currentUser,
       receiver_name: conversation.user.name,
@@ -159,7 +161,8 @@ async function postMessage(conversationId, text) {
 
 async function fetchMessages(conversationId) {
   const res = await fetch(
-    `http://localhost:3000/messages/conversation/${conversationId}`
+    `/messages/conversation/${conversationId}`,
+    { credentials: "include" }
   );
 
   const data = await res.json();
