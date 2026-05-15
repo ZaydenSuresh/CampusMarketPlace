@@ -112,6 +112,7 @@ async function fetchConversations() {
   );
 
   const data = await res.json();
+  if (!res.ok || !Array.isArray(data)) return [];
 
   // Fetch names one-by-one (simple version, no Promise.all)
   for (let conv of data) {
@@ -121,7 +122,7 @@ async function fetchConversations() {
         : conv.user2_id;
 
     try {
-      const res = await fetch(`/auth/profiles/${otherUserId}`);
+      const res = await fetch(`/auth/profiles/${otherUserId}`, { credentials: "include" });
       const profile = await res.json();
 
       console.log(profile);
@@ -156,6 +157,7 @@ async function postMessage(conversationId, text) {
     })
   });
 
+  if (!res.ok) return null;
   return await res.json();
 }
 
@@ -166,6 +168,7 @@ async function fetchMessages(conversationId) {
   );
 
   const data = await res.json();
+  if (!res.ok || !Array.isArray(data)) return [];
 
   return data.map(msg => ({
     text: msg.content,
@@ -338,7 +341,7 @@ async function initMessagesPage() {
   if (targetConvId && getConversationById(targetConvId)) {
     activeConversationId = targetConvId;
   } else {
-    activeConversationId = conversations[0].id;
+    activeConversationId = conversations[0]?.id;
   }
 
   openConversation(activeConversationId);
