@@ -30,11 +30,22 @@ function makeSupabaseMock({
     limit: jest.fn(),
     eq: jest.fn(),
     single: jest.fn(),
+    maybeSingle: jest.fn(),
     gte: jest.fn(),
     lte: jest.fn(),
     or: jest.fn(),
     in: jest.fn(),
   };
+
+
+const ratingsBuilder = {
+  select: jest.fn().mockReturnThis(),
+  in: jest.fn().mockReturnThis(),
+  or: jest.fn().mockResolvedValue({
+    data: [],
+    error: null,
+  }),
+};
 
   const supabase = {
     auth: {
@@ -53,7 +64,13 @@ function makeSupabaseMock({
         }),
       }),
     },
-    from: jest.fn(() => queryBuilder),
+    from: jest.fn((table) => {
+  if (table === "ratings") {
+    return ratingsBuilder;
+  }
+
+  return queryBuilder;
+}),
   };
 
   // GET /listings and GET /listings/all
@@ -78,32 +95,32 @@ function makeSupabaseMock({
 
 // POST /listings
 queryBuilder.insert.mockReturnValue({
-  select: jest.fn().mockReturnValue({
-    single: jest.fn().mockResolvedValue({
-      data: insertedListing,
-      error: insertedListing ? null : { message: "Insert failed" },
-    }),
+  select: jest.fn().mockResolvedValue({
+    data: insertedListing ? [insertedListing] : undefined,
+    error: insertedListing ? null : { message: "Insert failed" },
   }),
 });
 
 // PUT /listings/:id
 queryBuilder.update.mockReturnValue({
   eq: jest.fn().mockReturnValue({
-    select: jest.fn().mockReturnValue({
-      single: jest.fn().mockResolvedValue({
-        data: updatedListing,
-        error: updatedListing ? null : { message: "Update failed" },
-      }),
+    select: jest.fn().mockResolvedValue({
+      data: updatedListing ? [updatedListing] : undefined,
+      error: updatedListing ? null : { message: "Update failed" },
     }),
   }),
 });
 
   // DELETE /listings/:id
-  queryBuilder.delete.mockReturnValue({
-    eq: jest.fn().mockResolvedValue({
+const deleteBuilder = {
+  eq: jest.fn().mockReturnThis(),
+  then: (resolve) =>
+    resolve({
       error: deleteError,
     }),
-  });
+};
+
+queryBuilder.delete.mockReturnValue(deleteBuilder);
 
   // search chain support
   queryBuilder.gte.mockReturnValue(queryBuilder);
@@ -112,7 +129,11 @@ queryBuilder.update.mockReturnValue({
     data: listingsData,
     error: null,
   });
-
+  queryBuilder.then = (resolve) =>
+  resolve({
+    data: listingsData,
+    error: null,
+  });
   return { supabase, queryBuilder };
 }
 
@@ -317,16 +338,28 @@ describe("Listings UAT tests", () => {
     expect(res.body.error).toBe("Invalid category");
   });
 
-  test("UAT 9 — Delete listing", async () => {
-    const { supabase } = makeSupabaseMock();
-    createSupabaseClient.mockReturnValue(supabase);
-
-    const res = await request(app).delete("/listings/listing-1");
-
-    expect(res.statusCode).toBe(200);
-    expect(res.body.ok).toBe(true);
-    expect(res.body.message).toBe("Listing deleted");
+test("UAT 9 — Delete listing", async () => {
+  const { supabase } = makeSupabaseMock({
+    user: {
+      id: "user-123",
+      email: "test@example.com",
+    },
+    singleListing: {
+      id: "listing-1",
+      title: "Item to delete",
+      user_id: "user-123",
+      status: "available",
+    },
   });
+
+  createSupabaseClient.mockReturnValue(supabase);
+
+  const res = await request(app).delete("/listings/listing-1");
+
+  expect(res.statusCode).toBe(200);
+  expect(res.body.ok).toBe(true);
+  expect(res.body.message).toBe("Listing deleted");
+});
 
   test("UAT 10 — Search listings", async () => {
     const listings = [
@@ -394,21 +427,34 @@ test("UAT 11 — Reserve available listing sets reserved_by", async () => {
     }),
   };
 
-  const transactionsInsertBuilder = {
-    insert: jest.fn().mockReturnThis(),
-    select: jest.fn().mockReturnThis(),
-    single: jest.fn().mockResolvedValue({
-      data: {
+const transactionsLookupBuilder = {
+  select: jest.fn().mockReturnThis(),
+  eq: jest.fn().mockReturnThis(),
+  neq: jest.fn().mockReturnThis(),
+  then: (resolve) =>
+    resolve({
+      data: [],
+      error: null,
+    }),
+};
+
+const transactionsInsertBuilder = {
+  insert: jest.fn().mockReturnThis(),
+  select: jest.fn().mockResolvedValue({
+    data: [
+      {
         id: "transaction-1",
         listing_id: "listing-1",
         buyer_id: buyerId,
         type: "trade",
         status: "pending",
       },
-      error: null,
-    }),
-  };
+    ],
+    error: null,
+  }),
+};
 
+let transactionsCallCount = 0;
   const supabase = {
     auth: {
       getUser: jest.fn().mockResolvedValue({
@@ -429,9 +475,15 @@ test("UAT 11 — Reserve available listing sets reserved_by", async () => {
         return listingsUpdateBuilder;
       }
 
-      if (table === "transactions") {
-        return transactionsInsertBuilder;
-      }
+if (table === "transactions") {
+  transactionsCallCount++;
+
+  if (transactionsCallCount === 1) {
+    return transactionsLookupBuilder;
+  }
+
+  return transactionsInsertBuilder;
+}
 
       return {};
     }),
@@ -517,7 +569,7 @@ test("UAT 12 — Prevent duplicate reservation", async () => {
     });
 
   expect(res.statusCode).toBe(400);
-  expect(res.body.ok).toBe(false);
+ expect(res.body.error).toBeDefined();
 
   expect(listingsUpdateBuilder.update).not.toHaveBeenCalled();
 });
