@@ -33,6 +33,7 @@ function makeSupabaseMock({
     gte: jest.fn(),
     lte: jest.fn(),
     or: jest.fn(),
+    in: jest.fn(),
   };
 
   const supabase = {
@@ -70,23 +71,32 @@ function makeSupabaseMock({
     error: singleListing ? null : { message: "Not found" },
   });
 
-  // POST /listings
-  queryBuilder.insert.mockReturnValue({
-    select: jest.fn().mockResolvedValue({
-      data: insertedListing ? [insertedListing] : [],
+  queryBuilder.maybeSingle.mockResolvedValue({
+  data: singleListing,
+  error: singleListing ? null : null,
+});
+
+// POST /listings
+queryBuilder.insert.mockReturnValue({
+  select: jest.fn().mockReturnValue({
+    single: jest.fn().mockResolvedValue({
+      data: insertedListing,
       error: insertedListing ? null : { message: "Insert failed" },
     }),
-  });
+  }),
+});
 
-  // PUT /listings/:id
-  queryBuilder.update.mockReturnValue({
-    eq: jest.fn().mockReturnValue({
-      select: jest.fn().mockResolvedValue({
-        data: updatedListing ? [updatedListing] : [],
+// PUT /listings/:id
+queryBuilder.update.mockReturnValue({
+  eq: jest.fn().mockReturnValue({
+    select: jest.fn().mockReturnValue({
+      single: jest.fn().mockResolvedValue({
+        data: updatedListing,
         error: updatedListing ? null : { message: "Update failed" },
       }),
     }),
-  });
+  }),
+});
 
   // DELETE /listings/:id
   queryBuilder.delete.mockReturnValue({
@@ -346,7 +356,7 @@ describe("Listings UAT tests", () => {
     expect(res.body.ok).toBe(true);
     expect(res.body.listings.length).toBe(1);
   });
-});
+
 //UATs for newly added buy now/reserve features
 test("UAT 11 — Reserve available listing sets reserved_by", async () => {
   const buyerId = "buyer-123";
@@ -628,4 +638,8 @@ test("UAT 15 — Search listings returns seller name and ratings", async () => {
 
   expect(res.body.listings[0].profiles.name).toBe("Test Seller");
   expect(res.body.listings[0].ratings.length).toBe(2);
+});
+
+
+
 });
