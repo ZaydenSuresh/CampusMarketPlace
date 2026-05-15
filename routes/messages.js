@@ -493,21 +493,11 @@ router.get(
 // GET USER CONVERSATIONS
 // ======================================================
 router.get(
-  "/conversations/:name",
-
-  [
-    param("name")
-      .isString()
-      .isLength({ min: 1, max: 50 })
-  ],
+  "/conversations",
 
   async (req, res) => {
 
     try {
-
-      if (!validateRequest(req, res)) {
-        return;
-      }
 
       const supabase = createSupabaseClient(req, res);
 
@@ -523,27 +513,6 @@ router.get(
       }
 
 
-      let { name } = req.params;
-
-      name = cleanInput(name);
-
-
-      // ======================================================
-      // FIND USER
-      // ======================================================
-      const { data: user, error: userError } = await supabase
-        .from("profiles")
-        .select("id")
-        .eq("name", name)
-        .maybeSingle();
-
-      if (userError || !user) {
-        return res.status(404).json({
-          error: "User not found"
-        });
-      }
-
-
       // ======================================================
       // FETCH CONVERSATIONS
       // ======================================================
@@ -551,7 +520,7 @@ router.get(
         .from("conversations")
         .select("*")
         .or(
-          `user1_id.eq.${user.id},user2_id.eq.${user.id}`
+          `user1_id.eq.${sessionUser.id},user2_id.eq.${sessionUser.id}`
         );
 
       if (error) {

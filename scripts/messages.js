@@ -107,7 +107,7 @@ async function getUserName(id) {
 
 async function fetchConversations() {
   const res = await fetch(
-    `/messages/conversations/${encodeURIComponent(currentUser)}`,
+    `/messages/conversations`,
     { credentials: "include" }
   );
 
