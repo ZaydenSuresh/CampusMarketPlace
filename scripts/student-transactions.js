@@ -157,7 +157,7 @@ function buildCard(t) {
           </div>
           <div class="card-actions">
             ${isPending ? `<button class="btn-sm btn-book" data-book="${t.id}">Book Slot</button>` : ""}
-            ${canMessage ? `<button class="btn-sm btn-message" data-msg-seller="${t.seller?.name}" data-msg-seller-id="${t.seller_id}" data-msg-item="${escapeHtml(title)}">Message ${t.seller?.name}</button>` : ""}
+            ${canMessage ? `<button class="btn-sm btn-message" data-msg-seller="${counterpartyName}" data-msg-seller-id="${counterpartyId}" data-msg-item="${escapeHtml(title)}">Message ${counterpartyName}</button>` : ""}
             ${canCancel ? `<button class="btn-sm btn-cancel" data-id="${t.id}">Cancel</button>` : ""}
             ${isCompleted && alreadyRated ? `<button class="btn-sm btn-rate" disabled>Rated</button>` : ""}
             ${isCompleted && !alreadyRated ? `<button class="btn-sm btn-rate" onclick="window.location.href='/rating.html?transactionId=${t.id}&ratedId=${counterpartyId}&ratedName=${encodeUrl(counterpartyName)}&itemTitle=${encodeUrl(title)}&ratedRole=${ratedRole}'">Rate</button>` : ""}
@@ -215,6 +215,7 @@ container.addEventListener("click", async (e) => {
       const findRes = await fetch("/messages/conversation/find-or-create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({
           sender_id: currentUserId,
           receiver_id: sellerId,
@@ -235,6 +236,7 @@ container.addEventListener("click", async (e) => {
       await fetch("/messages/send", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({
           sender_id: currentUserId,
           receiver_id: sellerId,

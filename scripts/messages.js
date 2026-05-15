@@ -112,7 +112,10 @@ async function fetchConversations() {
   );
 
   const data = await res.json();
-  if (!res.ok || !Array.isArray(data)) return [];
+  if (!res.ok || !Array.isArray(data)) {
+    console.warn("fetchConversations: unexpected response", res.status, data);
+    return [];
+  }
 
   // Fetch names one-by-one (simple version, no Promise.all)
   for (let conv of data) {

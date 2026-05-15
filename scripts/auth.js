@@ -61,7 +61,7 @@ export async function loginUser({ email, password }) {
 }
 
 export async function getCurrentUser() {
-  const response = await fetch(`${API_BASE}/me`);
+  const response = await fetch(`${API_BASE}/me`, { credentials: "include" });
   if (!response.ok) return null;
   const data = await response.json();
   return data.ok ? data.user : null;
