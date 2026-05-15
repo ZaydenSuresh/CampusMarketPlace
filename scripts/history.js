@@ -1,4 +1,4 @@
-const API = "http://localhost:3000";
+const API = "";
 
 const bought = document.getElementById("bought-container");
 const sold = document.getElementById("sold-container");

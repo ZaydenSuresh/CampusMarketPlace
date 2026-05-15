@@ -1,4 +1,4 @@
-const API = "http://localhost:3000";
+const API = "";
 
 const form = document.getElementById("create-slot-form");
 const dateInput = document.getElementById("slot-date");
