@@ -139,14 +139,11 @@ router.post(
       // SANITIZE INPUTS
       // ======================================================
       let {
-        sender_name,
         receiver_name,
-        sender_id,
         receiver_id,
         content
       } = req.body;
 
-      sender_name = cleanInput(sender_name);
       receiver_name = cleanInput(receiver_name);
       content = cleanInput(content);
 
@@ -156,39 +153,16 @@ router.post(
       // ======================================================
       if (
         !content ||
-        (!sender_id && !sender_name) ||
         (!receiver_id && !receiver_name)
       ) {
         return res.status(400).json({
-          error:
-            "sender and receiver identifiers and content are required"
+          error: "receiver identifier and content are required"
         });
       }
 
 
-      let senderId = sender_id || null;
+      const senderId = sessionUser.id;
       let receiverId = receiver_id || null;
-
-
-      // ======================================================
-      // FIND SENDER
-      // ======================================================
-      if (!senderId) {
-
-        const { data: sender, error: senderError } = await supabase
-          .from("profiles")
-          .select("id")
-          .eq("name", sender_name)
-          .maybeSingle();
-
-        if (senderError || !sender) {
-          return res.status(404).json({
-            error: "Sender not found"
-          });
-        }
-
-        senderId = sender.id;
-      }
 
 
       // ======================================================
@@ -209,17 +183,6 @@ router.post(
         }
 
         receiverId = receiver.id;
-      }
-
-
-      // ======================================================
-      // EXTRA AUTH CHECK
-      // Prevent impersonation
-      // ======================================================
-      if (sessionUser.id !== senderId) {
-        return res.status(403).json({
-          error: "You cannot send messages as another user"
-        });
       }
 
 

@@ -154,13 +154,16 @@ async function postMessage(conversationId, text) {
     headers: { "Content-Type": "application/json" },
     credentials: "include",
     body: JSON.stringify({
-      sender_name: currentUser,
-      receiver_name: conversation.user.name,
+      receiver_id: conversation.user.id,
       content: text
     })
   });
 
-  if (!res.ok) return null;
+  if (!res.ok) {
+    const err = await res.json();
+    console.warn("postMessage: send failed", res.status, err);
+    return null;
+  }
   return await res.json();
 }
 
