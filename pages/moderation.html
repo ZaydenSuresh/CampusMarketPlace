@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Moderate Reviews | Campus Marketplace</title>
+
+    <link rel="stylesheet" href="/styles/global.css" />
+    <link rel="stylesheet" href="/styles/analytics.css" />
+
+    <style>
+        .filter-row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 24px;
+        }
+
+        .filter-btn {
+            padding: 10px 18px;
+            border-radius: 999px;
+            border: 1px solid var(--grey-border);
+            background: var(--white);
+            color: var(--wits-navy);
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .filter-btn:hover,
+        .filter-btn.active {
+            background: var(--wits-navy);
+            color: var(--white);
+            border-color: var(--wits-navy);
+        }
+
+        .table-card {
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--grey-border);
+            box-shadow: var(--shadow-sm);
+            overflow-x: auto;
+            padding: 16px;
+        }
+
+        .moderation-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .moderation-table th,
+        .moderation-table td {
+            padding: 14px 12px;
+            border-bottom: 1px solid var(--grey-border);
+            text-align: left;
+            vertical-align: top;
+            font-size: 0.9rem;
+        }
+
+        .moderation-table th {
+            color: var(--wits-navy-dark);
+            font-weight: 900;
+            background: var(--bg-light);
+        }
+
+        .review-text {
+            max-width: 280px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 6px 12px;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 900;
+        }
+
+        .status-clean {
+            background: rgba(16, 185, 129, 0.13);
+            color: #047857;
+        }
+
+        .status-flagged {
+            background: rgba(245, 158, 11, 0.16);
+            color: #92400e;
+        }
+
+        .status-removed {
+            background: rgba(239, 68, 68, 0.14);
+            color: #991b1b;
+        }
+
+        .action-group {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .small-btn {
+            border: none;
+            padding: 8px 12px;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 900;
+            cursor: pointer;
+        }
+
+        .flag-action {
+            background: var(--wits-navy);
+            color: var(--white);
+        }
+
+        .safe-action {
+            background: #047857;
+            color: var(--white);
+        }
+
+        .remove-action {
+            background: #991b1b;
+            color: var(--white);
+        }
+
+        .done-action {
+            background: var(--grey-border);
+            color: var(--grey-text);
+            cursor: not-allowed;
+        }
+
+        .empty-state {
+            padding: 28px;
+            text-align: center;
+            color: var(--grey-text);
+            font-weight: 700;
+        }
+    </style>
+</head>
+
+<body>
+    <aside class="sidebar">
+        <div class="sidebar-logo">
+            Campus<span class="highlight">Market</span>
+        </div>
+
+        <nav class="nav-list">
+            <a href="admin-dashboard.html" class="nav-item">Analytics</a>
+            <a href="moderation.html" class="nav-item active">Moderate Reviews</a>
+        </nav>
+
+        <footer class="sidebar-footer">
+            <button type="button" id="logout-btn" class="logout-btn">
+                Logout
+            </button>
+        </footer>
+    </aside>
+
+    <main class="main-content">
+        <header class="dashboard-header">
+            <section>
+                <h1>Review Moderation</h1>
+                <p>Flag, approve, or remove reviews that need admin attention.</p>
+            </section>
+        </header>
+
+        <section class="filter-row">
+            <button class="filter-btn active" data-filter="all">All</button>
+            <button class="filter-btn" data-filter="flagged">Flagged</button>
+            <button class="filter-btn" data-filter="removed">Removed</button>
+        </section>
+
+        <section class="table-card">
+            <table class="moderation-table">
+                <thead>
+                    <tr>
+                        <th>Reviewer Name</th>
+                        <th>Reviewed User</th>
+                        <th>Item</th>
+                        <th>Rating</th>
+                        <th>Review Text</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody id="moderation-table-body">
+                    <tr>
+                        <td colspan="7" class="empty-state">Loading reviews...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+    </main>
+
+    <script type="module" src="/scripts/moderation.js"></script>
+</body>
+</html>
