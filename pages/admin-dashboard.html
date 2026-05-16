@@ -1,99 +1,130 @@
 <!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Analytics | Campus Marketplace</title>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Analytics | Campus Marketplace</title>
 
-    <link rel="stylesheet" href="/styles/global.css" />
-    <link rel="stylesheet" href="/styles/analytics.css" />
-</head>
+        <link rel="stylesheet" href="/styles/global.css" />
+        <link rel="stylesheet" href="/styles/analytics.css" />
+    </head>
 
-<body>
-    <aside class="sidebar">
-        <div class="sidebar-logo">
-            Campus<span class="highlight">Market</span>
-        </div>
+    <body>
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                Campus<span class="highlight">Market</span>
+            </div>
 
-        <nav class="nav-list">
-            <a href="admin-dashboard.html" class="nav-item active">Analytics</a>
-        </nav>
+            <nav class="nav-list">
+                <a href="admin-dashboard.html" class="nav-item active"
+                    >Analytics</a
+                >
+            </nav>
 
-        <footer class="sidebar-footer">
-            <button type="button" id="logout-btn" class="logout-btn">
-                Logout
-            </button>
-        </footer>
-    </aside>
+            <footer class="sidebar-footer">
+                <button type="button" id="logout-btn" class="logout-btn">
+                    Logout
+                </button>
+            </footer>
+        </aside>
 
-    <main class="main-content">
-        <header class="dashboard-header">
-            <section>
-                <h1 id="welcome-name">Dashboard</h1>
-                <p>View completed transactions and identify popular categories</p>
+        <main class="main-content">
+            <header class="dashboard-header">
+                <section>
+                    <h1 id="welcome-name">Dashboard</h1>
+                    <p>
+                        View completed transactions and identify popular
+                        categories
+                    </p>
+                </section>
+
+                <button class="export-btn" id="export-btn">Export CSV</button>
+            </header>
+
+            <!-- Stats Cards -->
+            <section class="stats-grid">
+                <div class="stat-card">
+                    <h3>Total Transactions</h3>
+                    <div class="value" id="total-transactions">0</div>
+                </div>
+
+                <div class="stat-card">
+                    <h3>Total Value (R)</h3>
+                    <div class="value" id="total-value">0</div>
+                </div>
+
+                <div class="stat-card">
+                    <h3>Avg Value/Day</h3>
+                    <div class="value" id="avg-per-day">0</div>
+                </div>
+
+                <div class="stat-card">
+                    <h3>Slot Utilisation</h3>
+                    <div class="value" id="slot-utilisation-pct">0%</div>
+                    <p
+                        class="sub-text"
+                        id="slot-utilisation-ratio"
+                        style="font-size: 0.85rem; color: #777; margin-top: 5px"
+                    >
+                        0 / 0 booked
+                    </p>
+                </div>
             </section>
 
-            <button class="export-btn" id="export-btn">Export CSV</button>
-        </header>
-
-        <!-- Stats Cards -->
-        <section class="stats-grid">
-            <div class="stat-card">
-                <h3>Total Transactions</h3>
-                <div class="value" id="total-transactions">0</div>
-            </div>
-
-            <div class="stat-card">
-                <h3>Total Value (R)</h3>
-                <div class="value" id="total-value">0</div>
-            </div>
-
-            <div class="stat-card">
-                <h3>Avg Value/Day</h3>
-                <div class="value" id="avg-per-day">0</div>
-            </div>
-        </section>
-
-        <!-- Trends Chart (Line Chart with Time Filter) -->
-        <section class="chart-section">
-            <div class="section-header">
-                <h2 class="section-title">Transaction Trends</h2>
-                <div class="period-filters">
-                    <button class="period-btn" data-period="day">Day</button>
-                    <button class="period-btn active" data-period="week">Week</button>
-                    <button class="period-btn" data-period="month">Month</button>
-                </div>
-            </div>
-            <div class="chart-container">
-                <canvas id="trendsChart"></canvas>
-            </div>
-        </section>
-
-        <!-- Categories Row: Bar Chart + Pie Chart Side by Side -->
-        <div class="categories-row">
-            <!-- Popular Categories (Horizontal Bar Chart) -->
+            <!-- Trends Chart (Line Chart with Time Filter) -->
             <section class="chart-section">
                 <div class="section-header">
-                    <h2 class="section-title">Popular Categories</h2>
+                    <h2 class="section-title">Transaction Trends</h2>
+                    <div class="period-filters">
+                        <button class="period-btn" data-period="day">
+                            Day
+                        </button>
+                        <button class="period-btn active" data-period="week">
+                            Week
+                        </button>
+                        <button class="period-btn" data-period="month">
+                            Month
+                        </button>
+                    </div>
                 </div>
-                <div class="chart-container categories">
-                    <canvas id="categoryChart"></canvas>
+                <div class="chart-container">
+                    <canvas id="trendsChart"></canvas>
                 </div>
             </section>
 
-            <!-- Category Distribution (Pie Chart) -->
-            <section class="chart-section">
+            <!-- Categories Row: Bar Chart + Pie Chart Side by Side -->
+            <div class="categories-row">
+                <!-- Popular Categories (Horizontal Bar Chart) -->
+                <section class="chart-section">
+                    <div class="section-header">
+                        <h2 class="section-title">Popular Categories</h2>
+                    </div>
+                    <div class="chart-container categories">
+                        <canvas id="categoryChart"></canvas>
+                    </div>
+                </section>
+
+                <!-- Category Distribution (Pie Chart) -->
+                <section class="chart-section">
+                    <div class="section-header">
+                        <h2 class="section-title">Category Distribution</h2>
+                    </div>
+                    <div class="chart-container pie">
+                        <canvas id="pieChart"></canvas>
+                    </div>
+                </section>
+            </div>
+            <section class="chart-section" style="margin-top: 20px">
                 <div class="section-header">
-                    <h2 class="section-title">Category Distribution</h2>
+                    <h2 class="section-title">Trade Facility Utilisation</h2>
                 </div>
-                <div class="chart-container pie">
-                    <canvas id="pieChart"></canvas>
+                <div class="chart-container">
+                    <canvas id="slotsChart"></canvas>
                 </div>
             </section>
-        </div>
-    </main>
+        </main>
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
-    <script type="module" src="/scripts/analytics.js"></script>
-</body>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+        <script type="module" src="/scripts/analytics.js"></script>
+    </body>
 </html>
