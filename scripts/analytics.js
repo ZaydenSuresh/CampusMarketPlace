@@ -51,11 +51,11 @@ async function loadSummary() {
 
 /**
  * Task E3: Load slot utilisation data from /analytics/slots
- * Updates the stat card and renders the bar chart, handling empty states cleanly.
+ * Safely handles empty summary objects and sets proper card metrics without crashing.
  */
 async function loadSlotUtilisation() {
   try {
-    const response = await fetch("/analytics/slots"); // [cite: 156, 195]
+    const response = await fetch("/analytics/slots"); //]
     const result = await response.json();
 
     if (result.ok) {
@@ -63,9 +63,26 @@ async function loadSlotUtilisation() {
       const pctEl = document.getElementById("slot-utilisation-pct");
       const ratioEl = document.getElementById("slot-utilisation-ratio");
 
-      if (pctEl) pctEl.textContent = `${result.utilisation_pct.toFixed(1)}%`; // [cite: 158, 192]
+      // DEFENSIVE READS: Fall back to summary container fields if root variables are missing
+      const utilizationValue =
+        result.utilisation_pct !== undefined
+          ? result.utilisation_pct
+          : (result.summary?.utilisation_pct ?? 0); //
+
+      const totalBooked =
+        result.total_booked !== undefined
+          ? result.total_booked
+          : (result.summary?.total_booked ?? 0); //
+
+      const totalCapacity =
+        result.total_capacity !== undefined
+          ? result.total_capacity
+          : (result.summary?.total_capacity ?? 0); //
+
+      // Safely apply text content using verified numbers
+      if (pctEl) pctEl.textContent = `${Number(utilizationValue).toFixed(1)}%`; // [cite: 192]
       if (ratioEl)
-        ratioEl.textContent = `${result.total_booked} / ${result.total_capacity} booked`; // [cite: 158, 192]
+        ratioEl.textContent = `${totalBooked} / ${totalCapacity} booked`; // [cite: 192]
 
       // 2. Target the canvas node explicitly via ID
       const canvasElement = document.getElementById("slotsChart");
@@ -76,12 +93,12 @@ async function loadSlotUtilisation() {
 
       // 3. Task E3 Edge Case Check: If by_date is missing or empty, show fallback text
       if (!result.by_date || result.by_date.length === 0) {
-        canvasElement.style.display = "none"; // Hide the blank canvas rendering layer [cite: 197]
+        canvasElement.style.display = "none"; // Hide the blank canvas rendering layer
 
         if (!fallbackMsg) {
           fallbackMsg = document.createElement("p");
           fallbackMsg.id = "slots-fallback-message";
-          fallbackMsg.textContent = "No slot data available"; // [cite: 197]
+          fallbackMsg.textContent = "No slot data available"; //
           fallbackMsg.style.textAlign = "center";
           fallbackMsg.style.padding = "60px 0"; // Centers neatly inside your white card container
           fallbackMsg.style.fontWeight = "600";
@@ -93,7 +110,7 @@ async function loadSlotUtilisation() {
         // Data exists! Clean up fallback text if present, show canvas, and render
         if (fallbackMsg) fallbackMsg.remove();
         canvasElement.style.display = "block";
-        renderSlotsChart(result.by_date); // [cite: 195]
+        renderSlotsChart(result.by_date); //
       }
     }
   } catch (error) {
