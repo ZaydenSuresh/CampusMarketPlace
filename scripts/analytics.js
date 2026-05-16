@@ -24,6 +24,7 @@ async function initPage() {
   loadTrends(currentPeriod);
   loadCategories();
   loadSlotUtilisation();
+  loadFlaggedContent();
 }
 
 /**
@@ -92,6 +93,39 @@ async function loadSlotUtilisation() {
   } catch (error) {
     console.error("Error loading slot utilisation metrics:", error);
   }
+}
+
+/**
+ * Task E5: Fetch flagged and removed content summary statistics
+ * Updates the cards and falls back to "—" gracefully on fetch failure.
+ */
+async function loadFlaggedContent() {
+  try {
+    const response = await fetch("/analytics/flagged-content");
+    const result = await response.json();
+
+    if (result.ok && result.summary) {
+      const flaggedEl = document.getElementById("flagged-count");
+      const removedEl = document.getElementById("removed-count");
+
+      // Use the summary fields sent by your backend peer
+      if (flaggedEl) flaggedEl.textContent = result.summary.flagged_count ?? 0;
+      if (removedEl) removedEl.textContent = result.summary.removed_count ?? 0;
+    } else {
+      setModerationPlaceholders();
+    }
+  } catch (error) {
+    console.error("Error loading moderation analytics:", error);
+    setModerationPlaceholders(); // Fallback requirement on network failure
+  }
+}
+
+// Helper to handle the "set both to "—" " failure state requirement cleanly
+function setModerationPlaceholders() {
+  const flaggedEl = document.getElementById("flagged-count");
+  const removedEl = document.getElementById("removed-count");
+  if (flaggedEl) flaggedEl.textContent = "—";
+  if (removedEl) removedEl.textContent = "—";
 }
 
 /**
@@ -493,6 +527,12 @@ document.querySelectorAll(".period-btn").forEach((btn) => {
 
 if (document.getElementById("export-btn")) {
   document.getElementById("export-btn").addEventListener("click", exportCSV);
+}
+
+if (document.getElementById("export-pdf-btn")) {
+  document.getElementById("export-pdf-btn").addEventListener("click", () => {
+    window.open("/analytics/export/pdf", "_blank");
+  });
 }
 
 if (document.getElementById("logout-btn")) {

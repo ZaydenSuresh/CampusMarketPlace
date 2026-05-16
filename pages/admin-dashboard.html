@@ -38,7 +38,14 @@
                     </p>
                 </section>
 
-                <button class="export-btn" id="export-btn">Export CSV</button>
+                <div class="header-actions" style="display: flex; gap: 10px">
+                    <button class="export-btn" id="export-btn">
+                        Export CSV
+                    </button>
+                    <button class="export-btn" id="export-pdf-btn">
+                        Export PDF
+                    </button>
+                </div>
             </header>
 
             <!-- Stats Cards -->
@@ -57,6 +64,7 @@
                     <h3>Avg Value/Day</h3>
                     <div class="value" id="avg-per-day">0</div>
                 </div>
+
                 <div class="stat-card">
                     <h3>Slot Utilisation</h3>
                     <div class="value" id="slot-utilisation-pct">0%</div>
@@ -67,6 +75,16 @@
                     >
                         0 / 0 booked
                     </p>
+                </div>
+
+                <div class="stat-card">
+                    <h3>Flagged Reviews</h3>
+                    <div class="value" id="flagged-count">0</div>
+                </div>
+
+                <div class="stat-card">
+                    <h3>Removed Reviews</h3>
+                    <div class="value" id="removed-count">0</div>
                 </div>
             </section>
 
