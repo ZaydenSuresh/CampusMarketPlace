@@ -231,6 +231,12 @@ function renderSlotsChart(byDateArray) {
 async function loadTrends(period) {
   try {
     const response = await fetch(`/analytics/transactions?period=${period}`);
+
+    if (!response.ok) {
+      console.warn("Trends API returned status:", response.status);
+      return;
+    }
+
     const result = await response.json();
 
     if (result.ok) {
