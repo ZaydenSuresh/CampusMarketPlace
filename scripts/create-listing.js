@@ -7,6 +7,24 @@ const imageInput = document.getElementById("image");
 const pageTitle = document.getElementById("pageTitle");
 const pageDescription = document.getElementById("pageDescription");
 
+// Target category and condition dropdown elements specifically
+const categorySelect = document.getElementById("category");
+const conditionSelect = document.getElementById("condition");
+const priceInput = document.getElementById("price");
+
+// Create and insert a <p> element for the suggestion text right after the category dropdown
+const suggestionText = document.createElement("p");
+suggestionText.id = "priceSuggestionText";
+suggestionText.style.fontSize = "0.85rem";
+suggestionText.style.marginTop = "4px";
+suggestionText.style.fontWeight = "600";
+if (categorySelect && categorySelect.parentNode) {
+  categorySelect.parentNode.insertBefore(
+    suggestionText,
+    categorySelect.nextSibling,
+  );
+}
+
 // Detect mode
 const params = new URLSearchParams(window.location.search);
 const mode = params.get("mode");
@@ -22,6 +40,60 @@ function showMessage(message, type = "error") {
   if (type) {
     formMessage.classList.add(type);
   }
+}
+
+/**
+ * Fetch and display price suggestions based on South African market data
+ */
+async function updatePriceSuggestion() {
+  const category = categorySelect.value;
+  const condition = conditionSelect.value;
+
+  // Clear suggestion display if values aren't fully selected
+  if (!category || category === "All" || !condition || condition === "All") {
+    suggestionText.textContent = "";
+    return;
+  }
+
+  try {
+    // Hit the endpoint layout: GET /listings/price-suggestion/:category?condition=:condition
+    const response = await fetch(
+      `/listings/price-suggestion/${encodeURIComponent(category)}?condition=${encodeURIComponent(condition)}`,
+      {
+        method: "GET",
+        credentials: "include",
+      },
+    );
+
+    if (!response.ok) return; // Silently ignore fetch failures
+
+    const data = await response.json();
+
+    if (data.ok && data.suggestion) {
+      const adjustedPrice = data.suggestion.adjusted_price;
+      suggestionText.textContent = `Suggested price: R${adjustedPrice} (based on SA market data)`;
+      suggestionText.style.color = "var(--wits-gold, #D4AF37)"; // Give it a noticeable premium theme color
+
+      // Optionally auto-fill the price input field if it's currently empty
+      if (priceInput && !priceInput.value.trim()) {
+        priceInput.value = adjustedPrice;
+      }
+    } else {
+      // Suggestion returned null
+      suggestionText.textContent =
+        "No price suggestion available for this category";
+      suggestionText.style.color = "#777777";
+    }
+  } catch (error) {
+    // Silently ignore failures; do not block or break the listing form workspace
+    console.error("Price suggestion fetch failed:", error);
+  }
+}
+
+// Attach event listeners to trigger live calculation on selection changes
+if (categorySelect && conditionSelect) {
+  categorySelect.addEventListener("change", updatePriceSuggestion);
+  conditionSelect.addEventListener("change", updatePriceSuggestion);
 }
 
 /**
@@ -56,7 +128,9 @@ async function parseJsonResponse(response) {
 
   if (!response.ok) {
     throw new Error(
-      data.message || data.error || `Request failed with status ${response.status}`
+      data.message ||
+        data.error ||
+        `Request failed with status ${response.status}`,
     );
   }
 
@@ -109,9 +183,15 @@ async function loadListingForEdit() {
     document.getElementById("condition").value = listing.condition || "";
     document.getElementById("sale_type").value = listing.sale_type || "";
     document.getElementById("description").value = listing.description || "";
+
+    // Automatically calculate price advice based on the loaded edit data
+    updatePriceSuggestion();
   } catch (error) {
     console.error("Load listing for edit error:", error);
-    showMessage(error.message || "Failed to load listing for editing.", "error");
+    showMessage(
+      error.message || "Failed to load listing for editing.",
+      "error",
+    );
   }
 }
 
@@ -139,7 +219,7 @@ if (deleteBtn) {
     if (!isEditMode || !listingId) return;
 
     const confirmed = window.confirm(
-      "Are you sure you want to delete this listing?"
+      "Are you sure you want to delete this listing?",
     );
 
     if (!confirmed) return;
@@ -192,7 +272,14 @@ form.addEventListener("submit", async (e) => {
   try {
     await getCurrentUser();
 
-    if (!title || !price || !category || !condition || !sale_type || !description) {
+    if (
+      !title ||
+      !price ||
+      !category ||
+      !condition ||
+      !sale_type ||
+      !description
+    ) {
       throw new Error("Please fill in all fields.");
     }
 
@@ -255,6 +342,9 @@ form.addEventListener("submit", async (e) => {
 
       showMessage("Listing created successfully.", "success");
       form.reset();
+
+      // Clear out the advisory text node since the form fields are now empty
+      suggestionText.textContent = "";
     }
 
     setTimeout(() => {
