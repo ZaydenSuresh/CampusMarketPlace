@@ -34,6 +34,12 @@ async function initPage() {
 async function loadSummary() {
   try {
     const response = await fetch("/analytics/summary");
+
+    if (!response.ok) {
+      console.warn("Summary API returned status:", response.status);
+      return;
+    }
+
     const result = await response.json();
 
     if (result.ok) {
@@ -317,6 +323,12 @@ function renderTrendsChart(labels, data, period) {
 async function loadCategories() {
   try {
     const response = await fetch("/analytics/categories");
+
+    if (!response.ok) {
+      console.warn("Categories API returned status:", response.status);
+      return;
+    }
+
     const result = await response.json();
 
     if (result.ok) {
