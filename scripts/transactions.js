@@ -78,25 +78,29 @@ async function fetchTransactions() {
 
 function mapStatus(t) {
 
-    /* highest priority check */
+    /* cancelled transactions */
+    if (t.status === "cancelled")
+        return "cancelled";
+
+    /* completed transaction */
     if (t.status === "completed")
         return "completed";
 
-    /* item not yet dropped off */
+    /* waiting for dropoff */
     if (
         t.status === "in_progress" &&
         !t.dropoff_confirmed
     )
         return "waiting_dropoff";
 
-    /* item dropped off but not collected */
+    /* waiting for pickup */
     if (
         t.dropoff_confirmed &&
         !t.collection_confirmed
     )
         return "waiting_pickup";
 
-    /* default stage */
+    /* default */
     return "pending";
 }
 
