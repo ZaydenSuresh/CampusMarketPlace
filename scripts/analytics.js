@@ -4,6 +4,7 @@ import { requireRole, logoutUser } from "/scripts/auth.js";
 let trendsChart = null;
 let categoryChart = null;
 let pieChart = null;
+let slotsChart = null;
 let currentPeriod = "week";
 
 /**
@@ -22,6 +23,7 @@ async function initPage() {
   loadSummary();
   loadTrends(currentPeriod);
   loadCategories();
+  loadSlotUtilisation();
 }
 
 /**
@@ -34,9 +36,12 @@ async function loadSummary() {
     const result = await response.json();
 
     if (result.ok) {
-      document.getElementById("total-transactions").textContent = result.total_transactions;
-      document.getElementById("total-value").textContent = `R${result.total_value.toFixed(2)}`;
-      document.getElementById("avg-per-day").textContent = `R${result.avg_per_day.toFixed(2)}`;
+      document.getElementById("total-transactions").textContent =
+        result.total_transactions;
+      document.getElementById("total-value").textContent =
+        `R${result.total_value.toFixed(2)}`;
+      document.getElementById("avg-per-day").textContent =
+        `R${result.avg_per_day.toFixed(2)}`;
     }
   } catch (error) {
     console.error("Error loading summary:", error);
@@ -44,9 +49,120 @@ async function loadSummary() {
 }
 
 /**
+ * Load slot utilisation data from /analytics/slots
+ * Updates the stat card and renders the bar chart, handling empty states cleanly.
+ */
+async function loadSlotUtilisation() {
+  try {
+    const response = await fetch("/analytics/slots"); //
+    const result = await response.json();
+
+    if (result.ok) {
+      // 1. Update the Stat Card from Task E
+      const pctEl = document.getElementById("slot-utilisation-pct");
+      const ratioEl = document.getElementById("slot-utilisation-ratio");
+
+      if (pctEl) pctEl.textContent = `${result.utilisation_pct.toFixed(1)}%`; // [cite: 192]
+      if (ratioEl)
+        ratioEl.textContent = `${result.total_booked} / ${result.total_capacity} booked`; // [cite: 192]
+
+      const chartContainer = document.querySelector("#slotsChart").parentNode;
+      let fallbackMsg = document.getElementById("slots-fallback-message");
+
+      // 2. Edge Case Check: If by_date is missing or empty, show fallback text
+      if (!result.by_date || result.by_date.length === 0) {
+        document.getElementById("slotsChart").style.display = "none";
+        if (!fallbackMsg) {
+          fallbackMsg = document.createElement("p");
+          fallbackMsg.id = "slots-fallback-message";
+          fallbackMsg.textContent = "No slot data available"; //
+          fallbackMsg.style.textAlign = "center";
+          fallbackMsg.style.padding = "40px 0";
+          fallbackMsg.style.fontWeight = "600";
+          fallbackMsg.style.color = "#777";
+          chartContainer.appendChild(fallbackMsg);
+        }
+      } else {
+        // Data exists! Clean up fallback text if present, show canvas, and render
+        if (fallbackMsg) fallbackMsg.remove();
+        document.getElementById("slotsChart").style.display = "block";
+        renderSlotsChart(result.by_date); //
+      }
+    }
+  } catch (error) {
+    console.error("Error loading slot utilisation metrics:", error);
+  }
+}
+
+/**
+ * Render vertical Chart.js bar chart in #slotsChart
+ * Displays dates on the x-axis, Booked (#003b7e) and Capacity (#c9a84c) bars, y-axis starting at 0.
+ */
+function renderSlotsChart(byDateArray) {
+  const canvasElement = document.getElementById("slotsChart");
+  if (!canvasElement) return;
+
+  const ctx = canvasElement.getContext("2d");
+
+  // Extract dates for X-axis and quantities for Y-axis
+  const labels = byDateArray.map((item) => item.date); //
+  const bookedData = byDateArray.map((item) => item.booked || 0);
+  const capacityData = byDateArray.map((item) => item.capacity || 0);
+
+  // Avoid canvas reuse errors by destroying the old instance
+  if (slotsChart) {
+    slotsChart.destroy();
+  }
+
+  slotsChart = new Chart(ctx, {
+    type: "bar", // Vertical bar chart
+    data: {
+      labels: labels,
+      datasets: [
+        {
+          label: "Booked",
+          data: bookedData,
+          backgroundColor: "#003b7e", // Mandatory Wits Navy color
+          borderRadius: 4,
+        },
+        {
+          label: "Capacity",
+          data: capacityData,
+          backgroundColor: "#c9a84c", // Mandatory Wits Gold color
+          borderRadius: 4,
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        y: {
+          beginAtZero: true, // Mandatory: y-axis starts at 0
+          title: {
+            display: true,
+            text: "Number of Slots",
+            font: { weight: "bold", size: 12 },
+          },
+          grid: { color: "rgba(0, 0, 0, 0.05)" },
+        },
+        x: {
+          title: {
+            display: true,
+            text: "Dates", // Dates on x-axis
+            font: { weight: "bold", size: 12 },
+          },
+          grid: { display: false },
+        },
+      },
+    },
+  });
+}
+
+/**
  * Load transaction trends from /analytics/transactions?period=X
  * Renders a line chart showing completed transactions over time
- * 
+ *
  * @param {string} period - "day", "week", or "month"
  */
 async function loadTrends(period) {
@@ -81,19 +197,21 @@ function renderTrendsChart(labels, data, period) {
     type: "line",
     data: {
       labels: labels,
-      datasets: [{
-        label: `Completed Transactions (by ${period})`,
-        data: data,
-        borderColor: "#003b7e",
-        backgroundColor: "rgba(0, 59, 126, 0.1)",
-        tension: 0.3, // Smooth curve
-        fill: true,
-        pointRadius: 5,
-        pointHoverRadius: 7,
-        pointBackgroundColor: "#003b7e",
-        pointBorderColor: "#ffffff",
-        pointBorderWidth: 2,
-      }],
+      datasets: [
+        {
+          label: `Completed Transactions (by ${period})`,
+          data: data,
+          borderColor: "#003b7e",
+          backgroundColor: "rgba(0, 59, 126, 0.1)",
+          tension: 0.3, // Smooth curve
+          fill: true,
+          pointRadius: 5,
+          pointHoverRadius: 7,
+          pointBackgroundColor: "#003b7e",
+          pointBorderColor: "#ffffff",
+          pointBorderWidth: 2,
+        },
+      ],
     },
     options: {
       responsive: true,
@@ -125,7 +243,7 @@ function renderTrendsChart(labels, data, period) {
       plugins: {
         tooltip: {
           callbacks: {
-            label: function(context) {
+            label: function (context) {
               return ` ${context.dataset.label}: ${context.parsed.y}`;
             },
           },
@@ -157,31 +275,33 @@ async function loadCategories() {
 
 /**
  * Render horizontal bar chart for popular categories
- * 
+ *
  * @param {Object[]} categories - Array of { category, count, total_value }
  */
 function renderCategoryChart(categories) {
   const ctx = document.getElementById("categoryChart").getContext("2d");
-  const labels = categories.map(c => c.category);
-  const counts = categories.map(c => c.count);
+  const labels = categories.map((c) => c.category);
+  const counts = categories.map((c) => c.count);
 
   // Destroy previous chart instance
   if (categoryChart) {
     categoryChart.destroy();
   }
 
-   // Horizontal bar chart (indexAxis: "y")
+  // Horizontal bar chart (indexAxis: "y")
   categoryChart = new Chart(ctx, {
     type: "bar",
     data: {
       labels: labels,
-      datasets: [{
-        label: "Transactions",
-        data: counts,
-        backgroundColor: "#c9a84c",
-        borderColor: "#a88630",
-        borderWidth: 1,
-      }],
+      datasets: [
+        {
+          label: "Transactions",
+          data: counts,
+          backgroundColor: "#c9a84c",
+          borderColor: "#a88630",
+          borderWidth: 1,
+        },
+      ],
     },
     options: {
       responsive: true,
@@ -194,22 +314,22 @@ function renderCategoryChart(categories) {
           title: {
             display: true,
             text: "Number of Transactions",
-            font: { size: 12, weight: "bold" }
+            font: { size: 12, weight: "bold" },
           },
           grid: {
-            color: "rgba(0, 0, 0, 0.05)"
-          }
+            color: "rgba(0, 0, 0, 0.05)",
+          },
         },
         y: {
           title: {
             display: true,
             text: "Category",
-            font: { size: 12, weight: "bold" }
+            font: { size: 12, weight: "bold" },
           },
           grid: {
-            color: "rgba(0, 0, 0, 0.05)"
-          }
-        }
+            color: "rgba(0, 0, 0, 0.05)",
+          },
+        },
       },
     },
   });
@@ -233,8 +353,8 @@ function renderPieChart(categories) {
   const top5 = sorted.slice(0, 5);
   const rest = sorted.slice(5);
 
-  const labels = top5.map(c => c.category);
-  const values = top5.map(c => c.total_value);
+  const labels = top5.map((c) => c.category);
+  const values = top5.map((c) => c.total_value);
 
   // Add "Other" category if there are more than 5
   if (rest.length > 0) {
@@ -245,19 +365,26 @@ function renderPieChart(categories) {
 
   // Color palette for pie slices
   const colors = [
-    "#003b7e", "#c9a84c", "#4ade80", "#f87171", "#60a5fa", "#a78bfa"
+    "#003b7e",
+    "#c9a84c",
+    "#4ade80",
+    "#f87171",
+    "#60a5fa",
+    "#a78bfa",
   ];
 
   pieChart = new Chart(ctx, {
     type: "pie",
     data: {
       labels: labels,
-      datasets: [{
-        data: values,
-        backgroundColor: colors.slice(0, labels.length),
-        borderColor: "#ffffff",
-        borderWidth: 2,
-      }],
+      datasets: [
+        {
+          data: values,
+          backgroundColor: colors.slice(0, labels.length),
+          borderColor: "#ffffff",
+          borderWidth: 2,
+        },
+      ],
     },
     options: {
       responsive: true,
@@ -274,8 +401,8 @@ function renderPieChart(categories) {
         },
         tooltip: {
           callbacks: {
-            label: function(context) {
-              const total = context.dataset.data.reduce((a, b) => a + b,0);
+            label: function (context) {
+              const total = context.dataset.data.reduce((a, b) => a + b, 0);
               const percentage = ((context.parsed / total) * 100).toFixed(1);
               return ` R${context.parsed.toFixed(2)} (${percentage}%)`;
             },
@@ -306,13 +433,16 @@ async function exportCSV() {
     // Export transactions CSV
     if (txResult.ok && txResult.transactions) {
       let txCSV = "Date,Listing Title,Category,Price,Buyer Name,Seller Name\n";
-      txResult.transactions.forEach(tx => {
+      txResult.transactions.forEach((tx) => {
         const date = tx.created_at ? tx.created_at.split("T")[0] : "";
         const title = (tx.listings?.title || "").replace(/"/g, '""');
         const category = tx.listings?.category || "Uncategorized";
         const price = tx.listings?.price || 0;
         const buyer = (tx.buyer?.name || tx.buyer_id || "").replace(/"/g, '""');
-        const seller = (tx.seller?.name || tx.seller_id || "").replace(/"/g, '""');
+        const seller = (tx.seller?.name || tx.seller_id || "").replace(
+          /"/g,
+          '""',
+        );
         txCSV += `"${date}","${title}",${category},${price},"${buyer}","${seller}"\n`;
       });
       downloadCSV(txCSV, "transactions.csv");
@@ -321,7 +451,7 @@ async function exportCSV() {
     // Export categories CSV
     if (catResult.ok) {
       let catCSV = "Category,Transaction Count,Total Value\n";
-      catResult.categories.forEach(c => {
+      catResult.categories.forEach((c) => {
         catCSV += `${c.category},${c.count},${c.total_value.toFixed(2)}\n`;
       });
       downloadCSV(catCSV, "categories.csv");
@@ -333,7 +463,7 @@ async function exportCSV() {
 
 /**
  * Helper: Trigger CSV file download
- * 
+ *
  * @param {string} csvContent - CSV string
  * @param {string} filename - Download filename
  */
@@ -350,9 +480,11 @@ function downloadCSV(csvContent, filename) {
 /**
  * Setup event listeners
  */
-document.querySelectorAll(".period-btn").forEach(btn => {
+document.querySelectorAll(".period-btn").forEach((btn) => {
   btn.addEventListener("click", () => {
-    document.querySelectorAll(".period-btn").forEach(b => b.classList.remove("active"));
+    document
+      .querySelectorAll(".period-btn")
+      .forEach((b) => b.classList.remove("active"));
     btn.classList.add("active");
     currentPeriod = btn.dataset.period;
     loadTrends(currentPeriod);
