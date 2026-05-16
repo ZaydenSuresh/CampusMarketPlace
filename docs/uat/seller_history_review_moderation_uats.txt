@@ -1,0 +1,84 @@
+Seller History and Review Moderation UATs
+
+UAT 1 — View seller history
+
+Given a seller exists
+When I request /seller-history/:userId
+Then the seller’s profile information should be returned
+And the seller’s average rating should be returned
+And the seller’s total reviews should be returned
+And the seller’s completed transactions should be returned
+And the seller’s review history should be returned
+
+
+UAT 2 — Reject invalid seller history request
+
+Given the seller ID is missing or invalid
+When I request seller history
+Then the request should be rejected
+And an error should be returned
+
+
+UAT 3 — View seller with no reviews
+
+Given a seller exists with no reviews
+When I request /seller-history/:userId
+Then the seller’s profile information should still be returned
+And the average rating should not break the page
+And the total reviews should show as 0
+
+
+UAT 4 — Flag a review
+
+Given a review exists
+When I flag the review
+Then the review should be marked as flagged
+And the response should confirm that the review was flagged
+
+
+UAT 5 — Reject flagging a non-existing review
+
+Given a review does not exist
+When I try to flag the review
+Then the request should be rejected
+And an error should be returned
+
+
+UAT 6 — View reviews for moderation
+
+Given flagged reviews exist
+When I request /ratings/moderation
+Then the flagged reviews should be returned
+And each review should include its rating, review text, reviewer information, seller information, and moderation status
+
+
+UAT 7 — View moderation page when no flagged reviews exist
+
+Given no flagged reviews exist
+When I request /ratings/moderation
+Then an empty list should be returned
+And the request should still be successful
+
+
+UAT 8 — Mark flagged review as safe
+
+Given a review has been flagged
+When I mark the review as safe
+Then the review should no longer be flagged
+And the response should confirm that the review was marked safe
+
+
+UAT 9 — Remove flagged review
+
+Given a review has been flagged
+When I remove the review
+Then the review status should be updated to removed
+And the response should confirm that the review was removed
+
+
+UAT 10 — Reject moderation action for non-existing review
+
+Given a review does not exist
+When I try to mark it as safe or remove it
+Then the request should be rejected
+And an error should be returned
