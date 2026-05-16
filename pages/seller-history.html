@@ -1,0 +1,409 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Seller History | Campus Marketplace</title>
+
+        <link rel="stylesheet" href="/styles/global.css" />
+
+        <style>
+            body {
+                display: flex;
+                min-height: 100vh;
+                background-color: var(--bg-light);
+            }
+
+            .sidebar {
+                width: 280px;
+                background: var(--clr-bg-gradient);
+                color: var(--white);
+                display: flex;
+                flex-direction: column;
+                padding: var(--space-xl);
+                position: fixed;
+                height: 100vh;
+                box-shadow: var(--shadow-lg);
+            }
+
+            .sidebar-logo {
+                font-size: 1.5rem;
+                font-weight: 800;
+                margin-bottom: var(--space-2xl);
+                color: var(--white);
+            }
+
+            .sidebar-logo .highlight {
+                color: var(--wits-gold);
+            }
+
+            .nav-list {
+                display: flex;
+                flex-direction: column;
+                gap: var(--space-sm);
+            }
+
+            .nav-item {
+                display: flex;
+                align-items: center;
+                padding: var(--space-md);
+                border-radius: var(--radius-md);
+                background: rgba(255, 255, 255, 0.08);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                transition: all var(--transition-normal);
+                font-weight: 600;
+                font-size: 0.9rem;
+            }
+
+            .nav-item:hover,
+            .nav-item.active {
+                background: rgba(255, 255, 255, 0.2);
+                border-color: var(--wits-gold);
+                transform: translateX(5px);
+            }
+
+            .sidebar-footer {
+                margin-top: auto;
+                padding-top: var(--space-lg);
+            }
+
+            .logout-btn {
+                width: 100%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: var(--space-sm);
+                padding: var(--space-md);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                border-radius: var(--radius-md);
+                background: rgba(255, 255, 255, 0.08);
+                color: var(--white);
+                font-size: 0.9rem;
+                font-weight: 600;
+                transition: background-color var(--transition-fast);
+                cursor: pointer;
+            }
+
+            .logout-btn:hover {
+                background: rgba(255, 255, 255, 0.2);
+                border-color: var(--wits-gold);
+            }
+
+            .main-content {
+                margin-left: 280px;
+                flex: 1;
+                padding: var(--space-2xl);
+            }
+
+            .dashboard-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-start;
+                gap: 16px;
+                margin-bottom: var(--space-2xl);
+                flex-wrap: wrap;
+            }
+
+            .header-actions {
+                display: flex;
+                gap: 12px;
+                flex-wrap: wrap;
+            }
+
+            .action-btn {
+                background-color: var(--wits-navy);
+                color: var(--white);
+                border: none;
+                padding: 12px 24px;
+                border-radius: var(--radius-pill);
+                font-weight: 700;
+                cursor: pointer;
+            }
+
+            .action-btn:hover {
+                background-color: var(--wits-navy-dark);
+            }
+
+            .section-title {
+                color: var(--wits-navy-dark);
+                margin-bottom: 14px;
+                font-weight: 900;
+                font-size: 1.45rem;
+            }
+
+            .seller-profile-card {
+                background: var(--white);
+                border-radius: 26px;
+                border: 1px solid rgba(0, 59, 126, 0.12);
+                box-shadow: 0 12px 32px rgba(0, 59, 126, 0.09);
+                padding: 24px;
+                display: flex;
+                align-items: center;
+                gap: 20px;
+                margin-bottom: var(--space-2xl);
+            }
+
+            .seller-avatar {
+                width: 72px;
+                height: 72px;
+                border-radius: 50%;
+                background: linear-gradient(
+                    135deg,
+                    var(--wits-navy),
+                    var(--wits-navy-dark)
+                );
+                color: var(--white);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 2rem;
+                font-weight: 900;
+                box-shadow: 0 8px 18px rgba(0, 59, 126, 0.22);
+            }
+
+            .seller-profile-card h2 {
+                color: var(--wits-navy-dark);
+                margin-bottom: 6px;
+                font-weight: 900;
+            }
+
+            .seller-profile-card p {
+                color: var(--grey-text);
+                margin-bottom: 4px;
+                font-weight: 600;
+            }
+
+            .content-section {
+                margin-bottom: var(--space-2xl);
+            }
+
+            .reviews-list {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+                gap: 22px;
+            }
+
+            .review-card {
+                background: var(--white);
+                border-radius: 22px;
+                border: 1px solid rgba(0, 59, 126, 0.12);
+                box-shadow: 0 12px 28px rgba(0, 59, 126, 0.08);
+                padding: 20px;
+            }
+
+            .review-header {
+                display: flex;
+                justify-content: space-between;
+                gap: 12px;
+                margin-bottom: 10px;
+                color: var(--wits-navy-dark);
+                font-size: 0.9rem;
+            }
+
+            .review-date {
+                color: var(--grey-text);
+                font-size: 0.8rem;
+                font-weight: 600;
+            }
+
+            .review-stars {
+                color: #8b6b00;
+                font-weight: 900;
+                margin-bottom: 10px;
+            }
+
+            .review-text {
+                color: var(--grey-text);
+                line-height: 1.5;
+                margin-bottom: 14px;
+            }
+
+            .flag-btn {
+                background: var(--wits-navy);
+                color: var(--white);
+                border: none;
+                padding: 9px 15px;
+                border-radius: 999px;
+                font-size: 0.78rem;
+                font-weight: 900;
+                cursor: pointer;
+                box-shadow: 0 8px 18px rgba(0, 59, 126, 0.18);
+            }
+
+            .flag-btn:hover {
+                background: var(--wits-navy-dark);
+                transform: translateY(-2px);
+            }
+
+            .flag-btn:disabled {
+                background: var(--grey-text);
+                cursor: not-allowed;
+                transform: none;
+            }
+
+            .transactions-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(285px, 1fr));
+                gap: 26px;
+            }
+
+            .transaction-card {
+                background: var(--white);
+                border-radius: 26px;
+                border: 1px solid rgba(0, 59, 126, 0.12);
+                overflow: hidden;
+                box-shadow: 0 12px 32px rgba(0, 59, 126, 0.09);
+                transition: all 0.25s ease;
+            }
+
+            .transaction-card:hover {
+                transform: translateY(-6px);
+                box-shadow: 0 20px 38px rgba(0, 59, 126, 0.16);
+            }
+
+            .transaction-img {
+                height: 200px;
+                padding: 18px;
+                background:
+                    radial-gradient(
+                        circle at top left,
+                        rgba(201, 168, 76, 0.22),
+                        transparent 35%
+                    ),
+                    linear-gradient(135deg, #ffffff, #eef2f7);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .transaction-img img {
+                width: 100%;
+                height: 100%;
+                object-fit: contain;
+            }
+
+            .transaction-details {
+                padding: 18px 20px 20px;
+            }
+
+            .transaction-details h3 {
+                color: var(--wits-navy-dark);
+                font-size: 1.08rem;
+                line-height: 1.35;
+                margin-bottom: 7px;
+            }
+
+            .transaction-price {
+                color: var(--wits-navy);
+                font-size: 1.25rem;
+                font-weight: 950;
+                margin-bottom: 8px;
+            }
+
+            .text-small {
+                color: var(--grey-text);
+                font-size: 0.82rem;
+                line-height: 1.45;
+            }
+
+            .empty-card {
+                background: var(--white);
+                border-radius: 22px;
+                border: 1px solid rgba(0, 59, 126, 0.12);
+                padding: 20px;
+                color: var(--grey-text);
+                box-shadow: var(--shadow-sm);
+            }
+
+            @media (max-width: 800px) {
+                .sidebar {
+                    position: static;
+                    width: 100%;
+                    height: auto;
+                }
+
+                body {
+                    flex-direction: column;
+                }
+
+                .main-content {
+                    margin-left: 0;
+                }
+
+                .seller-profile-card {
+                    align-items: flex-start;
+                    flex-direction: column;
+                }
+            }
+        </style>
+    </head>
+
+    <body>
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                Campus<span class="highlight">Market</span>
+            </div>
+
+            <nav class="nav-list">
+                <a href="/dashboard.html" class="nav-item">🏠 Dashboard</a>
+                <a href="/my-listings.html" class="nav-item">📦 My Listings</a>
+                <a href="/student-transactions.html" class="nav-item">
+                    📋 My Transactions
+                </a>
+                <a href="/messages.html" class="nav-item">💬 Messages</a>
+            </nav>
+
+            <footer class="sidebar-footer">
+                <button type="button" id="logout-btn" class="logout-btn">
+                    Logout
+                </button>
+            </footer>
+        </aside>
+
+        <main class="main-content">
+            <header class="dashboard-header">
+                <section>
+                    <h1>Seller History</h1>
+                    <p>View this seller's ratings, reviews, and completed sales.</p>
+                </section>
+
+                <section class="header-actions">
+                    <button
+                        class="action-btn"
+                        onclick="window.location.href = '/dashboard.html'"
+                    >
+                        ← Back to Dashboard
+                    </button>
+                </section>
+            </header>
+
+            <section class="seller-profile-card">
+                <div class="seller-avatar">👤</div>
+
+                <div>
+                    <h2 id="seller-name">Loading seller...</h2>
+                    <p id="seller-meta">Member since...</p>
+                    <p id="seller-rating">Rating loading...</p>
+                </div>
+            </section>
+
+            <section class="content-section">
+                <h2 class="section-title">Reviews</h2>
+
+                <div id="reviews-list" class="reviews-list">
+                    <div class="empty-card">Loading reviews...</div>
+                </div>
+            </section>
+
+            <section class="content-section">
+                <h2 class="section-title">Completed Transactions</h2>
+
+                <div id="transactions-grid" class="transactions-grid">
+                    <div class="empty-card">Loading completed transactions...</div>
+                </div>
+            </section>
+        </main>
+
+        <script type="module" src="/scripts/seller-history.js"></script>
+    </body>
+</html>
