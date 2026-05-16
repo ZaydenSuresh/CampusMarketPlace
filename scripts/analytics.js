@@ -50,44 +50,50 @@ async function loadSummary() {
 }
 
 /**
- * Load slot utilisation data from /analytics/slots
+ * Task E3: Load slot utilisation data from /analytics/slots
  * Updates the stat card and renders the bar chart, handling empty states cleanly.
  */
 async function loadSlotUtilisation() {
   try {
-    const response = await fetch("/analytics/slots"); //
+    const response = await fetch("/analytics/slots"); // [cite: 156, 195]
     const result = await response.json();
 
     if (result.ok) {
-      // 1. Update the Stat Card from Task E
+      // 1. Update the Stat Card from Task E2
       const pctEl = document.getElementById("slot-utilisation-pct");
       const ratioEl = document.getElementById("slot-utilisation-ratio");
 
-      if (pctEl) pctEl.textContent = `${result.utilisation_pct.toFixed(1)}%`; // [cite: 192]
+      if (pctEl) pctEl.textContent = `${result.utilisation_pct.toFixed(1)}%`; // [cite: 158, 192]
       if (ratioEl)
-        ratioEl.textContent = `${result.total_booked} / ${result.total_capacity} booked`; // [cite: 192]
+        ratioEl.textContent = `${result.total_booked} / ${result.total_capacity} booked`; // [cite: 158, 192]
 
-      const chartContainer = document.querySelector("#slotsChart").parentNode;
+      // 2. Target the canvas node explicitly via ID
+      const canvasElement = document.getElementById("slotsChart");
+      if (!canvasElement) return;
+
+      const chartContainer = canvasElement.parentNode;
       let fallbackMsg = document.getElementById("slots-fallback-message");
 
-      // 2. Edge Case Check: If by_date is missing or empty, show fallback text
+      // 3. Task E3 Edge Case Check: If by_date is missing or empty, show fallback text
       if (!result.by_date || result.by_date.length === 0) {
-        document.getElementById("slotsChart").style.display = "none";
+        canvasElement.style.display = "none"; // Hide the blank canvas rendering layer [cite: 197]
+
         if (!fallbackMsg) {
           fallbackMsg = document.createElement("p");
           fallbackMsg.id = "slots-fallback-message";
-          fallbackMsg.textContent = "No slot data available"; //
+          fallbackMsg.textContent = "No slot data available"; // [cite: 197]
           fallbackMsg.style.textAlign = "center";
-          fallbackMsg.style.padding = "40px 0";
+          fallbackMsg.style.padding = "60px 0"; // Centers neatly inside your white card container
           fallbackMsg.style.fontWeight = "600";
-          fallbackMsg.style.color = "#777";
+          fallbackMsg.style.color = "#003b7e"; // Styled beautifully using Wits Navy
+          fallbackMsg.style.fontSize = "1.1rem";
           chartContainer.appendChild(fallbackMsg);
         }
       } else {
         // Data exists! Clean up fallback text if present, show canvas, and render
         if (fallbackMsg) fallbackMsg.remove();
-        document.getElementById("slotsChart").style.display = "block";
-        renderSlotsChart(result.by_date); //
+        canvasElement.style.display = "block";
+        renderSlotsChart(result.by_date); // [cite: 195]
       }
     }
   } catch (error) {
