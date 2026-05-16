@@ -118,7 +118,17 @@ router.get("/slots", async (req, res) => {
 
   const { supabase } = auth;
 
-  let query = supabase.from("trade_slots").select("*");
+  // ADDED BY KHANYISILE
+  // Only include slots whose booking date
+  // has not yet passed.
+  const today = new Date()
+    .toISOString()
+    .split("T")[0];
+
+  let query = supabase
+    .from("trade_slots")
+    .select("*")
+    .gte("date", today);
 
   // ADDED BY KHANYISILE
   if (req.query.from) {
@@ -149,8 +159,9 @@ router.get("/slots", async (req, res) => {
       0
     ),
 
+    // ADDED BY KHANYISILE
     total_booked: slots.reduce(
-      (a, b) => a + (b.booked || 0),
+      (a, b) => a + (b.booked_count || 0),
       0
     ),
   };
@@ -183,14 +194,19 @@ router.get("/slots", async (req, res) => {
       };
     }
 
-    byDateMap[date].capacity += slot.capacity || 0;
-    byDateMap[date].booked += slot.booked || 0;
+    byDateMap[date].capacity +=
+      slot.capacity || 0;
+
+    // ADDED BY KHANYISILE
+    byDateMap[date].booked +=
+      slot.booked_count || 0;
   });
 
   // ADDED BY KHANYISILE
   const by_date = Object.values(byDateMap).map(
     (d) => ({
       ...d,
+
       utilisation_pct:
         d.capacity > 0
           ? Number(
