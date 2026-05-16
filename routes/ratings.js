@@ -196,6 +196,7 @@ async function requireAdmin(req, res, supabase) {
 
 // ADDED BY KHANYISILE
 // GET /ratings/moderation — Admin views all ratings with moderation status
+// GET /ratings/moderation — Admin views all ratings with moderation status
 router.get("/moderation", async (req, res) => {
   try {
     const supabase = createSupabaseClient(req, res);
@@ -203,66 +204,139 @@ router.get("/moderation", async (req, res) => {
     const { errorResponse } = await requireAdmin(req, res, supabase);
     if (errorResponse) return;
 
-    const { data: ratings, error } = await supabase
+    // 1. Fetch ratings without joins
+    const { data: ratings, error: ratingsError } = await supabase
       .from("ratings")
       .select(`
         id,
+        rater_id,
+        rated_id,
+        transaction_id,
         rating,
         review,
         flagged,
         flagged_at,
         removed,
         removed_at,
-        created_at,
-        rater:profiles!ratings_rater_id_fkey (
-          id,
-          name,
-          full_name,
-          email
-        ),
-        rated_user:profiles!ratings_rated_id_fkey (
-          id,
-          name,
-          full_name,
-          email
-        ),
-        transaction:transactions (
-          id,
-          listing:listings (
-            id,
-            title
-          )
-        )
+        created_at
       `)
       .order("created_at", { ascending: false });
 
-    if (error) {
-      return res.status(500).json({ error: error.message });
+    if (ratingsError) {
+      return res.status(500).json({ error: ratingsError.message });
     }
 
-    const formattedRatings = (ratings || []).map((r) => ({
-      id: r.id,
-      rater_name:
-        r.rater?.name ||
-        r.rater?.full_name ||
-        r.rater?.email ||
-        "Unknown reviewer",
-      rated_user_name:
-        r.rated_user?.name ||
-        r.rated_user?.full_name ||
-        r.rated_user?.email ||
-        "Unknown user",
-      item_title:
-        r.transaction?.listing?.title ||
-        "Unknown item",
-      rating: r.rating,
-      review: r.review,
-      flagged: r.flagged === true,
-      flagged_at: r.flagged_at,
-      removed: r.removed === true,
-      removed_at: r.removed_at,
-      created_at: r.created_at,
-    }));
+    // 2. Fetch reviewer and reviewed-user profiles manually
+    const userIds = [
+      ...new Set(
+        (ratings || [])
+          .flatMap((rating) => [rating.rater_id, rating.rated_id])
+          .filter(Boolean)
+      ),
+    ];
+
+    let profiles = [];
+
+    if (userIds.length > 0) {
+      const { data: profileData, error: profilesError } = await supabase
+        .from("profiles")
+        .select("id, name, email")
+        .in("id", userIds);
+
+      if (profilesError) {
+        return res.status(500).json({ error: profilesError.message });
+      }
+
+      profiles = profileData || [];
+    }
+
+    // 3. Fetch related transactions manually
+    const transactionIds = [
+      ...new Set(
+        (ratings || [])
+          .map((rating) => rating.transaction_id)
+          .filter(Boolean)
+      ),
+    ];
+
+    let transactions = [];
+
+    if (transactionIds.length > 0) {
+      const { data: transactionData, error: transactionsError } = await supabase
+        .from("transactions")
+        .select("id, listing_id")
+        .in("id", transactionIds);
+
+      if (transactionsError) {
+        return res.status(500).json({ error: transactionsError.message });
+      }
+
+      transactions = transactionData || [];
+    }
+
+    // 4. Fetch related listings manually
+    const listingIds = [
+      ...new Set(
+        (transactions || [])
+          .map((transaction) => transaction.listing_id)
+          .filter(Boolean)
+      ),
+    ];
+
+    let listings = [];
+
+    if (listingIds.length > 0) {
+      const { data: listingData, error: listingsError } = await supabase
+        .from("listings")
+        .select("id, title")
+        .in("id", listingIds);
+
+      if (listingsError) {
+        return res.status(500).json({ error: listingsError.message });
+      }
+
+      listings = listingData || [];
+    }
+
+    // 5. Format response for moderation.js
+    const formattedRatings = (ratings || []).map((rating) => {
+      const rater = profiles.find((profile) => profile.id === rating.rater_id);
+      const ratedUser = profiles.find(
+        (profile) => profile.id === rating.rated_id
+      );
+
+      const transaction = transactions.find(
+        (item) => item.id === rating.transaction_id
+      );
+
+      const listing = listings.find(
+        (item) => item.id === transaction?.listing_id
+      );
+
+      return {
+        id: rating.id,
+
+        reviewer_name:
+          rater?.name ||
+          rater?.email ||
+          "Unknown reviewer",
+
+        reviewed_user_name:
+          ratedUser?.name ||
+          ratedUser?.email ||
+          "Unknown user",
+
+        item_title: listing?.title || "Unknown item",
+
+        rating: rating.rating,
+        review: rating.review,
+        flagged: rating.flagged === true,
+        flagged_at: rating.flagged_at,
+        removed: rating.removed === true,
+        removed_at: rating.removed_at,
+        created_at: rating.created_at,
+      };
+    });
 
     return res.json({ ok: true, ratings: formattedRatings });
   } catch (err) {

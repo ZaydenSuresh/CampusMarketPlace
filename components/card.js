@@ -46,7 +46,19 @@ export function createListingCard(listing) {
                 ${escapeHtml(listing.description || "")}
             </p>
             <p class="seller-line">
-    Seller: ${escapeHtml(listing.profiles?.name || listing.seller_name || "Unknown seller")}
+            <!-- Seller now clickable to view history -->
+    Seller:
+    ${
+        listing.user_id
+            ? `<a 
+                    href="/seller-history.html?sellerId=${encodeURIComponent(listing.user_id)}"
+                    class="seller-history-link"
+                    onclick="event.stopPropagation()"
+               >
+                    ${escapeHtml(listing.profiles?.name || listing.seller_name || "Unknown seller")}
+               </a>`
+            : escapeHtml(listing.profiles?.name || listing.seller_name || "Unknown seller")
+    }
 </p>
             <p class="seller-rating">
                 ★ ${listing.seller_average_rating || "No ratings yet"}
