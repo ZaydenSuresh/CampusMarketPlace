@@ -16,9 +16,6 @@ const cashDetails        = document.getElementById("cashDetails");
 const payBtn             = document.getElementById("payBtn");
 const paymentMessage     = document.getElementById("paymentMessage");
 
-// ─── Paystack Public Key ──────────────────────────────────────────────────────
-const PAYSTACK_PUBLIC_KEY = "pk_test_ca823faa0dfc20a53b408f5b895c682d512f413b";
-
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function formatPrice(amount) {
     return `R ${Number(amount || 0).toFixed(2)}`;
@@ -101,27 +98,6 @@ function updatePaymentMethod(method) {
     clearMessage();
 }
 
-// ─── Paystack Popup ───────────────────────────────────────────────────────────
-// Opens Paystack's hosted iframe. Resolves with the reference string on success,
-// rejects if the user closes / cancels the popup.
-// Called by whoever handles the submit (backend dev or integration point).
-function openPaystackPopup() {
-    const email = localStorage.getItem("email") || "test@witsmarketplace.co.za";
-
-    return new Promise((resolve, reject) => {
-        const handler = PaystackPop.setup({
-            key:      PAYSTACK_PUBLIC_KEY,
-            email,
-            amount:   Math.round((window.__paymentPrice || 0) * 100),
-            currency: "ZAR",
-            ref:      `WM-${transactionId}-${Date.now()}`,
-            onSuccess: (transaction) => resolve(transaction.reference),
-            onCancel:  ()            => reject(new Error("Payment cancelled")),
-        });
-        handler.openIframe();
-    });
-}
-
 // ─── Pay Button Click ─────────────────────────────────────────────────────────
 // Handles the UI side of submission:
 //   1. Validates price exists
@@ -141,24 +117,33 @@ payBtn.addEventListener("click", async () => {
     clearMessage();
     setLoading(true);
 
+    // Redirect to Paystack's secure checkout page
     if (selectedMethod === "paystack") {
-        let reference;
-        try {
-            reference = await openPaystackPopup();
-        } catch (_) {
-            showMessage("Payment was cancelled.", "error");
-            setLoading(false);
-            return;
-        }
+      try {
+            // initialize payment with paystack, the request is sent to the backend to get the authorization URL
+            const res = await fetch("/payments/initialize", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                credentials: "include",
+                body: JSON.stringify({
+                    transaction_id: transactionId,
+                    amount_paid: paymentPrice,
+                }),
+            });
 
-        document.dispatchEvent(new CustomEvent("payment:submit", {
-            detail: {
-                transaction_id:     transactionId,
-                amount_paid:        paymentPrice,
-                payment_method:     "paystack",
-                paystack_reference: reference,
+            const data = await res.json();
+
+            if (!data.ok) {
+                showMessage(data.message || "Failed to initialize payment", "error");
+                setLoading(false);
+                return;
             }
-        }));
+
+            window.location.href = data.authorization_url;
+        } catch (_) {
+            showMessage("Network error. Please try again.", "error");
+            setLoading(false);
+        }
         return;
     }
 
