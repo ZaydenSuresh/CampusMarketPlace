@@ -435,6 +435,13 @@ background:#061f42;
 opacity:.55;
 cursor:not-allowed;
 }
+
+.badge-awaitingpayment{
+background:var(--gold);
+color:var(--navy);
+border:1px solid var(--navy);
+}
+
 .shortfall-pending{
 background:#f3f4f6;
 color:var(--muted);
