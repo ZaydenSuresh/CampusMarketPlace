@@ -1,9 +1,6 @@
 
 const params        = new URLSearchParams(window.location.search);
 const transactionId = params.get("transactionId") || params.get("transaction_id") || "";
-const item          = params.get("item")           || "Marketplace Item";
-const seller        = params.get("seller")         || params.get("sellerName") || "";
-const price         = Number(params.get("price")   || 0);
 
 // ─── DOM ──────────────────────────────────────────────────────────────────────
 const itemNameEl         = document.getElementById("itemName");
@@ -47,13 +44,34 @@ function setLoading(loading) {
     }
 }
 
-// ─── Populate Page from URL Params ────────────────────────────────────────────
-function loadPageDetails() {
-    itemNameEl.textContent        = item;
-    sellerNameEl.textContent      = `Seller: ${seller}`;
-    transactionTextEl.textContent = `Transaction: ${transactionId || "Pending"}`;
-    itemPriceEl.textContent       = formatPrice(price);
-    totalPriceEl.textContent      = formatPrice(price);
+// ─── Fetch Transaction from Server ────────────────────────────────────────────
+async function loadTransactionDetails() {
+    if (!transactionId) {
+        showMessage("No transaction specified", "error");
+        return;
+    }
+
+    try {
+        const res = await fetch(`/transactions/${transactionId}`, { credentials: "include" });
+        if (!res.ok) {
+            showMessage("Failed to load transaction details", "error");
+            return;
+        }
+
+        const tx = await res.json();
+
+        const listing = Array.isArray(tx.listings) ? tx.listings[0] : tx.listings;
+
+        itemNameEl.textContent        = listing?.title || "Unknown Item";
+        sellerNameEl.textContent      = `Seller: ${tx.seller?.name || "Unknown"}`;
+        transactionTextEl.textContent = `Transaction: ${tx.id}`;
+        itemPriceEl.textContent       = formatPrice(listing?.price || 0);
+        totalPriceEl.textContent      = formatPrice(listing?.price || 0);
+
+        window.__paymentPrice = Number(listing?.price || 0);
+    } catch (err) {
+        showMessage("Network error loading transaction", "error");
+    }
 }
 
 // ─── Payment Method Switching ─────────────────────────────────────────────────
@@ -94,7 +112,7 @@ function openPaystackPopup() {
         const handler = PaystackPop.setup({
             key:      PAYSTACK_PUBLIC_KEY,
             email,
-            amount:   Math.round(price * 100), // rands → kobo/cents
+            amount:   Math.round((window.__paymentPrice || 0) * 100),
             currency: "ZAR",
             ref:      `WM-${transactionId}-${Date.now()}`,
             onSuccess: (transaction) => resolve(transaction.reference),
@@ -113,7 +131,9 @@ function openPaystackPopup() {
 payBtn.addEventListener("click", async () => {
     const selectedMethod = document.querySelector('input[name="paymentMethod"]:checked')?.value;
 
-    if (price <= 0) {
+    const paymentPrice = window.__paymentPrice || 0;
+
+    if (paymentPrice <= 0) {
         showMessage("No payment amount available. Please try again.", "error");
         return;
     }
@@ -131,11 +151,10 @@ payBtn.addEventListener("click", async () => {
             return;
         }
 
-        // Dispatch event with everything needed for the POST
         document.dispatchEvent(new CustomEvent("payment:submit", {
             detail: {
                 transaction_id:     transactionId,
-                amount_paid:        price,
+                amount_paid:        paymentPrice,
                 payment_method:     "paystack",
                 paystack_reference: reference,
             }
@@ -147,7 +166,7 @@ payBtn.addEventListener("click", async () => {
         document.dispatchEvent(new CustomEvent("payment:submit", {
             detail: {
                 transaction_id: transactionId,
-                amount_paid:    price,
+                amount_paid:    paymentPrice,
                 payment_method: "cash",
             }
         }));
@@ -196,5 +215,5 @@ radioButtons.forEach((radio) => {
 });
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
-loadPageDetails();
+loadTransactionDetails();
 updatePaymentMethod("paystack");
