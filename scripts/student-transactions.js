@@ -137,8 +137,9 @@ function buildCard(t) {
   const isCompleted = t.status === "completed";
   const canMessage = isPending || t.status === "in_progress";
 
-  /* Dev C C3: Pay Now button only appears for in-progress transactions */
-  const canPay = t.status === "in_progress";
+/* Dev C C3: only the buyer can pay for an in-progress transaction */
+const isBuyer = t.buyer_id === currentUserId;
+const canPay = isBuyer && t.status === "in_progress";
 
   // Check if this user has already submitted a rating for this transaction
   const alreadyRated = isCompleted && ratedTransactionIds.has(t.id);
