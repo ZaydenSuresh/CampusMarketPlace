@@ -21,6 +21,7 @@ try {
 const { router: authRouter } = require("./routes/auth");
 const slotsRouter = require("./routes/slots");
 const MessageAuth = require("./routes/messages");
+const paymentsRouter = require("./routes/payments");
 const historyRouter = require("./routes/history");
 const analyticsRouter = require("./routes/analytics");
 const transactionsRouter = require("./routes/transactions");
@@ -41,6 +42,7 @@ app.use("/seller-history", sellerHistoryRouter);
 app.use("/auth", authRouter);
 app.use("/slots", slotsRouter);
 app.use("/messages", MessageAuth);
+app.use("/payments", paymentsRouter);
 app.use("/history", historyRouter);
 app.use("/analytics", analyticsRouter);
 app.use("/listings", listingsRouter);
