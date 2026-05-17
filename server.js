@@ -48,7 +48,17 @@ app.use("/analytics", analyticsRouter);
 app.use("/listings", listingsRouter);
 app.use("/transactions", transactionsRouter);
 app.use("/ratings", ratingsRouter);
-app.use(helmet());
+app.use(helmet({
+    contentSecurityPolicy: {
+        directives: {
+            defaultSrc: ["'self'"],
+            scriptSrc: ["'self'", "https://js.paystack.co", "https://s3-eu-west-1.amazonaws.com"],
+            scriptSrcElem: ["'self'", "https://js.paystack.co", "https://s3-eu-west-1.amazonaws.com"],
+            frameSrc: ["'self'", "https://checkout.paystack.com"],
+            connectSrc: ["'self'", "https://api.paystack.co"],
+        },
+    },
+}));
 
 // show login page on server startup
 app.get("/", (req, res) => {
