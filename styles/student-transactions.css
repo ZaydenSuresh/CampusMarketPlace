@@ -126,7 +126,8 @@ body {
     background-color: var(--wits-navy-dark);
 }
 
-.status-tabs {
+.status-tabs,
+.filters-row {
     display: flex;
     gap: 8px;
     margin-bottom: 24px;
@@ -134,7 +135,8 @@ body {
     align-items: center;
 }
 
-.tab-btn {
+.tab-btn,
+.filter-pill {
     padding: 8px 16px;
     border: 1px solid var(--grey-border);
     background: var(--white);
@@ -146,7 +148,8 @@ body {
     transition: all var(--transition-fast);
 }
 
-.tab-btn.active {
+.tab-btn.active,
+.filter-pill.active {
     background: var(--wits-navy);
     color: var(--white);
     border-color: var(--wits-navy);
@@ -212,150 +215,42 @@ body {
     flex-wrap: wrap;
 }
 
-.card-meta span {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    font-size: 0.85rem;
+.label {
+    color: var(--wits-navy);
+    font-weight: 700;
 }
 
-.card-meta .label {
+.name,
+.value {
     color: var(--grey-text);
 }
 
-.card-meta .name {
-    color: var(--wits-navy);
-    font-weight: 700;
+.slot-row {
+    color: var(--grey-text);
 }
 
 .card-bottom {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-top: auto;
+    gap: var(--space-md);
     flex-wrap: wrap;
-    gap: 8px;
-}
-
-.badge {
-    padding: 4px 12px;
-    border-radius: var(--radius-pill);
-    font-size: 0.8rem;
-    font-weight: 700;
-    text-transform: capitalize;
-}
-
-.badge-pending {
-    background: #eef2ff;
-    color: #4338ca;
-}
-
-.badge-in_progress {
-    background: #dbeafe;
-    color: #1d4ed8;
-}
-
-.badge-completed {
-    background: #dcfce7;
-    color: #15803d;
-}
-
-.badge-cancelled {
-    background: #fee2e2;
-    color: #b91c1c;
-}
-
-.badge-sale {
-    background: #dbeafe;
-    color: #1d4ed8;
-}
-
-.badge-trade {
-    background: #f3e8ff;
-    color: #9333ea;
-}
-
-.badge-either {
-    background: #eef2ff;
-    color: #4338ca;
-}
-
-.filters-row {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 24px;
-    flex-wrap: wrap;
-    align-items: center;
-}
-
-.filter-pill {
-    padding: 8px 16px;
-    border: 1px solid var(--grey-border);
-    background: var(--white);
-    border-radius: var(--radius-pill);
-    cursor: pointer;
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: var(--grey-text);
-    transition: all var(--transition-fast);
-}
-
-.filter-pill.active {
-    background: var(--wits-navy);
-    color: var(--white);
-    border-color: var(--wits-navy);
-}
-
-.slot-row {
-    font-size: 0.85rem;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    margin: 2px 0;
-}
-
-.slot-row .label {
-    color: var(--grey-text);
-}
-
-.slot-row .value {
-    color: var(--wits-navy);
-    font-weight: 700;
+    margin-top: var(--space-md);
 }
 
 .card-actions {
     display: flex;
     gap: 8px;
+    flex-wrap: wrap;
 }
 
 .btn-sm {
-    padding: 8px 16px;
     border: none;
+    padding: 8px 14px;
     border-radius: var(--radius-pill);
-    font-size: 0.8rem;
+    font-size: 0.82rem;
     font-weight: 700;
     cursor: pointer;
-    transition: transform var(--transition-fast), box-shadow var(--transition-fast);
-}
-
-.btn-sm:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-}
-
-.btn-sm:active {
-    transform: translateY(0);
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-}
-
-.btn-cancel {
-    background: var(--accent-red);
-    color: var(--white);
-}
-
-.btn-rate {
-    background: var(--wits-gold);
-    color: var(--white);
 }
 
 .btn-book {
@@ -363,45 +258,123 @@ body {
     color: var(--white);
 }
 
+.btn-message {
+    background: var(--grey-light);
+    color: var(--wits-navy);
+    border: 1px solid var(--grey-border);
+}
+
+.btn-cancel {
+    background: #fee2e2;
+    color: #b91c1c;
+}
+
+.btn-rate {
+    background: var(--wits-gold);
+    color: var(--wits-navy);
+}
+
+.btn-rate:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+}
+
+.badge {
+    display: inline-block;
+    padding: 5px 12px;
+    border-radius: var(--radius-pill);
+    font-size: 0.78rem;
+    font-weight: 800;
+    text-transform: capitalize;
+}
+
+.badge-pending {
+    background: var(--grey-light);
+    color: var(--grey-text);
+    border: 1px solid var(--grey-border);
+}
+
+.badge-in_progress {
+    background: var(--wits-gold);
+    color: var(--wits-navy);
+    border: 1px solid var(--wits-navy-dark);
+}
+
+.badge-completed {
+    background: var(--wits-navy);
+    color: var(--white);
+    border: 1px solid var(--wits-gold);
+}
+
+.badge-cancelled {
+    background: #fee2e2;
+    color: #b91c1c;
+    border: 1px solid #fecaca;
+}
+
+.badge-sale,
+.badge-trade,
+.badge-either {
+    background: var(--grey-light);
+    color: var(--wits-navy);
+    border: 1px solid var(--grey-border);
+}
+
+/* Dev C C3: Pay Now button and payment badges */
+.btn-pay {
+    background: var(--wits-gold);
+    color: var(--wits-navy);
+    border: none;
+    font-weight: 800;
+}
+
+.btn-pay:hover {
+    background: var(--wits-gold-light);
+}
+
+.badge-shortfall {
+    background: var(--wits-gold);
+    color: var(--wits-navy);
+    border: 1px solid var(--wits-navy-dark);
+}
+
+.badge-paid {
+    background: var(--wits-navy);
+    color: var(--white);
+    border: 1px solid var(--wits-gold);
+}
+
 .empty-state {
+    background: var(--white);
+    border: 1px solid var(--grey-border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-xl);
     text-align: center;
-    padding: 60px 20px;
     color: var(--grey-text);
 }
 
-.empty-state h3 {
-    font-size: 1.2rem;
-    margin-bottom: 8px;
-    color: var(--text-dark);
-}
+@media (max-width: 850px) {
+    .sidebar {
+        position: static;
+        width: 100%;
+        height: auto;
+    }
 
-.btn-message {
-    background: var(--wits-navy);
-    color: var(--white);
-}
+    body {
+        flex-direction: column;
+    }
 
-.btn-sm.loading {
-    position: relative;
-    color: transparent;
-    pointer-events: none;
-}
+    .main-content {
+        margin-left: 0;
+        padding: var(--space-lg);
+    }
 
-.btn-sm.loading::after {
-    content: '';
-    position: absolute;
-    width: 16px;
-    height: 16px;
-    top: 50%;
-    left: 50%;
-    margin: -8px 0 0 -8px;
-    border: 2px solid rgba(255, 255, 255, 0.3);
-    border-top-color: white;
-    border-radius: 50%;
-    animation: btn-spin 0.6s linear infinite;
-}
+    .transaction-card {
+        flex-direction: column;
+    }
 
-@keyframes btn-spin {
-    to {
-        transform: rotate(360deg);
+    .card-img {
+        width: 100%;
+        height: 180px;
     }
 }

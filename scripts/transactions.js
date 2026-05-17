@@ -60,7 +60,11 @@ async function fetchTransactions() {
                 t.dropoff_confirmed,
 
             collectionConfirmed:
-                t.collection_confirmed
+                t.collection_confirmed,
+
+            /* Dev C C4: keep shortfall data from backend if Dev B attaches it */
+            shortfall:
+                t.shortfall || null
         }));
 
         /* render cards after fetch */
@@ -359,7 +363,48 @@ function getFilteredTransactions() {
 }
 
 
-/* ================= RENDER TRANSACTION CARDS ================= */
+/* Dev C C4: Staff shortfall badge and settle button */
+function buildShortfallUI(transaction) {
+
+    const shortfall = transaction.shortfall;
+
+    if (!shortfall) {
+        return `
+            <strong class="shortfall-badge shortfall-none">
+                Paid in full
+            </strong>
+        `;
+    }
+
+    if (shortfall.status === "outstanding") {
+        return `
+            <section class="shortfall-box">
+                <strong class="shortfall-badge shortfall-outstanding">
+                    Shortfall: R${Number(shortfall.amount_owed || 0).toFixed(2)} outstanding
+                </strong>
+
+                <button
+                    type="button"
+                    class="settle-shortfall-btn"
+                    data-settle-shortfall="${transaction.id}"
+                >
+                    Settle Shortfall
+                </button>
+            </section>
+        `;
+    }
+
+    if (shortfall.status === "settled") {
+        return `
+            <strong class="shortfall-badge shortfall-settled">
+                Shortfall settled
+            </strong>
+        `;
+    }
+
+    return "";
+}
+
 
 function renderTransactions() {
 
@@ -474,6 +519,10 @@ function renderTransactions() {
                 </div>
 
 
+                <!-- Dev C C4: show shortfall status before staff actions -->
+                ${buildShortfallUI(t)}
+
+
                 <!-- progress tracker -->
                 ${renderProgress(step, t.type)}
 
@@ -492,7 +541,62 @@ function renderTransactions() {
 }
 
 
-/* ================= EVENT LISTENERS ================= */
+transactionsContainer.addEventListener("click", async (e) => {
+
+    const settleBtn =
+        e.target.closest("[data-settle-shortfall]");
+
+    if (!settleBtn) return;
+
+    const transactionId =
+        settleBtn.dataset.settleShortfall;
+
+    if (!confirm("Confirm that this shortfall has been settled?")) {
+        return;
+    }
+
+    settleBtn.disabled = true;
+    settleBtn.textContent = "Settling...";
+
+    try {
+
+        const res = await fetch(`/payments/${transactionId}/settle-shortfall`, {
+
+            method: "PUT",
+
+            headers: {
+                "Content-Type": "application/json"
+            },
+
+            credentials: "include"
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+
+            alert(data.error || "Failed to settle shortfall.");
+
+            settleBtn.disabled = false;
+            settleBtn.textContent = "Settle Shortfall";
+
+            return;
+        }
+
+        alert("Shortfall settled successfully.");
+
+        fetchTransactions();
+
+    } catch (err) {
+
+        console.error(err);
+
+        alert("Something went wrong. Please try again.");
+
+        settleBtn.disabled = false;
+        settleBtn.textContent = "Settle Shortfall";
+    }
+});
 
 
 /* status filter buttons */

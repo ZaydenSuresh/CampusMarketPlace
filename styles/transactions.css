@@ -380,3 +380,58 @@ color:#15803d;
 .feedback-message.error{
 color:#b91c1c;
 }
+
+/* Dev C C4: staff shortfall visibility and settle button */
+
+.shortfall-box{
+display:flex;
+align-items:center;
+gap:10px;
+flex-wrap:wrap;
+margin:10px 0 20px;
+}
+
+.shortfall-badge{
+display:inline-block;
+padding:8px 14px;
+font-size:.88rem;
+font-weight:800;
+margin-bottom:18px;
+}
+
+.shortfall-none{
+background:#f3f4f6;
+color:var(--muted);
+border:1px solid var(--border);
+}
+
+.shortfall-outstanding{
+background:var(--gold);
+color:var(--navy);
+border:1px solid var(--navy);
+}
+
+.shortfall-settled{
+background:var(--navy);
+color:white;
+border:1px solid var(--gold);
+}
+
+.settle-shortfall-btn{
+border:none;
+padding:10px 14px;
+background:var(--navy);
+color:white;
+font-size:.86rem;
+font-weight:800;
+cursor:pointer;
+}
+
+.settle-shortfall-btn:hover:not(:disabled){
+background:#061f42;
+}
+
+.settle-shortfall-btn:disabled{
+opacity:.55;
+cursor:not-allowed;
+}

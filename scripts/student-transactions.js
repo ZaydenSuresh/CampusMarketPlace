@@ -114,6 +114,19 @@ function encodeUrl(str) {
   return encodeURIComponent(str || "");
 }
 
+/* Dev C C3: payment badge helper */
+function buildPaymentBadge(status) {
+  if (status === "awaiting_payment") {
+    return `<strong class="badge badge-shortfall">⚠ Shortfall</strong>`;
+  }
+
+  if (status === "paid") {
+    return `<strong class="badge badge-paid">✓ Paid</strong>`;
+  }
+
+  return "";
+}
+
 function buildCard(t) {
   const listing = getListing(t);
   const imgUrl = listing?.image_url || "/images/placeholder.png";
@@ -123,6 +136,10 @@ function buildCard(t) {
   const canCancel = t.status !== "completed" && t.status !== "cancelled";
   const isCompleted = t.status === "completed";
   const canMessage = isPending || t.status === "in_progress";
+
+  /* Dev C C3: Pay Now button only appears for in-progress transactions */
+  const canPay = t.status === "in_progress";
+
   // Check if this user has already submitted a rating for this transaction
   const alreadyRated = isCompleted && ratedTransactionIds.has(t.id);
 
@@ -137,6 +154,9 @@ function buildCard(t) {
   const slotLine = slot
     ? `<div class="slot-row"><span class="label">Booked:</span> <span class="value">${formatDate(slot.date)} - ${slot.time?.slice(0, 5) || slot.time}</span></div>`
     : `<div class="slot-row"><span class="label">Booked:</span> <span class="value">No slot booked yet</span></div>`;
+
+  /* Dev C C3: status badge for shortfall and paid transactions */
+  const paymentBadge = buildPaymentBadge(t.status);
 
   return `
     <div class="transaction-card">
@@ -154,9 +174,13 @@ function buildCard(t) {
           <div>
             <span class="badge badge-${t.status}">${t.status.replace("_", " ")}</span>
             <span class="badge badge-${t.type}">${t.type}</span>
+            ${paymentBadge}
           </div>
           <div class="card-actions">
             ${isPending ? `<button class="btn-sm btn-book" data-book="${t.id}">Book Slot</button>` : ""}
+
+            ${canPay ? `<button class="btn-sm btn-pay" data-pay-transaction="${t.id}">Pay Now</button>` : ""}
+
             ${canMessage ? `<button class="btn-sm btn-message" data-msg-seller="${counterpartyName}" data-msg-seller-id="${counterpartyId}" data-msg-item="${escapeHtml(title)}">Message ${counterpartyName}</button>` : ""}
             ${canCancel ? `<button class="btn-sm btn-cancel" data-id="${t.id}">Cancel</button>` : ""}
             ${isCompleted && alreadyRated ? `<button class="btn-sm btn-rate" disabled>Rated</button>` : ""}
@@ -176,6 +200,14 @@ function escapeHtml(str) {
 
 // Event delegation for Cancel and Book Slot buttons
 container.addEventListener("click", async (e) => {
+  /* Dev C C3: Pay Now button opens payment page for this transaction */
+  const payBtn = e.target.closest("[data-pay-transaction]");
+  if (payBtn) {
+    const id = payBtn.dataset.payTransaction;
+    window.location.href = `/payment.html?transactionId=${id}`;
+    return;
+  }
+
   const cancelBtn = e.target.closest(".btn-cancel");
   if (cancelBtn) {
     const id = cancelBtn.dataset.id;
