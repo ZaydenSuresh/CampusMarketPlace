@@ -22,8 +22,10 @@ CREATE TABLE public.listings (
   condition USER-DEFINED NOT NULL DEFAULT 'New'::condition,
   sale_type USER-DEFINED NOT NULL DEFAULT 'Either'::sale_type,
   status text DEFAULT 'available'::text CHECK (status = ANY (ARRAY['available'::text, 'reserved'::text, 'unavailable'::text])),
+  reserved_by uuid,
   CONSTRAINT listings_pkey PRIMARY KEY (id),
-  CONSTRAINT Listings_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.profiles(id)
+  CONSTRAINT Listings_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.profiles(id),
+  CONSTRAINT listings_reserved_by_fkey FOREIGN KEY (reserved_by) REFERENCES public.profiles(id)
 );
 CREATE TABLE public.messages (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
@@ -34,6 +36,25 @@ CREATE TABLE public.messages (
   CONSTRAINT messages_pkey PRIMARY KEY (id),
   CONSTRAINT messages_conversation_id_fkey FOREIGN KEY (conversation_id) REFERENCES public.conversations(id),
   CONSTRAINT messages_sender_id_fkey FOREIGN KEY (sender_id) REFERENCES auth.users(id)
+);
+CREATE TABLE public.payments (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  transaction_id uuid NOT NULL,
+  amount_paid numeric NOT NULL,
+  payment_method text NOT NULL CHECK (payment_method = ANY (ARRAY['paystack'::text, 'cash'::text])),
+  status text NOT NULL DEFAULT 'pending'::text CHECK (status = ANY (ARRAY['pending'::text, 'paid'::text, 'failed'::text, 'refunded'::text])),
+  paid_at timestamp with time zone,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT payments_pkey PRIMARY KEY (id),
+  CONSTRAINT payments_transaction_id_fkey FOREIGN KEY (transaction_id) REFERENCES public.transactions(id)
+);
+CREATE TABLE public.price_suggestions (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  category text NOT NULL UNIQUE,
+  base_price numeric NOT NULL,
+  source text,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT price_suggestions_pkey PRIMARY KEY (id)
 );
 CREATE TABLE public.profiles (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
@@ -53,10 +74,24 @@ CREATE TABLE public.ratings (
   rating integer NOT NULL CHECK (rating >= 1 AND rating <= 5),
   review text,
   created_at timestamp without time zone DEFAULT now(),
+  flagged boolean DEFAULT false,
+  flagged_at timestamp with time zone,
+  removed boolean DEFAULT false,
+  removed_at timestamp with time zone,
   CONSTRAINT ratings_pkey PRIMARY KEY (id),
   CONSTRAINT fk_rater FOREIGN KEY (rater_id) REFERENCES public.profiles(id),
   CONSTRAINT fk_rated FOREIGN KEY (rated_id) REFERENCES public.profiles(id),
   CONSTRAINT fk_transaction FOREIGN KEY (transaction_id) REFERENCES public.transactions(id)
+);
+CREATE TABLE public.shortfalls (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  transaction_id uuid NOT NULL,
+  amount_owed numeric NOT NULL,
+  status text NOT NULL DEFAULT 'outstanding'::text CHECK (status = ANY (ARRAY['outstanding'::text, 'settled'::text])),
+  created_at timestamp with time zone DEFAULT now(),
+  settled_at timestamp with time zone,
+  CONSTRAINT shortfalls_pkey PRIMARY KEY (id),
+  CONSTRAINT shortfalls_transaction_id_fkey FOREIGN KEY (transaction_id) REFERENCES public.transactions(id)
 );
 CREATE TABLE public.slot_bookings (
   id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
@@ -83,7 +118,7 @@ CREATE TABLE public.transactions (
   status USER-DEFINED NOT NULL,
   dropoff_confirmed boolean NOT NULL DEFAULT false,
   collection_confirmed boolean NOT NULL DEFAULT false,
-  slot_id bigint NOT NULL,
+  slot_id bigint,
   updated_at timestamp without time zone DEFAULT now(),
   CONSTRAINT transactions_pkey PRIMARY KEY (id),
   CONSTRAINT transactions_slot_id_fkey FOREIGN KEY (slot_id) REFERENCES public.trade_slots(id),
