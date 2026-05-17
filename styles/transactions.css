@@ -435,3 +435,8 @@ background:#061f42;
 opacity:.55;
 cursor:not-allowed;
 }
+.shortfall-pending{
+background:#f3f4f6;
+color:var(--muted);
+border:1px solid var(--border);
+}

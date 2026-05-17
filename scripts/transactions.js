@@ -41,6 +41,8 @@ async function fetchTransactions() {
                 ? "trade"
                 : t.type,
             status: mapStatus(t),
+            paymentStatus:
+                 t.status,
             listingTitle:
                 t.listings?.title ||
                 "Unknown Listing",
@@ -363,20 +365,13 @@ function getFilteredTransactions() {
 }
 
 
-/* Dev C C4: Staff shortfall badge and settle button */
+/* Dev C C4: Staff payment and shortfall display */
 function buildShortfallUI(transaction) {
 
     const shortfall = transaction.shortfall;
+    const paymentStatus = transaction.paymentStatus;
 
-    if (!shortfall) {
-        return `
-            <strong class="shortfall-badge shortfall-none">
-                Paid in full
-            </strong>
-        `;
-    }
-
-    if (shortfall.status === "outstanding") {
+    if (shortfall && shortfall.status === "outstanding") {
         return `
             <section class="shortfall-box">
                 <strong class="shortfall-badge shortfall-outstanding">
@@ -394,7 +389,7 @@ function buildShortfallUI(transaction) {
         `;
     }
 
-    if (shortfall.status === "settled") {
+    if (shortfall && shortfall.status === "settled") {
         return `
             <strong class="shortfall-badge shortfall-settled">
                 Shortfall settled
@@ -402,7 +397,27 @@ function buildShortfallUI(transaction) {
         `;
     }
 
-    return "";
+    if (paymentStatus === "paid" || paymentStatus === "completed") {
+        return `
+            <strong class="shortfall-badge shortfall-none">
+                Paid in full
+            </strong>
+        `;
+    }
+
+    if (paymentStatus === "awaiting_payment") {
+        return `
+            <strong class="shortfall-badge shortfall-outstanding">
+                Shortfall outstanding
+            </strong>
+        `;
+    }
+
+    return `
+        <strong class="shortfall-badge shortfall-pending">
+            Payment not started
+        </strong>
+    `;
 }
 
 
