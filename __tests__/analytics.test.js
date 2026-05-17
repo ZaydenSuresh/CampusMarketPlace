@@ -405,4 +405,171 @@ describe('Analytics routes', () => {
       expect(res.body.avg_per_day).toBe(100);
     });
   });
+
+// ADDED BY KHANYISILE
+describe("Sprint analytics endpoints", () => {
+
+
+ // ADDED BY KHANYISILE
+test("GET /analytics/slots returns slot utilisation summary", async () => {
+  adminAuth();
+
+  const slotsBuilder = {
+    select: jest.fn().mockResolvedValue({
+      data: [
+        {
+          date: "2026-05-20",
+          capacity: 10,
+          booked: 5,
+        },
+        {
+          date: "2026-05-21",
+          capacity: 20,
+          booked: 10,
+        },
+      ],
+      error: null,
+    }),
+  };
+
+  mockSupabaseClient.from.mockReturnValueOnce(
+    slotsBuilder
+  );
+
+  const res = await request(buildApp())
+    .get("/analytics/slots");
+
+  expect(res.status).toBe(200);
+
+  expect(res.body.ok).toBe(true);
+
+  expect(res.body.summary.total_slots).toBe(2);
+
+  expect(res.body.summary.total_capacity)
+    .toBe(30);
+
+  expect(res.body.summary.total_booked)
+    .toBe(15);
+
+  expect(res.body.summary.utilisation_pct)
+    .toBe(50);
+});
+
+  // ADDED BY KHANYISILE
+  test("GET /analytics/slots returns 403 for non-admin", async () => {
+    mockSupabaseClient.auth.getUser.mockResolvedValue({
+      data: {
+        user: null,
+      },
+      error: null,
+    });
+
+    const res = await request(buildApp())
+      .get("/analytics/slots");
+
+    expect(res.status).toBe(403);
+
+    expect(res.body.ok).toBe(false);
+  });
+
+  // ADDED BY KHANYISILE
+  test("GET /analytics/flagged-content returns moderation stats", async () => {
+    adminAuth();
+
+    const ratingsBuilder = {
+      select: jest.fn().mockResolvedValue({
+        data: [
+          {
+            flagged: true,
+            removed: false,
+          },
+          {
+            flagged: true,
+            removed: true,
+          },
+          {
+            flagged: false,
+            removed: false,
+          },
+        ],
+        error: null,
+      }),
+    };
+
+    mockSupabaseClient.from.mockReturnValueOnce(
+      ratingsBuilder
+    );
+
+    const res = await request(buildApp())
+      .get("/analytics/flagged-content");
+
+    expect(res.status).toBe(200);
+
+    expect(res.body.ok).toBe(true);
+
+    expect(
+      res.body.summary.total_reviews
+    ).toBe(3);
+
+    expect(
+      res.body.summary.flagged_count
+    ).toBe(2);
+
+    expect(
+      res.body.summary.removed_count
+    ).toBe(1);
+  });
+
+  // ADDED BY KHANYISILE
+  test("GET /analytics/export/pdf returns PDF file", async () => {
+    adminAuth();
+
+    const transactionsBuilder = {
+      select: jest.fn().mockReturnThis(),
+      eq: jest.fn().mockResolvedValue({
+        data: [
+          {
+            listings: {
+              title: "Laptop",
+              price: 5000,
+            },
+          },
+        ],
+        error: null,
+      }),
+    };
+
+    mockSupabaseClient.from.mockReturnValueOnce(
+      transactionsBuilder
+    );
+
+    const res = await request(buildApp())
+      .get("/analytics/export/pdf");
+
+    expect(res.status).toBe(200);
+
+    expect(
+      res.headers["content-type"]
+    ).toContain("application/pdf");
+
+    expect(
+      res.headers["content-disposition"]
+    ).toContain("attachment");
+  });
+
+  // ADDED BY KHANYISILE
+  test("GET /analytics/export/pdf returns 403 for non-admin", async () => {
+    mockSupabaseClient.auth.getUser.mockResolvedValue({
+      data: {
+        user: null,
+      },
+      error: null,
+    });
+
+    const res = await request(buildApp())
+      .get("/analytics/export/pdf");
+
+    expect(res.status).toBe(403);
+  });
+});  
 });

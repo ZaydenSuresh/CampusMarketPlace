@@ -381,4 +381,46 @@ describe('Slots routes', () => {
     expect(res.status).toBe(200);
     expect(res.body.message).toBe('Slot updated successfully');
   });
+
+// ADDED BY KHANYISILE
+test('GET /slots filters out expired slots using current date', async () => {
+  const mockChain = {
+    select: jest.fn().mockReturnThis(),
+    gte: jest.fn().mockReturnThis(),
+    order: jest.fn(),
+  };
+
+  mockChain.order = jest.fn()
+    .mockReturnValueOnce(mockChain)
+    .mockReturnValueOnce(
+      Promise.resolve({
+        data: [
+          {
+            id: 1,
+            date: '2099-12-31',
+            time: '09:00',
+            capacity: 5,
+            booked_count: 2,
+          },
+        ],
+        error: null,
+      })
+    );
+
+  db.from.mockReturnValue(mockChain);
+
+  const res = await request(app).get('/slots');
+
+  expect(res.status).toBe(200);
+
+  expect(mockChain.gte).toHaveBeenCalled();
+
+  expect(mockChain.gte.mock.calls[0][0])
+    .toBe('date');
+
+  expect(res.body.length).toBe(1);
+
+  expect(res.body[0].date)
+    .toBe('2099-12-31');
+});  
 });
