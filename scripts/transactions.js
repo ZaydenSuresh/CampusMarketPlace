@@ -365,7 +365,6 @@ function getFilteredTransactions() {
 }
 
 
-/* Dev C C4: Staff payment and shortfall display */
 function buildShortfallUI(transaction) {
 
     const shortfall = transaction.shortfall;
