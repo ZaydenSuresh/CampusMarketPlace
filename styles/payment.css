@@ -1,0 +1,311 @@
+
+
+.payment-page {
+    min-height: 100vh;
+    background: var(--bg-light);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: var(--space-2xl);
+}
+
+.payment-card {
+    width: 100%;
+    max-width: 1100px;
+    background: var(--white);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    display: grid;
+    grid-template-columns: 1.3fr 0.8fr;
+    overflow: hidden;
+}
+
+.payment-left {
+    padding: var(--space-2xl);
+}
+
+.payment-right {
+    background: linear-gradient(
+        160deg,
+        var(--wits-navy),
+        var(--wits-navy-dark)
+    );
+    color: var(--white);
+    padding: var(--space-2xl);
+    display: flex;
+    flex-direction: column;
+}
+
+.payment-label {
+    color: var(--wits-gold);
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 0.8rem;
+    margin-bottom: var(--space-sm);
+}
+
+.payment-header h1 {
+    color: var(--wits-navy);
+    font-size: 2.4rem;
+    margin-bottom: var(--space-sm);
+}
+
+.payment-subtitle {
+    color: var(--grey-text);
+    margin-bottom: var(--space-xl);
+}
+
+.item-summary {
+    background: var(--grey-light);
+    border: 1px solid var(--grey-border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-lg);
+    display: flex;
+    align-items: center;
+    gap: var(--space-lg);
+    margin-bottom: var(--space-xl);
+}
+
+.item-emoji {
+    width: 60px;
+    height: 60px;
+    background: var(--white);
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    box-shadow: var(--shadow-sm);
+}
+
+.item-summary-text h2 {
+    color: var(--wits-navy);
+    margin-bottom: 4px;
+}
+
+.item-summary-text p {
+    color: var(--grey-text);
+    font-size: 0.9rem;
+}
+
+.payment-methods h3,
+.cash-details h3 {
+    color: var(--wits-navy);
+    margin-bottom: var(--space-md);
+}
+
+.method-option {
+    border: 1px solid var(--grey-border);
+    border-radius: var(--radius-md);
+    padding: 16px 18px;
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    margin-bottom: var(--space-md);
+    cursor: pointer;
+    transition: var(--transition);
+    background: var(--white);
+}
+
+.method-option:hover {
+    border-color: var(--wits-navy);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
+}
+
+.method-option.active {
+    border: 2px solid var(--wits-navy);
+    background: rgba(0, 59, 126, 0.06);
+}
+
+.method-option input {
+    accent-color: var(--wits-navy);
+}
+
+.method-option p {
+    font-weight: 700;
+    color: var(--text-dark);
+}
+
+.cash-details {
+    margin-top: var(--space-lg);
+    background: rgba(0, 59, 126, 0.05);
+    border: 1px solid var(--grey-border);
+    border-radius: var(--radius-md);
+    padding: var(--space-md);
+}
+
+.cash-details p {
+    color: var(--grey-text);
+    margin-bottom: var(--space-xs);
+}
+
+.payment-right h2 {
+    font-size: 2rem;
+    margin-bottom: var(--space-xl);
+}
+
+.summary-row,
+.summary-total {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--space-md);
+    margin-bottom: var(--space-lg);
+}
+
+.summary-row p {
+    color: rgba(255, 255, 255, 0.75);
+}
+
+.summary-total {
+    border-top: 1px solid rgba(255, 255, 255, 0.25);
+    padding-top: var(--space-lg);
+    margin-top: auto;
+    font-size: 1.2rem;
+}
+
+.pay-btn {
+    width: 100%;
+    background: var(--wits-gold);
+    color: var(--wits-navy);
+    border: none;
+    padding: 16px;
+    border-radius: var(--radius-pill);
+    font-size: 1rem;
+    font-weight: 800;
+    cursor: pointer;
+    margin-top: var(--space-xl);
+    transition: var(--transition);
+}
+
+.pay-btn:hover:not(:disabled) {
+    background: var(--wits-gold-light);
+    transform: translateY(-2px);
+}
+
+.pay-btn:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+}
+
+.secure-note {
+    margin-top: var(--space-lg);
+    text-align: center;
+    font-size: 0.9rem;
+    opacity: 0.85;
+}
+
+.success-message {
+    color: var(--clr-success);
+    margin-top: var(--space-md);
+    font-weight: 700;
+}
+
+.error-message {
+    color: var(--clr-danger);
+    margin-top: var(--space-md);
+    font-weight: 700;
+}
+
+.hidden {
+    display: none;
+}
+
+@media (max-width: 900px) {
+    .payment-card {
+        grid-template-columns: 1fr;
+    }
+
+    .payment-right {
+        order: -1;
+    }
+}
+
+@media (max-width: 560px) {
+    .payment-page {
+        padding: var(--space-md);
+    }
+
+    .payment-left,
+    .payment-right {
+        padding: var(--space-lg);
+    }
+
+    .payment-header h1 {
+        font-size: 2rem;
+    }
+
+    .item-summary {
+        align-items: flex-start;
+    }
+}
+
+
+/* ─── Sprint 4 Additions ──────────────────────────────────────────────────── */
+
+/* Info box shown when Paystack method is selected */
+.paystack-details {
+    margin-top: var(--space-lg);
+    background: rgba(0, 59, 126, 0.05);
+    border: 1px solid var(--grey-border);
+    border-radius: var(--radius-md);
+    padding: var(--space-md);
+}
+
+.paystack-info {
+    color: var(--grey-text);
+    font-size: 0.95rem;
+    line-height: 1.5;
+    margin-bottom: var(--space-sm);
+}
+
+.paystack-test-note {
+    color: var(--grey-text);
+    font-size: 0.85rem;
+    opacity: 0.8;
+}
+
+/* Pay Now button on student-transactions cards */
+.btn-pay {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: var(--radius-pill);
+    background: var(--wits-navy);
+    color: var(--white);
+    font-size: 0.82rem;
+    font-weight: 700;
+    text-decoration: none;
+    transition: var(--transition);
+    white-space: nowrap;
+}
+
+.btn-pay:hover {
+    background: var(--wits-navy-dark);
+    transform: translateY(-1px);
+}
+
+/* Payment status badges on transaction cards */
+.badge-shortfall {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: var(--radius-pill);
+    font-size: 0.78rem;
+    font-weight: 700;
+    background: #fff3cd;
+    color: #7c5a00;
+    border: 1px solid #f0c040;
+}
+
+.badge-paid {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: var(--radius-pill);
+    font-size: 0.78rem;
+    font-weight: 700;
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #a8d5b5;
+}
