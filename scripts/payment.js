@@ -1,8 +1,11 @@
 
 const params        = new URLSearchParams(window.location.search);
 const transactionId = params.get("transactionId") || params.get("transaction_id") || "";
+const item          = params.get("item")           || "Marketplace Item";
+const seller        = params.get("seller")         || params.get("sellerName") || "";
+const price         = Number(params.get("price")   || 0);
 
-
+// ─── DOM ──────────────────────────────────────────────────────────────────────
 const itemNameEl         = document.getElementById("itemName");
 const sellerNameEl       = document.getElementById("sellerName");
 const transactionTextEl  = document.getElementById("transactionText");
@@ -19,26 +22,22 @@ const paymentMessage     = document.getElementById("paymentMessage");
 // ─── Paystack Public Key ──────────────────────────────────────────────────────
 const PAYSTACK_PUBLIC_KEY = "pk_test_ca823faa0dfc20a53b408f5b895c682d512f413b";
 
-// ─── State ────────────────────────────────────────────────────────────────────
-let price            = Number(params.get("price") || 0);
-let currentUserEmail = "test@witsmarketplace.co.za"; // overwritten by /auth/me
-
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function formatPrice(amount) {
     return `R ${Number(amount || 0).toFixed(2)}`;
 }
 
-function clearMessage() {
+export function clearMessage() {
     paymentMessage.textContent = "";
     paymentMessage.className   = "";
 }
 
-function showMessage(text, type) {
+export function showMessage(text, type) {
     paymentMessage.textContent = text;
     paymentMessage.className   = type === "success" ? "success-message" : "error-message";
 }
 
-function setLoading(loading) {
+export function setLoading(loading) {
     payBtn.disabled = loading;
     if (loading) {
         payBtn.textContent = "Processing…";
@@ -48,11 +47,8 @@ function setLoading(loading) {
     }
 }
 
-// ─── Pre-fill from URL Params (instant, before server responds) ───────────────
-function preFill() {
-    const item   = params.get("item")   || "Marketplace Item";
-    const seller = params.get("seller") || params.get("sellerName") || "";
-
+// ─── Populate Page from URL Params ────────────────────────────────────────────
+function loadPageDetails() {
     itemNameEl.textContent        = item;
     sellerNameEl.textContent      = `Seller: ${seller}`;
     transactionTextEl.textContent = `Transaction: ${transactionId || "Pending"}`;
@@ -60,67 +56,15 @@ function preFill() {
     totalPriceEl.textContent      = formatPrice(price);
 }
 
-// ─── Load from Server ─────────────────────────────────────────────────────────
-async function loadPaymentDetails() {
-    if (!transactionId) {
-        showMessage("No transaction ID found in URL.", "error");
-        payBtn.disabled = true;
-        return;
-    }
-
-    // Get logged-in user's email for Paystack popup
-    try {
-        const authRes = await fetch("/auth/me", { credentials: "include" });
-        if (authRes.ok) {
-            const authData = await authRes.json();
-            currentUserEmail = authData?.user?.email || currentUserEmail;
-        }
-    } catch (_) { /* silently fall back to placeholder */ }
-
-    // Get payment status for this transaction
-    try {
-        const res = await fetch(`/payments/${transactionId}`, { credentials: "include" });
-
-        // 404 just means no payment made yet — that's fine, URL params fill the UI
-        if (res.status === 404) return;
-
-        if (!res.ok) {
-            const data = await res.json().catch(() => ({}));
-            showMessage(data.message || "Could not load payment details.", "error");
-            return;
-        }
-
-        const data = await res.json();
-
-        // Already fully paid — lock the form
-        if (data.fully_paid) {
-            showMessage("This transaction has already been fully paid.", "success");
-            payBtn.disabled    = true;
-            payBtn.textContent = "Already Paid";
-            return;
-        }
-
-        // Outstanding shortfall — update price to remaining balance
-        if (data.total_shortfall > 0) {
-            price = data.total_shortfall;
-            showMessage(`Outstanding shortfall: ${formatPrice(price)}`, "error");
-            itemPriceEl.textContent  = formatPrice(price);
-            totalPriceEl.textContent = formatPrice(price);
-        }
-
-    } catch (err) {
-        console.error("Failed to load payment details:", err);
-        // Non-fatal — URL params still fill the UI
-    }
-}
-
-// ─── Payment Method UI ────────────────────────────────────────────────────────
+// ─── Payment Method Switching ─────────────────────────────────────────────────
 function updatePaymentMethod(method) {
+    // Update active state on radio labels
     methodOptions.forEach((opt) => opt.classList.remove("active"));
     document.querySelector(`input[name="paymentMethod"][value="${method}"]`)
         ?.closest(".method-option")
         ?.classList.add("active");
 
+    // Show / hide detail sections
     paystackDetails.classList.add("hidden");
     cashDetails.classList.add("hidden");
 
@@ -140,14 +84,17 @@ function updatePaymentMethod(method) {
 }
 
 // ─── Paystack Popup ───────────────────────────────────────────────────────────
-// Opens Paystack's hosted iframe. Resolves with reference on success,
-// rejects if the user closes/cancels the popup.
-function openPaystackPopup(amountToPay) {
+// Opens Paystack's hosted iframe. Resolves with the reference string on success,
+// rejects if the user closes / cancels the popup.
+// Called by whoever handles the submit (backend dev or integration point).
+export function openPaystackPopup() {
+    const email = localStorage.getItem("email") || "test@witsmarketplace.co.za";
+
     return new Promise((resolve, reject) => {
         const handler = PaystackPop.setup({
             key:      PAYSTACK_PUBLIC_KEY,
-            email:    currentUserEmail,
-            amount:   Math.round(amountToPay * 100), // rands → kobo/cents
+            email,
+            amount:   Math.round(price * 100), // rands → kobo/cents
             currency: "ZAR",
             ref:      `WM-${transactionId}-${Date.now()}`,
             onSuccess: (transaction) => resolve(transaction.reference),
@@ -157,14 +104,14 @@ function openPaystackPopup(amountToPay) {
     });
 }
 
-// ─── Submit ───────────────────────────────────────────────────────────────────
-async function handlePayment() {
+// ─── Pay Button Click ─────────────────────────────────────────────────────────
+// Handles the UI side of submission:
+//   1. Validates price exists
+//   2. If Paystack — opens popup, gets reference
+//   3. Dispatches a custom event "payment:submit" with all data needed for the POST
+//      so the backend integration can listen and handle the actual fetch call
+payBtn.addEventListener("click", async () => {
     const selectedMethod = document.querySelector('input[name="paymentMethod"]:checked')?.value;
-
-    if (!transactionId) {
-        showMessage("Missing transaction ID.", "error");
-        return;
-    }
 
     if (price <= 0) {
         showMessage("No payment amount available. Please try again.", "error");
@@ -174,60 +121,44 @@ async function handlePayment() {
     clearMessage();
     setLoading(true);
 
-    try {
-        const requestBody = {
-            transaction_id:  transactionId,
-            amount_paid:     price,
-            payment_method:  selectedMethod,
-        };
+    if (selectedMethod === "paystack") {
+        let reference;
+        try {
+            reference = await openPaystackPopup();
+        } catch (_) {
+            showMessage("Payment was cancelled.", "error");
+            setLoading(false);
+            return;
+        }
 
-        // Paystack: open popup and get the reference before POSTing
-        if (selectedMethod === "paystack") {
-            try {
-                requestBody.paystack_reference = await openPaystackPopup(price);
-            } catch (_) {
-                showMessage("Payment was cancelled.", "error");
-                setLoading(false);
-                return;
+        // Dispatch event with everything needed for the POST
+        document.dispatchEvent(new CustomEvent("payment:submit", {
+            detail: {
+                transaction_id:     transactionId,
+                amount_paid:        price,
+                payment_method:     "paystack",
+                paystack_reference: reference,
             }
-        }
-
-        // POST /payments/pay
-        const res = await fetch("/payments/pay", {
-            method:      "POST",
-            credentials: "include",
-            headers:     { "Content-Type": "application/json" },
-            body:        JSON.stringify(requestBody),
-        });
-
-        const data = await res.json();
-
-        if (!res.ok) {
-            throw new Error(data.message || "Payment failed. Please try again.");
-        }
-
-        // Success
-        showMessage("Payment confirmed successfully.", "success");
-        payBtn.textContent = "Payment Complete";
-
-        setTimeout(() => {
-            window.location.href = "/student-transactions.html";
-        }, 1500);
-
-    } catch (err) {
-        showMessage(err.message || "A network error occurred. Please try again.", "error");
-        setLoading(false);
+        }));
+        return;
     }
-}
 
-// ─── Events ───────────────────────────────────────────────────────────────────
+    if (selectedMethod === "cash") {
+        document.dispatchEvent(new CustomEvent("payment:submit", {
+            detail: {
+                transaction_id: transactionId,
+                amount_paid:    price,
+                payment_method: "cash",
+            }
+        }));
+    }
+});
+
+// ─── Event Listeners ──────────────────────────────────────────────────────────
 radioButtons.forEach((radio) => {
     radio.addEventListener("change", () => updatePaymentMethod(radio.value));
 });
 
-payBtn.addEventListener("click", handlePayment);
-
 // ─── Init ─────────────────────────────────────────────────────────────────────
-preFill();
+loadPageDetails();
 updatePaymentMethod("paystack");
-loadPaymentDetails(); // async — updates UI once server responds
