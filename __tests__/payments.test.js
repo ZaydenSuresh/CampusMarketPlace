@@ -547,4 +547,479 @@ describe('Payments routes', () => {
             expect(res.body).toEqual({ ok: false, message: 'Kaboom' });
         });
     });
+
+    // ============ POST /initialize ============
+    describe('POST /initialize', () => {
+        const validBody = {
+            transaction_id: 'tx-1',
+            amount_paid: 50,
+        };
+
+        test('returns 401 when not authenticated', async () => {
+            mockNoAuth();
+
+            const res = await request(app)
+                .post('/payments/initialize')
+                .send(validBody);
+            expect(res.status).toBe(401);
+            expect(res.body).toEqual({ ok: false, message: 'Not authenticated' });
+        });
+
+        test('returns 400 when transaction_id is missing', async () => {
+            mockAuth();
+
+            const res = await request(app)
+                .post('/payments/initialize')
+                .send({ amount_paid: 50 });
+            expect(res.status).toBe(400);
+            expect(res.body.ok).toBe(false);
+        });
+
+        test('returns 400 when amount_paid is missing', async () => {
+            mockAuth();
+
+            const res = await request(app)
+                .post('/payments/initialize')
+                .send({ transaction_id: 'tx-1' });
+            expect(res.status).toBe(400);
+            expect(res.body.ok).toBe(false);
+        });
+
+        test('returns 404 when transaction not found', async () => {
+            mockAuth();
+            mockSupabaseClient.from.mockReturnValueOnce(
+                singleChain({ data: null, error: { message: 'not found' } })
+            );
+
+            const res = await request(app)
+                .post('/payments/initialize')
+                .send(validBody);
+            expect(res.status).toBe(404);
+            expect(res.body).toEqual({ ok: false, message: 'Transaction not found' });
+        });
+
+        test('returns 403 when user is not the buyer', async () => {
+            mockAuth('user-2');
+            mockSupabaseClient.from.mockReturnValueOnce(
+                singleChain({
+                    data: { id: 'tx-1', buyer_id: 'user-1', status: 'in_progress', listings: { price: 100 } },
+                    error: null,
+                })
+            );
+
+            const res = await request(app)
+                .post('/payments/initialize')
+                .send(validBody);
+            expect(res.status).toBe(403);
+            expect(res.body).toEqual({ ok: false, message: 'You are not the buyer for this transaction' });
+        });
+
+        test('returns 400 when transaction status is not in_progress', async () => {
+            mockAuth();
+            mockSupabaseClient.from.mockReturnValueOnce(
+                singleChain({
+                    data: { id: 'tx-1', buyer_id: 'user-1', status: 'completed', listings: { price: 100 } },
+                    error: null,
+                })
+            );
+
+            const res = await request(app)
+                .post('/payments/initialize')
+                .send(validBody);
+            expect(res.status).toBe(400);
+            expect(res.body).toEqual({ ok: false, message: 'Can only pay while transaction is in progress' });
+        });
+
+        test('returns 400 when amount_paid is 0', async () => {
+            mockAuth();
+            mockSupabaseClient.from.mockReturnValueOnce(
+                singleChain({
+                    data: { id: 'tx-1', buyer_id: 'user-1', status: 'in_progress', listings: { price: 100 } },
+                    error: null,
+                })
+            );
+
+            const res = await request(app)
+                .post('/payments/initialize')
+                .send({ transaction_id: 'tx-1', amount_paid: 0 });
+            expect(res.status).toBe(400);
+            expect(res.body.ok).toBe(false);
+        });
+
+        test('returns 400 when amount_paid is negative', async () => {
+            mockAuth();
+            mockSupabaseClient.from.mockReturnValueOnce(
+                singleChain({
+                    data: { id: 'tx-1', buyer_id: 'user-1', status: 'in_progress', listings: { price: 100 } },
+                    error: null,
+                })
+            );
+
+            const res = await request(app)
+                .post('/payments/initialize')
+                .send({ transaction_id: 'tx-1', amount_paid: -1 });
+            expect(res.status).toBe(400);
+            expect(res.body.ok).toBe(false);
+        });
+
+        test('returns 400 when amount_paid exceeds listing price', async () => {
+            mockAuth();
+            mockSupabaseClient.from.mockReturnValueOnce(
+                singleChain({
+                    data: { id: 'tx-1', buyer_id: 'user-1', status: 'in_progress', listings: { price: 100 } },
+                    error: null,
+                })
+            );
+
+            const res = await request(app)
+                .post('/payments/initialize')
+                .send({ transaction_id: 'tx-1', amount_paid: 100.01 });
+            expect(res.status).toBe(400);
+            expect(res.body.ok).toBe(false);
+        });
+
+        test('returns 400 when Paystack initialization fails', async () => {
+            mockAuth();
+            mockSupabaseClient.from
+                .mockReturnValueOnce(
+                    singleChain({
+                        data: { id: 'tx-1', buyer_id: 'user-1', status: 'in_progress', listings: { price: 100 } },
+                        error: null,
+                    })
+                )
+                .mockReturnValueOnce(
+                    singleChain({ data: { email: 'buyer@test.com' }, error: null })
+                );
+
+            global.fetch.mockResolvedValue({
+                json: jest.fn().mockResolvedValue({ status: false, message: 'Invalid amount' }),
+            });
+
+            const res = await request(app)
+                .post('/payments/initialize')
+                .send({ transaction_id: 'tx-1', amount_paid: 50 });
+            expect(res.status).toBe(400);
+            expect(res.body).toEqual({ ok: false, message: 'Invalid amount' });
+        });
+
+        test('returns 400 with default message when Paystack returns no message', async () => {
+            mockAuth();
+            mockSupabaseClient.from
+                .mockReturnValueOnce(
+                    singleChain({
+                        data: { id: 'tx-1', buyer_id: 'user-1', status: 'in_progress', listings: { price: 100 } },
+                        error: null,
+                    })
+                )
+                .mockReturnValueOnce(
+                    singleChain({ data: { email: 'buyer@test.com' }, error: null })
+                );
+
+            global.fetch.mockResolvedValue({
+                json: jest.fn().mockResolvedValue({ status: false }),
+            });
+
+            const res = await request(app)
+                .post('/payments/initialize')
+                .send({ transaction_id: 'tx-1', amount_paid: 50 });
+            expect(res.status).toBe(400);
+            expect(res.body).toEqual({ ok: false, message: 'Paystack initialization failed' });
+        });
+
+        test('successfully initializes Paystack payment', async () => {
+            mockAuth();
+            mockSupabaseClient.from
+                .mockReturnValueOnce(
+                    singleChain({
+                        data: { id: 'tx-1', buyer_id: 'user-1', status: 'in_progress', listings: { price: 100 } },
+                        error: null,
+                    })
+                )
+                .mockReturnValueOnce(
+                    singleChain({ data: { email: 'buyer@test.com' }, error: null })
+                );
+
+            global.fetch.mockResolvedValue({
+                json: jest.fn().mockResolvedValue({
+                    status: true,
+                    data: {
+                        authorization_url: 'https://paystack.com/checkout/sess_123',
+                        reference: 'CAMPUS-tx-1-1234567890',
+                    },
+                }),
+            });
+
+            const res = await request(app)
+                .post('/payments/initialize')
+                .send({ transaction_id: 'tx-1', amount_paid: 50 });
+            expect(res.status).toBe(200);
+            expect(res.body.ok).toBe(true);
+            expect(res.body.authorization_url).toBe('https://paystack.com/checkout/sess_123');
+            expect(res.body.reference).toContain('CAMPUS-tx-1');
+        });
+
+        test('falls back to user.email when profile email is missing', async () => {
+            mockAuth();
+            mockSupabaseClient.from
+                .mockReturnValueOnce(
+                    singleChain({
+                        data: { id: 'tx-1', buyer_id: 'user-1', status: 'in_progress', listings: { price: 100 } },
+                        error: null,
+                    })
+                )
+                .mockReturnValueOnce(
+                    singleChain({ data: null, error: { message: 'not found' } })
+                );
+
+            mockSupabaseClient.auth.getUser.mockResolvedValue({
+                data: { user: { id: 'user-1', email: 'fallback@test.com' } },
+                error: null,
+            });
+
+            global.fetch.mockResolvedValue({
+                json: jest.fn().mockResolvedValue({
+                    status: true,
+                    data: {
+                        authorization_url: 'https://paystack.com/checkout/sess_456',
+                        reference: 'CAMPUS-tx-1-999',
+                    },
+                }),
+            });
+
+            const res = await request(app)
+                .post('/payments/initialize')
+                .send({ transaction_id: 'tx-1', amount_paid: 50 });
+            expect(res.status).toBe(200);
+            expect(res.body.ok).toBe(true);
+        });
+
+        test('falls back to default email when both profile and user email are missing', async () => {
+            mockAuth();
+            mockSupabaseClient.from
+                .mockReturnValueOnce(
+                    singleChain({
+                        data: { id: 'tx-1', buyer_id: 'user-1', status: 'in_progress', listings: { price: 100 } },
+                        error: null,
+                    })
+                )
+                .mockReturnValueOnce(
+                    singleChain({ data: null, error: { message: 'not found' } })
+                );
+
+            global.fetch.mockResolvedValue({
+                json: jest.fn().mockResolvedValue({
+                    status: true,
+                    data: {
+                        authorization_url: 'https://paystack.com/checkout/sess_789',
+                        reference: 'CAMPUS-tx-1-111',
+                    },
+                }),
+            });
+
+            const res = await request(app)
+                .post('/payments/initialize')
+                .send({ transaction_id: 'tx-1', amount_paid: 50 });
+            expect(res.status).toBe(200);
+            expect(res.body.ok).toBe(true);
+        });
+
+        test('returns 500 on thrown error', async () => {
+            mockAuth();
+            mockSupabaseClient.from.mockImplementationOnce(() => {
+                throw new Error('Kaboom');
+            });
+
+            const res = await request(app)
+                .post('/payments/initialize')
+                .send(validBody);
+            expect(res.status).toBe(500);
+            expect(res.body).toEqual({ ok: false, message: 'Kaboom' });
+        });
+    });
+
+    // ============ GET /callback ============
+    describe('GET /callback', () => {
+        test('redirects with error when reference is missing', async () => {
+            const res = await request(app).get('/payments/callback');
+            expect(res.status).toBe(302);
+            expect(res.headers.location).toContain('payment_error=No+reference+returned');
+        });
+
+        test('redirects with error when Paystack verification fails', async () => {
+            global.fetch.mockResolvedValue({
+                json: jest.fn().mockResolvedValue({ status: false }),
+            });
+
+            const res = await request(app).get('/payments/callback?reference=CAMPUS-tx-1-123');
+            expect(res.status).toBe(302);
+            expect(res.headers.location).toContain('error=Payment+verification+failed');
+        });
+
+        test('redirects with error when Paystack status is not success', async () => {
+            global.fetch.mockResolvedValue({
+                json: jest.fn().mockResolvedValue({
+                    status: true,
+                    data: { status: 'failed' },
+                }),
+            });
+
+            const res = await request(app).get('/payments/callback?reference=CAMPUS-tx-1-123');
+            expect(res.status).toBe(302);
+            expect(res.headers.location).toContain('error=Payment+verification+failed');
+        });
+
+        test('redirects with error and empty transactionId when reference has no dash', async () => {
+            global.fetch.mockResolvedValue({
+                json: jest.fn().mockResolvedValue({
+                    status: true,
+                    data: { status: 'failed' },
+                }),
+            });
+
+            const res = await request(app).get('/payments/callback?reference=plainref');
+            expect(res.status).toBe(302);
+            expect(res.headers.location).toBe('/payment.html?transactionId=&error=Payment+verification+failed');
+        });
+
+        test('redirects with error when metadata has no transaction_id', async () => {
+            global.fetch.mockResolvedValue({
+                json: jest.fn().mockResolvedValue({
+                    status: true,
+                    data: {
+                        status: 'success',
+                        metadata: { amount_paid: 50 },
+                    },
+                }),
+            });
+
+            const res = await request(app).get('/payments/callback?reference=CAMPUS-tx-1-123');
+            expect(res.status).toBe(302);
+            expect(res.headers.location).toContain('payment_error=Invalid+payment+data');
+        });
+
+        test('redirects with error when amount_paid is zero in metadata', async () => {
+            global.fetch.mockResolvedValue({
+                json: jest.fn().mockResolvedValue({
+                    status: true,
+                    data: {
+                        status: 'success',
+                        metadata: { transaction_id: 'tx-1', amount_paid: 0 },
+                    },
+                }),
+            });
+
+            const res = await request(app).get('/payments/callback?reference=CAMPUS-tx-1-123');
+            expect(res.status).toBe(302);
+            expect(res.headers.location).toContain('payment_error=Invalid+payment+data');
+        });
+
+        test('redirects with error when transaction is not found in database', async () => {
+            global.fetch.mockResolvedValue({
+                json: jest.fn().mockResolvedValue({
+                    status: true,
+                    data: {
+                        status: 'success',
+                        metadata: { transaction_id: 'tx-99', amount_paid: 50 },
+                    },
+                }),
+            });
+
+            mockSupabaseClient.from.mockReturnValueOnce(
+                singleChain({ data: null, error: { message: 'not found' } })
+            );
+
+            const res = await request(app).get('/payments/callback?reference=CAMPUS-tx-99-123');
+            expect(res.status).toBe(302);
+            expect(res.headers.location).toContain('payment_error=Transaction+not+found');
+        });
+
+        test('redirects to success for full Paystack payment', async () => {
+            global.fetch.mockResolvedValue({
+                json: jest.fn().mockResolvedValue({
+                    status: true,
+                    data: {
+                        status: 'success',
+                        metadata: { transaction_id: 'tx-1', amount_paid: 100 },
+                    },
+                }),
+            });
+
+            mockSupabaseClient.from
+                .mockReturnValueOnce(
+                    singleChain({
+                        data: { id: 'tx-1', listings: { price: 100 } },
+                        error: null,
+                    })
+                )
+                .mockReturnValueOnce(updateChain({ error: null }));
+
+            Payment.create.mockResolvedValue({
+                id: 'pay-1',
+                transaction_id: 'tx-1',
+                amount_paid: 100,
+                payment_method: 'paystack',
+                status: 'paid',
+            });
+
+            Shortfall.create.mockResolvedValue(null);
+
+            const res = await request(app).get('/payments/callback?reference=CAMPUS-tx-1-123');
+            expect(res.status).toBe(302);
+            expect(res.headers.location).toBe('/student-transactions.html?payment=success');
+            expect(Payment.create).toHaveBeenCalledWith(
+                expect.objectContaining({ amount_paid: 100, payment_method: 'paystack' })
+            );
+        });
+
+        test('redirects to success and creates shortfall for partial Paystack payment', async () => {
+            global.fetch.mockResolvedValue({
+                json: jest.fn().mockResolvedValue({
+                    status: true,
+                    data: {
+                        status: 'success',
+                        metadata: { transaction_id: 'tx-1', amount_paid: 30 },
+                    },
+                }),
+            });
+
+            mockSupabaseClient.from
+                .mockReturnValueOnce(
+                    singleChain({
+                        data: { id: 'tx-1', listings: { price: 100 } },
+                        error: null,
+                    })
+                )
+                .mockReturnValueOnce(updateChain({ error: null }));
+
+            Payment.create.mockResolvedValue({
+                id: 'pay-1',
+                transaction_id: 'tx-1',
+                amount_paid: 30,
+                payment_method: 'paystack',
+                status: 'paid',
+            });
+
+            Shortfall.create.mockResolvedValue({
+                id: 'short-1',
+                transaction_id: 'tx-1',
+                amount_owed: 70,
+                status: 'outstanding',
+            });
+
+            const res = await request(app).get('/payments/callback?reference=CAMPUS-tx-1-456');
+            expect(res.status).toBe(302);
+            expect(res.headers.location).toBe('/student-transactions.html?payment=success');
+            expect(Shortfall.create).toHaveBeenCalledWith(
+                expect.objectContaining({ amount_owed: 70 })
+            );
+        });
+
+        test('redirects with error on thrown exception', async () => {
+            global.fetch.mockRejectedValue(new Error('Network error'));
+
+            const res = await request(app).get('/payments/callback?reference=CAMPUS-tx-1-123');
+            expect(res.status).toBe(302);
+            expect(res.headers.location).toContain('payment_error=Network%20error');
+        });
+    });
 });
