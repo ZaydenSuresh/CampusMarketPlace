@@ -27,17 +27,17 @@ function formatPrice(amount) {
     return `R ${Number(amount || 0).toFixed(2)}`;
 }
 
-export function clearMessage() {
+function clearMessage() {
     paymentMessage.textContent = "";
     paymentMessage.className   = "";
 }
 
-export function showMessage(text, type) {
+function showMessage(text, type) {
     paymentMessage.textContent = text;
     paymentMessage.className   = type === "success" ? "success-message" : "error-message";
 }
 
-export function setLoading(loading) {
+function setLoading(loading) {
     payBtn.disabled = loading;
     if (loading) {
         payBtn.textContent = "Processing…";
@@ -87,7 +87,7 @@ function updatePaymentMethod(method) {
 // Opens Paystack's hosted iframe. Resolves with the reference string on success,
 // rejects if the user closes / cancels the popup.
 // Called by whoever handles the submit (backend dev or integration point).
-export function openPaystackPopup() {
+function openPaystackPopup() {
     const email = localStorage.getItem("email") || "test@witsmarketplace.co.za";
 
     return new Promise((resolve, reject) => {
@@ -151,6 +151,42 @@ payBtn.addEventListener("click", async () => {
                 payment_method: "cash",
             }
         }));
+    }
+});
+
+// ─── payment:submit Listener ──────────────────────────────────────────────────
+// Calls the backend POST /payments/pay when the Pay button dispatches the event
+document.addEventListener("payment:submit", async (e) => {
+    const detail = e.detail;
+
+    setLoading(true);
+
+    try {
+        const res = await fetch("/payments/pay", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify({
+                transaction_id: detail.transaction_id,
+                amount_paid: detail.amount_paid,
+                payment_method: detail.payment_method,
+                paystack_reference: detail.paystack_reference || undefined,
+            }),
+        });
+
+        const data = await res.json();
+
+        if (!data.ok) {
+            showMessage(data.message || "Payment failed", "error");
+            setLoading(false);
+            return;
+        }
+
+        showMessage("Payment successful! Redirecting...", "success");
+        setTimeout(() => window.location.href = "/student-transactions.html", 1500);
+    } catch (err) {
+        showMessage("Network error. Please try again.", "error");
+        setLoading(false);
     }
 });
 
