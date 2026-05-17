@@ -74,7 +74,6 @@ describe('Payments routes', () => {
         const validBody = {
             transaction_id: 'tx-1',
             amount_paid: 50,
-            payment_method: 'cash',
         };
 
         test('returns 401 when not authenticated', async () => {
@@ -92,7 +91,7 @@ describe('Payments routes', () => {
 
             const res = await request(app)
                 .post('/payments/pay')
-                .send({ amount_paid: 50, payment_method: 'cash' });
+                .send({ amount_paid: 50 });
             expect(res.status).toBe(400);
             expect(res.body.ok).toBe(false);
         });
@@ -102,17 +101,7 @@ describe('Payments routes', () => {
 
             const res = await request(app)
                 .post('/payments/pay')
-                .send({ transaction_id: 'tx-1', payment_method: 'cash' });
-            expect(res.status).toBe(400);
-            expect(res.body.ok).toBe(false);
-        });
-
-        test('returns 400 when payment_method is missing', async () => {
-            mockAuth();
-
-            const res = await request(app)
-                .post('/payments/pay')
-                .send({ transaction_id: 'tx-1', amount_paid: 50 });
+                .send({ transaction_id: 'tx-1' });
             expect(res.status).toBe(400);
             expect(res.body.ok).toBe(false);
         });
@@ -173,7 +162,7 @@ describe('Payments routes', () => {
 
             const res = await request(app)
                 .post('/payments/pay')
-                .send({ transaction_id: 'tx-1', amount_paid: 0, payment_method: 'cash' });
+                .send({ transaction_id: 'tx-1', amount_paid: 0 });
             expect(res.status).toBe(400);
             expect(res.body.ok).toBe(false);
         });
@@ -189,7 +178,7 @@ describe('Payments routes', () => {
 
             const res = await request(app)
                 .post('/payments/pay')
-                .send({ transaction_id: 'tx-1', amount_paid: -1, payment_method: 'cash' });
+                .send({ transaction_id: 'tx-1', amount_paid: -1 });
             expect(res.status).toBe(400);
             expect(res.body.ok).toBe(false);
         });
@@ -205,75 +194,9 @@ describe('Payments routes', () => {
 
             const res = await request(app)
                 .post('/payments/pay')
-                .send({ transaction_id: 'tx-1', amount_paid: 100.01, payment_method: 'cash' });
+                .send({ transaction_id: 'tx-1', amount_paid: 100.01 });
             expect(res.status).toBe(400);
             expect(res.body.ok).toBe(false);
-        });
-
-        test('returns 400 when paystack_reference is missing for paystack payment', async () => {
-            mockAuth();
-            mockSupabaseClient.from.mockReturnValueOnce(
-                singleChain({
-                    data: { id: 'tx-1', buyer_id: 'user-1', status: 'in_progress', listings: { price: 100 } },
-                    error: null,
-                })
-            );
-
-            const res = await request(app)
-                .post('/payments/pay')
-                .send({ transaction_id: 'tx-1', amount_paid: 50, payment_method: 'paystack' });
-            expect(res.status).toBe(400);
-            expect(res.body).toEqual({ ok: false, message: 'paystack_reference is required for Paystack payments' });
-        });
-
-        test('returns 400 when Paystack verification fails', async () => {
-            mockAuth();
-            mockSupabaseClient.from.mockReturnValueOnce(
-                singleChain({
-                    data: { id: 'tx-1', buyer_id: 'user-1', status: 'in_progress', listings: { price: 100 } },
-                    error: null,
-                })
-            );
-
-            global.fetch.mockResolvedValue({
-                json: async () => ({ status: false, data: { status: 'failed' } }),
-            });
-
-            const res = await request(app)
-                .post('/payments/pay')
-                .send({
-                    transaction_id: 'tx-1',
-                    amount_paid: 50,
-                    payment_method: 'paystack',
-                    paystack_reference: 'ref-bad',
-                });
-            expect(res.status).toBe(400);
-            expect(res.body).toEqual({ ok: false, message: 'Paystack verification failed' });
-        });
-
-        test('returns 400 when Paystack amount does not match within tolerance', async () => {
-            mockAuth();
-            mockSupabaseClient.from.mockReturnValueOnce(
-                singleChain({
-                    data: { id: 'tx-1', buyer_id: 'user-1', status: 'in_progress', listings: { price: 100 } },
-                    error: null,
-                })
-            );
-
-            global.fetch.mockResolvedValue({
-                json: async () => ({ status: true, data: { status: 'success', amount: 5002 } }),
-            });
-
-            const res = await request(app)
-                .post('/payments/pay')
-                .send({
-                    transaction_id: 'tx-1',
-                    amount_paid: 50,
-                    payment_method: 'paystack',
-                    paystack_reference: 'ref-amt',
-                });
-            expect(res.status).toBe(400);
-            expect(res.body).toEqual({ ok: false, message: 'Paystack amount does not match amount_paid' });
         });
 
         test('processes cash payment at valid boundary minimum (0.01)', async () => {
@@ -305,7 +228,7 @@ describe('Payments routes', () => {
 
             const res = await request(app)
                 .post('/payments/pay')
-                .send({ transaction_id: 'tx-1', amount_paid: 0.01, payment_method: 'cash' });
+                .send({ transaction_id: 'tx-1', amount_paid: 0.01 });
             expect(res.status).toBe(200);
             expect(res.body.ok).toBe(true);
             expect(res.body.payment.amount_paid).toBe(0.01);
@@ -336,7 +259,7 @@ describe('Payments routes', () => {
 
             const res = await request(app)
                 .post('/payments/pay')
-                .send({ transaction_id: 'tx-1', amount_paid: 100, payment_method: 'cash' });
+                .send({ transaction_id: 'tx-1', amount_paid: 100 });
             expect(res.status).toBe(200);
             expect(res.body.ok).toBe(true);
             expect(res.body.shortfall).toBeNull();
@@ -370,59 +293,13 @@ describe('Payments routes', () => {
 
             const res = await request(app)
                 .post('/payments/pay')
-                .send({ transaction_id: 'tx-1', amount_paid: 50, payment_method: 'cash' });
+                .send({ transaction_id: 'tx-1', amount_paid: 50 });
             expect(res.status).toBe(200);
             expect(res.body.ok).toBe(true);
             expect(Shortfall.create).toHaveBeenCalledWith(
                 expect.objectContaining({ amount_owed: 100 })
             );
             expect(res.body.shortfall.amount_owed).toBe(100);
-        });
-
-        test('processes paystack payment successfully with matching amount', async () => {
-            mockAuth();
-            mockSupabaseClient.from
-                .mockReturnValueOnce(
-                    singleChain({
-                        data: { id: 'tx-1', buyer_id: 'user-1', status: 'in_progress', listings: { price: 200 } },
-                        error: null,
-                    })
-                )
-                .mockReturnValueOnce(updateChain({ error: null }));
-
-            global.fetch.mockResolvedValue({
-                json: async () => ({ status: true, data: { status: 'success', amount: 15000 } }),
-            });
-
-            Payment.create.mockResolvedValue({
-                id: 'pay-1',
-                transaction_id: 'tx-1',
-                amount_paid: 150,
-                payment_method: 'paystack',
-                status: 'paid',
-            });
-
-            Shortfall.create.mockResolvedValue({
-                id: 'short-1',
-                transaction_id: 'tx-1',
-                amount_owed: 50,
-                status: 'outstanding',
-            });
-
-            const res = await request(app)
-                .post('/payments/pay')
-                .send({
-                    transaction_id: 'tx-1',
-                    amount_paid: 150,
-                    payment_method: 'paystack',
-                    paystack_reference: 'ref-valid',
-                });
-            expect(res.status).toBe(200);
-            expect(res.body.ok).toBe(true);
-            expect(global.fetch).toHaveBeenCalledWith(
-                expect.stringContaining('paystack.co/transaction/verify/ref-valid'),
-                expect.any(Object)
-            );
         });
 
         test('returns 500 on thrown error', async () => {
