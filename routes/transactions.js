@@ -213,6 +213,42 @@ router.put("/:id/cancel", async (req, res) => {
   }
 });
 
+// GET /:id — fetch a single transaction with listing details (buyer or seller only)
+router.get("/:id", async (req, res) => {
+  try {
+    const supabase = createSupabaseClient(req, res);
+    const user = await getCurrentUser(req, res);
+    if (!user) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
+
+    const { id } = req.params;
+
+    const { data: transaction, error } = await supabase
+      .from("transactions")
+      .select(`
+        *,
+        listings(title, image_url, price),
+        buyer:profiles!transactions_buyer_id_fkey(id, name),
+        seller:profiles!transactions_seller_id_fkey(id, name)
+      `)
+      .eq("id", id)
+      .single();
+
+    if (error || !transaction) {
+      return res.status(404).json({ error: "Transaction not found" });
+    }
+
+    if (transaction.buyer_id !== user.id && transaction.seller_id !== user.id) {
+      return res.status(403).json({ error: "Not authorized" });
+    }
+
+    res.json(transaction);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // PUT /:id — staff-only actions: confirm dropoff or mark as complete
 router.put("/:id", async (req, res) => {
   try {
