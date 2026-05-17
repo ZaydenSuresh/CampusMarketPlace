@@ -81,7 +81,6 @@ async function fetchTransactions() {
 
 
 /*  STATUS LOGIC  */
-
 function mapStatus(t) {
 
     /* cancelled transactions */
@@ -91,6 +90,16 @@ function mapStatus(t) {
     /* completed transaction */
     if (t.status === "completed")
         return "completed";
+
+    /*partial payment made, shortfall still outstanding */
+    if (t.status === "awaiting_payment")
+        return "awaiting_payment";
+
+    if (
+        t.status === "paid" &&
+        !t.dropoff_confirmed
+    )
+        return "waiting_dropoff";
 
     /* waiting for dropoff */
     if (
@@ -365,6 +374,7 @@ function getFilteredTransactions() {
 }
 
 
+/* Dev C C4: Staff payment and shortfall display */
 function buildShortfallUI(transaction) {
 
     const shortfall = transaction.shortfall;
@@ -374,7 +384,7 @@ function buildShortfallUI(transaction) {
         return `
             <section class="shortfall-box">
                 <strong class="shortfall-badge shortfall-outstanding">
-                    Shortfall: R${Number(shortfall.amount_owed || 0).toFixed(2)} outstanding
+                    Awaiting payment: R${Number(shortfall.amount_owed || 0).toFixed(2)} shortfall
                 </strong>
 
                 <button
@@ -396,18 +406,18 @@ function buildShortfallUI(transaction) {
         `;
     }
 
-    if (paymentStatus === "paid" || paymentStatus === "completed") {
+    if (paymentStatus === "awaiting_payment") {
         return `
-            <strong class="shortfall-badge shortfall-none">
-                Paid in full
+            <strong class="shortfall-badge shortfall-outstanding">
+                Awaiting payment
             </strong>
         `;
     }
 
-    if (paymentStatus === "awaiting_payment") {
+    if (paymentStatus === "paid" || paymentStatus === "completed") {
         return `
-            <strong class="shortfall-badge shortfall-outstanding">
-                Shortfall outstanding
+            <strong class="shortfall-badge shortfall-none">
+                Paid in full
             </strong>
         `;
     }
@@ -418,7 +428,6 @@ function buildShortfallUI(transaction) {
         </strong>
     `;
 }
-
 
 function renderTransactions() {
 
