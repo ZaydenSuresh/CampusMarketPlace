@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment | Wits Marketplace</title>
+
+    <link rel="stylesheet" href="/styles/global.css">
+    <link rel="stylesheet" href="/styles/payment.css">
+
+    <script src="https://js.paystack.co/v1/inline.js"></script>
+</head>
+
+<body>
+    <main class="payment-page">
+        <section class="payment-card">
+
+            <section class="payment-left">
+                <header class="payment-header">
+                    <p class="payment-label">Secure Payment</p>
+                    <h1>Complete Your Purchase</h1>
+                    <p class="payment-subtitle">
+                        Confirm your order details and choose your preferred payment method.
+                    </p>
+                </header>
+
+                <article class="item-summary">
+                    <p class="item-emoji">📦</p>
+
+                    <section class="item-summary-text">
+                        <h2 id="itemName">Loading item...</h2>
+                        <p id="sellerName">Seller: Loading...</p>
+                        <p id="transactionText">Transaction: Loading...</p>
+                    </section>
+                </article>
+
+                <section class="payment-methods">
+                    <h3>Choose Payment Method</h3>
+
+                    <label class="method-option active">
+                        <input type="radio" name="paymentMethod" value="paystack" checked>
+                        <p>💳 Card Payment (Paystack)</p>
+                    </label>
+
+                    <label class="method-option">
+                        <input type="radio" name="paymentMethod" value="cash">
+                        <p>💵 Cash on Collection</p>
+                    </label>
+                </section>
+
+                <!-- Paystack: no card fields — Paystack popup handles all card entry -->
+                <section class="paystack-details" id="paystackDetails">
+                    <p class="paystack-info">
+                        🔒 A secure Paystack popup will open for you to enter your card details.
+                        Your card information never touches our servers.
+                    </p>
+                    <p class="paystack-test-note">
+                        <strong>Test card:</strong> 4084 0840 8408 4081 &middot; Any CVV &middot; Any future expiry
+                    </p>
+                </section>
+
+                <section class="cash-details hidden" id="cashDetails">
+                    <h3>Cash on Collection</h3>
+                    <p>You will pay when collecting the item at the trade facility.</p>
+                </section>
+
+                <p id="paymentMessage"></p>
+            </section>
+
+            <aside class="payment-right">
+                <h2>Order Summary</h2>
+
+                <article class="summary-row">
+                    <p>Item Price</p>
+                    <strong id="itemPrice">R 0.00</strong>
+                </article>
+
+                <article class="summary-row">
+                    <p>Service Fee</p>
+                    <strong>R 0.00</strong>
+                </article>
+
+                <article class="summary-row">
+                    <p>Payment Method</p>
+                    <strong id="selectedMethodText">Card (Paystack)</strong>
+                </article>
+
+                <article class="summary-total">
+                    <p>Total</p>
+                    <strong id="totalPrice">R 0.00</strong>
+                </article>
+
+                <button id="payBtn" class="pay-btn">Pay Now</button>
+
+                <p class="secure-note">
+                    🔒 Payments are encrypted and protected by Paystack.
+                </p>
+            </aside>
+
+        </section>
+    </main>
+
+    <script src="/scripts/payment.js"></script>
+</body>
+</html>
