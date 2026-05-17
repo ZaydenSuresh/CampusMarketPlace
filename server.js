@@ -38,6 +38,19 @@ app.use("/components", express.static("components"));
 app.use("/images", express.static("images"));
 app.use(express.static("pages"));
 app.use(express.json());
+
+app.use(helmet({
+    contentSecurityPolicy: {
+        directives: {
+            defaultSrc: ["'self'"],
+            scriptSrc: ["'self'", "https://js.paystack.co", "https://s3-eu-west-1.amazonaws.com"],
+            scriptSrcElem: ["'self'", "'unsafe-inline'", "https://js.paystack.co", "https://s3-eu-west-1.amazonaws.com"],
+            frameSrc: ["'self'", "https://checkout.paystack.com"],
+            connectSrc: ["'self'", "https://api.paystack.co"],
+        },
+    },
+}));
+
 app.use("/seller-history", sellerHistoryRouter);
 app.use("/auth", authRouter);
 app.use("/slots", slotsRouter);
@@ -48,17 +61,6 @@ app.use("/analytics", analyticsRouter);
 app.use("/listings", listingsRouter);
 app.use("/transactions", transactionsRouter);
 app.use("/ratings", ratingsRouter);
-app.use(helmet({
-    contentSecurityPolicy: {
-        directives: {
-            defaultSrc: ["'self'"],
-            scriptSrc: ["'self'", "https://js.paystack.co", "https://s3-eu-west-1.amazonaws.com"],
-            scriptSrcElem: ["'self'", "https://js.paystack.co", "https://s3-eu-west-1.amazonaws.com"],
-            frameSrc: ["'self'", "https://checkout.paystack.com"],
-            connectSrc: ["'self'", "https://api.paystack.co"],
-        },
-    },
-}));
 
 // show login page on server startup
 app.get("/", (req, res) => {
