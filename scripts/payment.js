@@ -180,6 +180,11 @@ document.addEventListener("payment:submit", async (e) => {
 
     setLoading(true);
 
+    const timeout = setTimeout(() => {
+        setLoading(false);
+        showMessage("Request timed out. Please try again.", "error");
+    }, 15000);
+
     try {
         const res = await fetch("/payments/pay", {
             method: "POST",
@@ -195,6 +200,8 @@ document.addEventListener("payment:submit", async (e) => {
 
         const data = await res.json();
 
+        clearTimeout(timeout);
+
         if (!data.ok) {
             showMessage(data.message || "Payment failed", "error");
             setLoading(false);
@@ -204,6 +211,7 @@ document.addEventListener("payment:submit", async (e) => {
         showMessage("Payment successful! Redirecting...", "success");
         setTimeout(() => window.location.href = "/student-transactions.html", 1500);
     } catch (err) {
+        clearTimeout(timeout);
         showMessage("Network error. Please try again.", "error");
         setLoading(false);
     }
