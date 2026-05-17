@@ -692,6 +692,155 @@ test("UAT 15 — Search listings returns seller name and ratings", async () => {
   expect(res.body.listings[0].ratings.length).toBe(2);
 });
 
+// ADDED BY KHANYISILE — Sprint tests
 
+test("UAT 16 — Get valid price suggestion", async () => {
+  const suggestionBuilder = {
+    select: jest.fn().mockReturnThis(),
+    eq: jest.fn().mockReturnThis(),
+    single: jest.fn().mockResolvedValue({
+      data: {
+        category: "Electronics",
+        base_price: 2500,
+        source: "Stats SA CPI Electronics",
+      },
+      error: null,
+    }),
+  };
+
+  const supabase = {
+    auth: {
+      getUser: jest.fn(),
+    },
+
+    from: jest.fn((table) => {
+      if (table === "price_suggestions") {
+        return suggestionBuilder;
+      }
+
+      return suggestionBuilder;
+    }),
+  };
+
+  createSupabaseClient.mockReturnValue(supabase);
+
+  const res = await request(app).get(
+    "/listings/price-suggestion/Electronics?condition=Good"
+  );
+
+  expect(res.statusCode).toBe(200);
+
+  expect(res.body.ok).toBe(true);
+
+  expect(res.body.suggestion.category).toBe(
+    "Electronics"
+  );
+
+  expect(res.body.suggestion.adjusted_price).toBe(
+    2125
+  );
+});
+
+test("UAT 17 — Reject invalid price suggestion category", async () => {
+  const { supabase } = makeSupabaseMock();
+
+  createSupabaseClient.mockReturnValue(supabase);
+
+  const res = await request(app).get(
+    "/listings/price-suggestion/InvalidCategory"
+  );
+
+  expect(res.statusCode).toBe(400);
+
+  expect(res.body.error).toBe(
+    "Invalid category"
+  );
+});
+
+test("UAT 18 — Reject invalid price suggestion condition", async () => {
+  const { supabase } = makeSupabaseMock();
+
+  createSupabaseClient.mockReturnValue(supabase);
+
+  const res = await request(app).get(
+    "/listings/price-suggestion/Electronics?condition=Broken"
+  );
+
+  expect(res.statusCode).toBe(400);
+
+  expect(res.body.error).toBe(
+    "Invalid condition"
+  );
+});
+
+test("UAT 19 — Listing ratings exclude removed reviews", async () => {
+  const listings = [
+    {
+      id: "listing-1",
+      title: "Laptop",
+      user_id: "seller-123",
+    },
+  ];
+
+  const ratingsBuilder = {
+    select: jest.fn().mockReturnThis(),
+
+    in: jest.fn().mockReturnThis(),
+
+    or: jest.fn().mockResolvedValue({
+      data: [
+        {
+          rated_id: "seller-123",
+          rating: 5,
+        },
+      ],
+
+      error: null,
+    }),
+  };
+
+  const listingsBuilder = {
+    select: jest.fn().mockReturnThis(),
+
+    order: jest.fn().mockReturnThis(),
+
+    limit: jest.fn().mockResolvedValue({
+      data: listings,
+      error: null,
+    }),
+  };
+
+  const supabase = {
+    auth: {
+      getUser: jest.fn(),
+    },
+
+    from: jest.fn((table) => {
+      if (table === "ratings") {
+        return ratingsBuilder;
+      }
+
+      return listingsBuilder;
+    }),
+  };
+
+  createSupabaseClient.mockReturnValue(supabase);
+
+  const res = await request(app).get("/listings");
+
+  expect(res.statusCode).toBe(200);
+
+  expect(res.body.ok).toBe(true);
+
+  expect(
+    ratingsBuilder.or
+  ).toHaveBeenCalledWith(
+    "removed.is.null,removed.eq.false"
+  );
+
+  expect(
+    res.body.listings[0].seller_average_rating
+  ).toBe(5);
+});
 
 });

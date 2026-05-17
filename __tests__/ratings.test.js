@@ -39,26 +39,41 @@ describe('Ratings routes', () => {
     };
   }
 
-  function thenableChain(data, error = null) {
-    const result = { data, error };
-    const chain = {
-      select: jest.fn().mockReturnThis(),
-      eq: jest.fn().mockReturnThis(),
-      order: jest.fn().mockReturnThis(),
-    };
-    chain.then = (resolve) => resolve(result);
-    return chain;
-  }
+  // ADDED BY KHANYISILE
+function thenableChain(data, error = null) {
+  const result = { data, error };
 
-  function simpleThenableChain(data, error = null) {
-    const result = { data, error };
-    const chain = {
-      select: jest.fn().mockReturnThis(),
-      eq: jest.fn().mockReturnThis(),
-    };
-    chain.then = (resolve) => resolve(result);
-    return chain;
-  }
+  const chain = {
+    select: jest.fn().mockReturnThis(),
+
+    eq: jest.fn().mockReturnThis(),
+
+    or: jest.fn().mockReturnThis(),
+
+    order: jest.fn().mockReturnThis(),
+  };
+
+  chain.then = (resolve) => resolve(result);
+
+  return chain;
+}
+
+ // ADDED BY KHANYISILE
+function simpleThenableChain(data, error = null) {
+  const result = { data, error };
+
+  const chain = {
+    select: jest.fn().mockReturnThis(),
+
+    eq: jest.fn().mockReturnThis(),
+
+    or: jest.fn().mockReturnThis(),
+  };
+
+  chain.then = (resolve) => resolve(result);
+
+  return chain;
+}
 
   function mockAuth(userId) {
     mockSupabaseClient.auth.getUser.mockResolvedValue({
@@ -379,4 +394,284 @@ describe('Ratings routes', () => {
       expect(res.body.total).toBe(0);
     });
   });
+
+// ADDED BY KHANYISILE
+describe("Moderation endpoints", () => {
+
+  // ADDED BY KHANYISILE
+  function updateChain(result) {
+    return {
+      update: jest.fn().mockReturnThis(),
+      eq: jest.fn().mockReturnThis(),
+      select: jest.fn().mockReturnThis(),
+      single: jest.fn().mockResolvedValue(result),
+    };
+  }
+
+  // ADDED BY KHANYISILE
+  function orderChain(result) {
+    return {
+      select: jest.fn().mockReturnThis(),
+      order: jest.fn().mockResolvedValue(result),
+    };
+  }
+
+  // ADDED BY KHANYISILE
+  function inChain(result) {
+    return {
+      select: jest.fn().mockReturnThis(),
+      in: jest.fn().mockResolvedValue(result),
+    };
+  }
+
+  // ADDED BY KHANYISILE
+  function adminAuth() {
+    mockSupabaseClient.auth.getUser.mockResolvedValue({
+      data: {
+        user: {
+          id: "admin-1",
+        },
+      },
+      error: null,
+    });
+
+    mockSupabaseClient.from.mockReturnValueOnce(
+      singleChain({
+        data: {
+          id: "admin-1",
+          role: "Admin",
+        },
+        error: null,
+      })
+    );
+  }
+
+  // ADDED BY KHANYISILE
+  test("PUT /ratings/:id/flag flags a review", async () => {
+    mockAuth("user-1");
+
+    mockSupabaseClient.from
+      .mockReturnValueOnce(
+        singleChain({
+          data: {
+            id: "rating-1",
+          },
+          error: null,
+        })
+      )
+      .mockReturnValueOnce(
+        updateChain({
+          data: {
+            id: "rating-1",
+            flagged: true,
+          },
+          error: null,
+        })
+      );
+
+    const res = await request(app)
+      .put("/ratings/rating-1/flag");
+
+    expect(res.status).toBe(200);
+
+    expect(res.body.ok).toBe(true);
+
+    expect(res.body.rating.flagged).toBe(true);
+  });
+
+  // ADDED BY KHANYISILE
+  test("PUT /ratings/:id/mark-safe clears flag", async () => {
+    adminAuth();
+
+    mockSupabaseClient.from
+      .mockReturnValueOnce(
+        singleChain({
+          data: {
+            id: "rating-1",
+          },
+          error: null,
+        })
+      )
+      .mockReturnValueOnce(
+        updateChain({
+          data: {
+            id: "rating-1",
+            flagged: false,
+          },
+          error: null,
+        })
+      );
+
+    const res = await request(app)
+      .put("/ratings/rating-1/mark-safe");
+
+    expect(res.status).toBe(200);
+
+    expect(res.body.ok).toBe(true);
+
+    expect(res.body.rating.flagged).toBe(false);
+  });
+
+  // ADDED BY KHANYISILE
+  test("PUT /ratings/:id/remove soft removes review", async () => {
+    adminAuth();
+
+    mockSupabaseClient.from
+      .mockReturnValueOnce(
+        singleChain({
+          data: {
+            id: "rating-1",
+          },
+          error: null,
+        })
+      )
+      .mockReturnValueOnce(
+        updateChain({
+          data: {
+            id: "rating-1",
+            removed: true,
+          },
+          error: null,
+        })
+      );
+
+    const res = await request(app)
+      .put("/ratings/rating-1/remove");
+
+    expect(res.status).toBe(200);
+
+    expect(res.body.ok).toBe(true);
+
+    expect(res.body.rating.removed).toBe(true);
+  });
+
+  // ADDED BY KHANYISILE
+  test("GET /ratings/moderation returns moderation list", async () => {
+    adminAuth();
+
+    mockSupabaseClient.from
+      .mockReturnValueOnce(
+        orderChain({
+          data: [
+            {
+              id: "rating-1",
+              rater_id: "user-1",
+              rated_id: "user-2",
+              transaction_id: "tx-1",
+              rating: 5,
+              review: "Great",
+              flagged: true,
+              removed: false,
+            },
+          ],
+          error: null,
+        })
+      )
+      .mockReturnValueOnce(
+        inChain({
+          data: [
+            {
+              id: "user-1",
+              name: "Reviewer",
+            },
+            {
+              id: "user-2",
+              name: "Seller",
+            },
+          ],
+          error: null,
+        })
+      )
+      .mockReturnValueOnce(
+        inChain({
+          data: [
+            {
+              id: "tx-1",
+              listing_id: "listing-1",
+            },
+          ],
+          error: null,
+        })
+      )
+      .mockReturnValueOnce(
+        inChain({
+          data: [
+            {
+              id: "listing-1",
+              title: "Laptop",
+            },
+          ],
+          error: null,
+        })
+      );
+
+    const res = await request(app)
+      .get("/ratings/moderation");
+
+    expect(res.status).toBe(200);
+
+    expect(res.body.ok).toBe(true);
+
+    expect(res.body.ratings).toHaveLength(1);
+
+    expect(
+      res.body.ratings[0].reviewer_name
+    ).toBe("Reviewer");
+
+    expect(
+      res.body.ratings[0].item_title
+    ).toBe("Laptop");
+  });
+
+  // ADDED BY KHANYISILE
+  test("GET /ratings excludes removed reviews from public view", async () => {
+
+    const ratingsQuery = {
+      select: jest.fn().mockReturnThis(),
+      eq: jest.fn().mockReturnThis(),
+      or: jest.fn().mockReturnThis(),
+      order: jest.fn().mockResolvedValue({
+        data: [
+          {
+            id: "r1",
+            rating: 5,
+          },
+        ],
+        error: null,
+      }),
+    };
+
+    const aggQuery = {
+      select: jest.fn().mockReturnThis(),
+      eq: jest.fn().mockReturnThis(),
+      or: jest.fn().mockResolvedValue({
+        data: [
+          {
+            rating: 5,
+          },
+        ],
+        error: null,
+      }),
+    };
+
+    mockSupabaseClient.from
+      .mockReturnValueOnce(ratingsQuery)
+      .mockReturnValueOnce(aggQuery);
+
+    const res = await request(app)
+      .get("/ratings?user_id=user-1");
+
+    expect(res.status).toBe(200);
+
+    expect(ratingsQuery.or)
+      .toHaveBeenCalledWith(
+        "removed.is.null,removed.eq.false"
+      );
+
+    expect(aggQuery.or)
+      .toHaveBeenCalledWith(
+        "removed.is.null,removed.eq.false"
+      );
+  });
+});  
 });
