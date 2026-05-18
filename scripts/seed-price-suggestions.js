@@ -1,9 +1,9 @@
 //ADDED BY KHANYISILE
-require("dotenv").config();
+require("dotenv").config();//loads variables from .env to process.env(which contains the keys I need for this file)
 
 const {
   seedPriceSuggestions,
-} = require("../services/price-suggestion");
+} = require("../services/price-suggestion");//imports the seedP..S.. function from services/price-suggestion
 
 //ADDED BY KHANYISILE
 async function runSeed() {
@@ -24,3 +24,5 @@ async function runSeed() {
 
 //ADDED BY KHANYISILE
 runSeed();
+
+//This file exists so you can run the database seeding process from the terminal without needing to start the whole application.
