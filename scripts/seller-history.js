@@ -1,12 +1,16 @@
+//DOM element references
+
 const sellerName = document.getElementById("seller-name");
 const sellerMeta = document.getElementById("seller-meta");
 const sellerRating = document.getElementById("seller-rating");
 const reviewsList = document.getElementById("reviews-list");
 const transactionsGrid = document.getElementById("transactions-grid");
 
+//Getting the seller ID from the URL
 const params = new URLSearchParams(window.location.search);
 const sellerId = params.get("sellerId");
 
+//Neat readable date 
 function formatDate(dateString) {
   if (!dateString) return "Unknown date";
 
@@ -30,7 +34,7 @@ function renderStars(rating) {
   const rounded = Math.round(Number(rating) || 0);
   return "★".repeat(rounded) + "☆".repeat(5 - rounded);
 }
-
+// Error if seller history cannot be loaded for some reason
 function showError(message) {
   sellerName.textContent = "Could not load seller";
   sellerMeta.textContent = message;
