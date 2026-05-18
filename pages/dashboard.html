@@ -692,12 +692,19 @@
                 });
             }
 
+
+
+		function filterValidListings(listings) {
+    return listings.filter((item) => {
+        return item.status !== "reserved" && item.status !== "unavailable";
+    });
+}
             async function loadListings() {
                 try {
                     const response = await fetch("/listings/search");
                     const result = await response.json();
 
-                    listings = result.listings || [];
+                    listings = filterValidListings(result.listings || []);
 
                     if (activeListingsCount) {
                         activeListingsCount.textContent = String(
@@ -726,7 +733,7 @@
                     );
                     const result = await response.json();
 
-                    const filteredListings = result.listings || [];
+                    const filteredListings = filterValidListings(result.listings || []);
 
                     if (activeListingsCount) {
                         activeListingsCount.textContent = String(
