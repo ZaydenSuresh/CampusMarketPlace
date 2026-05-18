@@ -12,10 +12,10 @@
 
 <body>
     <main class="payment-page">
-        <section class="payment-card">
+        <section class="payment-card"><!--main payment card container-->
 
             <section class="payment-left">
-                <header class="payment-header">
+                <header class="payment-header"><!--payment heading section-->
                     <p class="payment-label">Secure Payment</p>
                     <h1>Complete Your Purchase</h1>
                     <p class="payment-subtitle">
@@ -23,38 +23,34 @@
                     </p>
                 </header>
 
-                <article class="item-summary">
+                <article class="item-summary"><!--item info-->
                     <p class="item-emoji">📦</p>
 
-                    <section class="item-summary-text">
-                        <h2 id="itemName">Loading item...</h2>
-                        <p id="sellerName">Seller: Loading...</p>
-                        <p id="transactionText">Transaction: Loading...</p>
+                    <section class="item-summary-text"><!--container:item deets-->
+                        <h2 id="itemName">Loading item...</h2> <!--item loaded dyn using js-->
+                        <p id="sellerName">Seller: Loading...</p> <!--seller name-->
+                        <p id="transactionText">Transaction: Loading...</p> <!--transaction details-->
                     </section>
                 </article>
 
-                <section class="payment-methods">
+                <section class="payment-methods"><!--payment selection-->
                     <h3>Choose Payment Method</h3>
 
-                    <label class="method-option active">
-                        <input type="radio" name="paymentMethod" value="paystack" checked>
-                        <p>💳 Card Payment (Paystack)</p>
+                    <label class="method-option active"> <!--paystack card payment option (selected by default)-->
+                        <input type="radio" name="paymentMethod" value="paystack" checked> <!--radio btn for selecting paystact payment-->
+                        <p>💳 Card Payment (Paystack)</p> <!--label text for paystack payment opt-->
                     </label>
 
-                    <label class="method-option">
-                        <input type="radio" name="paymentMethod" value="cash">
+                    <label class="method-option"><!--cash payment option-->
+                        <input type="radio" name="paymentMethod" value="cash"><!--radio btn for cash pay-->
                         <p>💵 Cash on Collection</p>
                     </label>
                 </section>
-
-                <!-- Paystack: no card fields — Paystack popup handles all card entry -->
-                <section class="paystack-details" id="paystackDetails">
-                    <p class="paystack-info">
+                <!--paystack info setion-->
+                <!--no card fields shown bc paystack handles card entry securely-->
+                <section class="paystack-details" id="paystackDetails"><!--unq name for js-->
+                    <p class="paystack-info"><!--tell user abt paystack payment process-->
                         🔒 You will be redirected to Paystack's secure checkout page to enter your card details.
-                        Your card information never touches our servers.
-                    </p>
-                    <p class="paystack-test-note">
-                        <strong>Test card:</strong> 4084 0840 8408 4081 &middot; Any CVV &middot; Any future expiry
                     </p>
                 </section>
 
