@@ -1,9 +1,7 @@
-
+//read query params from page url
 const params        = new URLSearchParams(window.location.search);
-const transactionId = params.get("transactionId") || params.get("transaction_id") || "";
-
-// ─── DOM ──────────────────────────────────────────────────────────────────────
-const itemNameEl         = document.getElementById("itemName");
+const transactionId = params.get("transactionId") || params.get("transaction_id") || "";//get transaction id from url
+const itemNameEl         = document.getElementById("itemName");//display item name
 const sellerNameEl       = document.getElementById("sellerName");
 const transactionTextEl  = document.getElementById("transactionText");
 const itemPriceEl        = document.getElementById("itemPrice");
@@ -16,79 +14,81 @@ const cashDetails        = document.getElementById("cashDetails");
 const payBtn             = document.getElementById("payBtn");
 const paymentMessage     = document.getElementById("paymentMessage");
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
+//format number as SA currency
 function formatPrice(amount) {
     return `R ${Number(amount || 0).toFixed(2)}`;
 }
-
+//clear any msg currently shown
 function clearMessage() {
     paymentMessage.textContent = "";
     paymentMessage.className   = "";
 }
-
+//show sccucess/error msg
 function showMessage(text, type) {
     paymentMessage.textContent = text;
-    paymentMessage.className   = type === "success" ? "success-message" : "error-message";
+    paymentMessage.className   = type === "success" ? "success-message" : "error-message";//aplly css class depending on msg type
 }
-
+//enable/disable payment btn while request=pend
 function setLoading(loading) {
     payBtn.disabled = loading;
     if (loading) {
-        payBtn.textContent = "Processing…";
-    } else {
+        payBtn.textContent = "Processing…";//show loading text while payment is being processed
+    } else {//restore btn text based on selected payment method
         const method = document.querySelector('input[name="paymentMethod"]:checked')?.value;
         payBtn.textContent = method === "cash" ? "Confirm Cash Payment" : "Pay Now";
     }
 }
-
-// ─── Fetch Transaction from Server ────────────────────────────────────────────
-async function loadTransactionDetails() {
-    if (!transactionId) {
+//fetch transaction from server
+async function loadTransactionDetails() {//load transaction details from backend using transactionid
+    if (!transactionId) {//stop when transaction id not found in url
         showMessage("No transaction specified", "error");
         return;
     }
 
     try {
-        const res = await fetch(`/transactions/${transactionId}`, { credentials: "include" });
-        if (!res.ok) {
+        const res = await fetch(`/transactions/${transactionId}`, { credentials: "include" });//request transaction details from backend
+        if (!res.ok) {//show message when error from server
             showMessage("Failed to load transaction details", "error");
             return;
         }
-
+        //conv repsonse into js obj
         const tx = await res.json();
-
+        //some api return listing as array/obj, this handles both
         const listing = Array.isArray(tx.listings) ? tx.listings[0] : tx.listings;
-
+        //fill page w transacton/listing deets
         itemNameEl.textContent        = listing?.title || "Unknown Item";
         sellerNameEl.textContent      = `Seller: ${tx.seller?.name || "Unknown"}`;
         transactionTextEl.textContent = `Transaction: ${tx.id}`;
         itemPriceEl.textContent       = formatPrice(listing?.price || 0);
         totalPriceEl.textContent      = formatPrice(listing?.price || 0);
-
         window.__paymentPrice = Number(listing?.price || 0);
-    } catch (err) {
+    } catch (err) {//handle network errors, server downtime/failed req
         showMessage("Network error loading transaction", "error");
     }
 }
-
-// ─── Payment Method Switching ─────────────────────────────────────────────────
+//update ui when user select diff pay method
 function updatePaymentMethod(method) {
     // Update active state on radio labels
-    methodOptions.forEach((opt) => opt.classList.remove("active"));
-    document.querySelector(`input[name="paymentMethod"][value="${method}"]`)
-        ?.closest(".method-option")
-        ?.classList.add("active");
+    methodOptions.forEach((opt) => opt.classList.remove("active"));//remove active styling from payment opts
+    //acrive styling to selected payment opt
+    const selectedRadio = document.querySelector(//find radio btn for selcted
+    `input[name="paymentMethod"][value="${method}"]`
+);
+//find payment opt container wrapping radio btn
+const selectedOption = selectedRadio.closest(".method-option");
+//selected pay=active=highlighted
+selectedOption.classList.add("active");
 
-    // Show / hide detail sections
+    // Show / hide detail sections//hide both payment deets first
     paystackDetails.classList.add("hidden");
     cashDetails.classList.add("hidden");
-
+//if paystack selected
     if (method === "paystack") {
         paystackDetails.classList.remove("hidden");
         selectedMethodText.textContent = "Card (Paystack)";
         payBtn.textContent             = "Pay Now";
     }
-
+//if cash selcted
     if (method === "cash") {
         cashDetails.classList.remove("hidden");
         selectedMethodText.textContent = "Cash";
@@ -97,18 +97,11 @@ function updatePaymentMethod(method) {
 
     clearMessage();
 }
-
-// ─── Pay Button Click ─────────────────────────────────────────────────────────
-// Handles the UI side of submission:
-//   1. Validates price exists
-//   2. If Paystack — opens popup, gets reference
-//   3. Dispatches a custom event "payment:submit" with all data needed for the POST
-//      so the backend integration can listen and handle the actual fetch call
+//run when payment btn clicked
 payBtn.addEventListener("click", async () => {
+  //get current selected payment method
     const selectedMethod = document.querySelector('input[name="paymentMethod"]:checked')?.value;
-
     const paymentPrice = window.__paymentPrice || 0;
-
     if (paymentPrice <= 0) {
         showMessage("No payment amount available. Please try again.", "error");
         return;
@@ -124,8 +117,8 @@ payBtn.addEventListener("click", async () => {
             const res = await fetch("/payments/initialize", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                credentials: "include",
-                body: JSON.stringify({
+                credentials: "include",//cookies, session info
+                body: JSON.stringify({//js obj->json txt
                     transaction_id: transactionId,
                     amount_paid: paymentPrice,
                 }),
@@ -140,7 +133,8 @@ payBtn.addEventListener("click", async () => {
             }
 
             window.location.href = data.authorization_url;
-        } catch (_) {
+        } //ck pg
+        catch (_) {
             showMessage("Network error. Please try again.", "error");
             setLoading(false);
         }
@@ -148,6 +142,7 @@ payBtn.addEventListener("click", async () => {
     }
 
     if (selectedMethod === "cash") {
+      //paym submission logic=seperate
         document.dispatchEvent(new CustomEvent("payment:submit", {
             detail: {
                 transaction_id: transactionId,
@@ -158,13 +153,9 @@ payBtn.addEventListener("click", async () => {
     }
 });
 
-// ─── payment:submit Listener ──────────────────────────────────────────────────
-// Calls the backend POST /payments/pay when the Pay button dispatches the event
 document.addEventListener("payment:submit", async (e) => {
-    const detail = e.detail;
-
-    setLoading(true);
-
+    const detail = e.detail;//paym deets from cust event
+    setLoading(true);//disable subm bn while subm payent
     const timeout = setTimeout(() => {
         setLoading(false);
         showMessage("Request timed out. Please try again.", "error");
@@ -201,12 +192,10 @@ document.addEventListener("payment:submit", async (e) => {
         setLoading(false);
     }
 });
-
-// ─── Event Listeners ──────────────────────────────────────────────────────────
+//update paym method section when user changes method
 radioButtons.forEach((radio) => {
     radio.addEventListener("change", () => updatePaymentMethod(radio.value));
 });
 
-// ─── Init ─────────────────────────────────────────────────────────────────────
 loadTransactionDetails();
 updatePaymentMethod("paystack");

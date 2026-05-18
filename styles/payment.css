@@ -1,5 +1,4 @@
 
-
 .payment-page {
     min-height: 100vh;
     background: var(--bg-light);
@@ -241,10 +240,6 @@
     }
 }
 
-
-/* ─── Sprint 4 Additions ──────────────────────────────────────────────────── */
-
-/* Info box shown when Paystack method is selected */
 .paystack-details {
     margin-top: var(--space-lg);
     background: rgba(0, 59, 126, 0.05);
@@ -259,8 +254,6 @@
     line-height: 1.5;
     margin-bottom: var(--space-sm);
 }
-
-/* Pay Now button on student-transactions cards */
 .btn-pay {
     display: inline-flex;
     align-items: center;
