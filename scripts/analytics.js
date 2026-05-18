@@ -328,7 +328,7 @@ function renderTrendsChart(labels, data, period) {
  */
 async function loadCategories() {
   try {
-    const response = await fetch("/analytics/categories");
+    const response = await fetch("/transaction-analytics/categories");
 
     if (!response.ok) {
       console.warn("Categories API returned status:", response.status);
@@ -498,8 +498,8 @@ async function exportCSV() {
   try {
     // Fetch both datasets in parallel
     const [txResponse, catResponse] = await Promise.all([
-      fetch("/analytics/export"),
-      fetch("/analytics/categories"),
+      fetch("/transaction-analytics/export"),
+      fetch("/transaction-analytics/categories"),
     ]);
 
     const txResult = await txResponse.json();
