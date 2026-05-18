@@ -260,12 +260,6 @@
     margin-bottom: var(--space-sm);
 }
 
-.paystack-test-note {
-    color: var(--grey-text);
-    font-size: 0.85rem;
-    opacity: 0.8;
-}
-
 /* Pay Now button on student-transactions cards */
 .btn-pay {
     display: inline-flex;
