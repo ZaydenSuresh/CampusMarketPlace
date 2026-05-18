@@ -264,11 +264,26 @@ router.put("/:id", async (req, res) => {
     }
 
     if (action === "complete") {
-      // Staff confirms buyer collected the item
-      updateData.collection_confirmed = true;
-      updateData.status = "completed";
-    }
+  const { data: shortfall, error: fetchError } = await supabase
+    .from("shortfalls")
+    .select("amount_owed, status")
+    .eq("transaction_id", id)
+    .eq("status", "outstanding")
+    .maybeSingle();
 
+  if (fetchError) {
+    return res.status(500).json({ error: fetchError.message });
+  }
+
+  if (shortfall) {
+    return res.status(400).json({
+      error: `Cannot complete transaction: outstanding shortfall of R${shortfall.amount_owed}. Please confirm settlement first.`,
+    });
+  }
+
+  updateData.collection_confirmed = true;
+  updateData.status = "completed";
+}
     const { error } = await supabase
       .from("transactions")
       .update(updateData)
@@ -281,6 +296,64 @@ router.put("/:id", async (req, res) => {
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
+  }
+});
+
+router.get("/staff", async (req, res) => {
+  try {
+    const supabase = createSupabaseClient(req, res);
+
+    // 1. Fetch staff transactions
+    const { data: transactions, error: transactionError } = await supabase
+      .from("transactions")
+      .select("*")
+      .in("status", ["in_progress", "awaiting_payment"]);
+
+    if (transactionError) {
+      return res.status(500).json({
+        error: transactionError.message,
+      });
+    }
+
+    // 2. Fetch all shortfalls
+    const { data: shortfalls, error: shortfallError } = await supabase
+      .from("shortfalls")
+      .select("transaction_id, amount_owed, status");
+
+    if (shortfallError) {
+      return res.status(500).json({
+        error: shortfallError.message,
+      });
+    }
+
+    // 3. Build lookup object
+    const shortfallLookup = {};
+
+    shortfalls.forEach((shortfall) => {
+      shortfallLookup[shortfall.transaction_id] = shortfall;
+    });
+
+    // 4. Attach shortfall field
+    const result = transactions.map((transaction) => {
+      const shortfall = shortfallLookup[transaction.id];
+
+      return {
+        ...transaction,
+        shortfall: shortfall
+          ? {
+              amount_owed: shortfall.amount_owed,
+              status: shortfall.status,
+            }
+          : null,
+      };
+    });
+
+    res.json(result);
+
+  } catch (err) {
+    res.status(500).json({
+      error: err.message,
+    });
   }
 });
 

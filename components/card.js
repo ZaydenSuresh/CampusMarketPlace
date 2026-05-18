@@ -50,6 +50,7 @@ export function createListingCard(listing) {
     Seller:
     ${
         listing.user_id
+        
             ? `<a 
                     href="/seller-history.html?sellerId=${encodeURIComponent(listing.user_id)}"
                     class="seller-history-link"

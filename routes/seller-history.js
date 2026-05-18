@@ -9,7 +9,7 @@ router.get("/:userId", async (req, res) => {
     const supabase = createSupabaseClient(req, res);
     const { userId } = req.params;
 
-    // 1. Get seller profile
+    // Get seller profile
     const { data: seller, error: sellerError } = await supabase
       .from("profiles")
       .select("id, name, created_at")
@@ -24,7 +24,7 @@ router.get("/:userId", async (req, res) => {
     }
 
     // 2. Get completed transactions for this seller
-    // Avoid Supabase joins because your schema relationship names are causing errors.
+    // Avoided Supabase joins because schema relationship names are causing errors.
     const { data: transactions, error: transactionsError } = await supabase
       .from("transactions")
       .select("id, created_at, buyer_id, listing_id, seller_id, status")
@@ -36,8 +36,7 @@ router.get("/:userId", async (req, res) => {
       throw transactionsError;
     }
 
-    // 3. Get ratings for this seller, excluding removed reviews
-    // Also avoid joins here because ratings_rater_id_fkey does not exist in your schema.
+    // Get ratings for this seller, excluding removed reviews
     const { data: ratings, error: ratingsError } = await supabase
       .from("ratings")
       .select("id, rater_id, rated_id, rating, review, created_at, flagged, removed")
@@ -49,7 +48,7 @@ router.get("/:userId", async (req, res) => {
       throw ratingsError;
     }
 
-    // 4. Fetch listing details manually
+    // Fetch listing details manually
     const listingIds = [
       ...new Set((transactions || []).map((t) => t.listing_id).filter(Boolean)),
     ];
@@ -69,7 +68,7 @@ router.get("/:userId", async (req, res) => {
       listings = listingData || [];
     }
 
-    // 5. Fetch buyer profiles manually
+    // Fetch buyer profiles manually
     const buyerIds = [
       ...new Set((transactions || []).map((t) => t.buyer_id).filter(Boolean)),
     ];
@@ -89,7 +88,7 @@ router.get("/:userId", async (req, res) => {
       buyers = buyerData || [];
     }
 
-    // 6. Fetch reviewer profiles manually
+    // Fetch reviewer profiles manually
     const reviewerIds = [
       ...new Set((ratings || []).map((r) => r.rater_id).filter(Boolean)),
     ];
@@ -109,7 +108,7 @@ router.get("/:userId", async (req, res) => {
       reviewers = reviewerData || [];
     }
 
-    // 7. Calculate average rating
+    // Calculate average rating
     const totalRatings = (ratings || []).length;
 
     const averageRating =
@@ -122,7 +121,7 @@ router.get("/:userId", async (req, res) => {
             ).toFixed(2)
           );
 
-    // 8. Format completed transactions for frontend
+    // Format completed transactions for frontend
     const completedTransactions = (transactions || []).map((transaction) => {
       const listing = listings.find((l) => l.id === transaction.listing_id);
       const buyer = buyers.find((b) => b.id === transaction.buyer_id);
@@ -137,7 +136,7 @@ router.get("/:userId", async (req, res) => {
       };
     });
 
-    // 9. Format reviews for frontend
+    // Format reviews for frontend
     const formattedReviews = (ratings || []).map((item) => {
       const reviewer = reviewers.find((r) => r.id === item.rater_id);
 

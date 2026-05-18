@@ -63,8 +63,6 @@ async function fetchTransactions() {
 
             collectionConfirmed:
                 t.collection_confirmed,
-
-            /* Dev C C4: keep shortfall data from backend if Dev B attaches it */
             shortfall:
                 t.shortfall || null
         }));

@@ -264,6 +264,16 @@ form.addEventListener("submit", async (e) => {
   const description = document.getElementById("description").value.trim();
   const imageFile = imageInput.files[0];
 
+// 5MB limit (change if you want)
+const MAX_SIZE = 5 * 1024 * 1024;
+
+if (imageFile && imageFile.size > MAX_SIZE) {
+  showMessage("Image too large. Maximum allowed size is 5MB.", "error");
+  submitBtn.disabled = false;
+  if (deleteBtn) deleteBtn.disabled = false;
+  return;
+}
+
   formMessage.textContent = "";
   formMessage.className = "message";
   submitBtn.disabled = true;
