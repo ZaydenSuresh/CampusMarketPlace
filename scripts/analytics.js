@@ -33,7 +33,7 @@ async function initPage() {
  */
 async function loadSummary() {
   try {
-    const response = await fetch("/analytics/summary");
+    const response = await fetch("/transaction-analytics/summary");
 
     if (!response.ok) {
       console.warn("Summary API returned status:", response.status);
