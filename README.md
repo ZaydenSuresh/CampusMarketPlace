@@ -56,7 +56,9 @@ Campus Marketplace is a university marketplace web application developed for the
 ### Running the Application:
 - Start the development server:
   - npm run dev
-  - If npm run dev is unavailable, use: npm start
+  - If npm run dev is unavailable, use one of the following:
+      - node server.js
+      - npm start
 
 --- 
 
