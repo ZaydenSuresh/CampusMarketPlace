@@ -38,19 +38,19 @@
 
                     <label class="method-option active"> <!--paystack card payment option (selected by default)-->
                         <input type="radio" name="paymentMethod" value="paystack" checked> <!--radio btn for selecting paystact payment-->
-                        <p>💳 Card Payment (Paystack)</p> <!--label text for paystack payment opt-->
+                        <p></p> Card Payment (Paystack)</p> <!--label text for paystack payment opt-->
                     </label>
 
                     <label class="method-option"><!--cash payment option-->
                         <input type="radio" name="paymentMethod" value="cash"><!--radio btn for cash pay-->
-                        <p>💵 Cash on Collection</p>
+                        <p>Cash on Collection</p>
                     </label>
                 </section>
                 <!--paystack info setion-->
                 <!--no card fields shown bc paystack handles card entry securely-->
                 <section class="paystack-details" id="paystackDetails"><!--unq name for js-->
                     <p class="paystack-info"><!--tell user abt paystack payment process-->
-                        🔒 You will be redirected to Paystack's secure checkout page to enter your card details.
+                        You will be redirected to Paystack's secure checkout page to enter your card details.
                     </p>
                 </section>
                 <!--cash details section, hidden by default-->
@@ -88,7 +88,7 @@
                 <button id="payBtn" class="pay-btn">Pay Now</button>
 
                 <p class="secure-note">
-                    🔒 Payments are encrypted and protected by Paystack.
+                    Payments are encrypted and protected by Paystack.
                 </p>
             </aside><!--mark content related to main topic of page or article-->
 
