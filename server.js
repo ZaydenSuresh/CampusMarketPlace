@@ -29,6 +29,7 @@ const listingsRouter = require("./routes/listings");
 const ratingsRouter = require("./routes/ratings");
 const helmet = require("helmet");
 const sellerHistoryRouter = require("./routes/seller-history");
+const transAnalyticsRouter = require("./routes/transaction-analytics");
 
 app.use(cors());
 app.use("/lib", express.static("lib"));
@@ -40,17 +41,28 @@ app.use(express.static("pages"));
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
-app.use(helmet({
+app.use(
+  helmet({
     contentSecurityPolicy: {
-        directives: {
-            defaultSrc: ["'self'"],
-            scriptSrc: ["'self'", "https://js.paystack.co", "https://s3-eu-west-1.amazonaws.com"],
-            scriptSrcElem: ["'self'", "'unsafe-inline'", "https://js.paystack.co", "https://s3-eu-west-1.amazonaws.com"],
-            frameSrc: ["'self'", "https://checkout.paystack.com"],
-            connectSrc: ["'self'", "https://api.paystack.co"],
-        },
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: [
+          "'self'",
+          "https://js.paystack.co",
+          "https://s3-eu-west-1.amazonaws.com",
+        ],
+        scriptSrcElem: [
+          "'self'",
+          "'unsafe-inline'",
+          "https://js.paystack.co",
+          "https://s3-eu-west-1.amazonaws.com",
+        ],
+        frameSrc: ["'self'", "https://checkout.paystack.com"],
+        connectSrc: ["'self'", "https://api.paystack.co"],
+      },
     },
-}));
+  }),
+);
 
 app.use("/seller-history", sellerHistoryRouter);
 app.use("/auth", authRouter);
@@ -62,6 +74,7 @@ app.use("/analytics", analyticsRouter);
 app.use("/listings", listingsRouter);
 app.use("/transactions", transactionsRouter);
 app.use("/ratings", ratingsRouter);
+app.use("/transaction-analytics", transAnalyticsRouter);
 
 // show login page on server startup
 app.get("/", (req, res) => {

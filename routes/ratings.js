@@ -167,7 +167,7 @@ router.get("/", async (req, res) => {
   }
 });
 
-// ADDED BY KHANYISILE
+
 // Helper: check if the logged-in user is an Admin.
 // This checks the profiles table using the current user's id.
 async function requireAdmin(req, res, supabase) {
@@ -194,7 +194,7 @@ async function requireAdmin(req, res, supabase) {
   return { user, errorResponse: null };
 }
 
-// ADDED BY KHANYISILE
+
 // GET /ratings/moderation — Admin views all ratings with moderation status
 // GET /ratings/moderation — Admin views all ratings with moderation status
 router.get("/moderation", async (req, res) => {
@@ -233,7 +233,7 @@ router.get("/moderation", async (req, res) => {
           .flatMap((rating) => [rating.rater_id, rating.rated_id])
           .filter(Boolean)
       ),
-    ];
+    ];// creates a list of unique IDs.
 
     let profiles = [];
 
@@ -248,7 +248,7 @@ router.get("/moderation", async (req, res) => {
       }
 
       profiles = profileData || [];
-    }
+    }//for the user identified already, if they are there, then collect their info.
 
     // 3. Fetch related transactions manually
     const transactionIds = [

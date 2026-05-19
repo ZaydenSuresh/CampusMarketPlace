@@ -2,7 +2,7 @@ const express = require("express");
 const { createSupabaseClient } = require("../lib/supabase");
 
 // ADDED BY KHANYISILE
-const PDFDocument = require("pdfkit");
+const PDFDocument = require("pdfkit");//The library is used to generate PDF documents in Node.js.
 
 const router = express.Router();
 
@@ -300,14 +300,14 @@ router.get("/export/pdf", async (req, res) => {
   res.setHeader(
     "Content-Type",
     "application/pdf"
-  );
+  );//Tells the browser:“This response is a PDF file.”
 
   res.setHeader(
     "Content-Disposition",
     `attachment; filename=analytics-report-${new Date()
       .toISOString()
       .split("T")[0]}.pdf`
-  );
+  );//Tells the browser:“Download this as a file.” with file name defined by date of download
 
   doc.pipe(res);
 
